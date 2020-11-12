@@ -12,52 +12,52 @@ router.get("/me", auth, async (req, res) => {
   const user = await User.findById(req.user._id).select("-password");
   res.send(user);
 });
+console.log("menee");
+router.post("/push", async (req, res) => {
+  console.log("menee");
 
-// router.post("/", async (req, res) => {
-//   console.log("menee");
+  const sendPushNotification = async (targetExpoPushToken, message) => {
+    const expo = new Expo();
+    const chunks = expo.chunkPushNotifications([
+      // { to: targetExpoPushToken, sound: "default", body: message },
+      // {
+      //   to: "ExponentPushToken[3vcfsuIUA38AfF4LGWW87F]",
+      //   sound: "default",
+      //   body: "Viesti juu",
+      // },
+      req.body,
+      // https://www.npmjs.com/package/expo-server-sdks
+    ]);
 
-//   const sendPushNotification = async (targetExpoPushToken, message) => {
-//     const expo = new Expo();
-//     const chunks = expo.chunkPushNotifications([
-//       // { to: targetExpoPushToken, sound: "default", body: message },
-//       // {
-//       //   to: "ExponentPushToken[3vcfsuIUA38AfF4LGWW87F]",
-//       //   sound: "default",
-//       //   body: "Viesti juu",
-//       // },
-//       req.body,
-//       // https://www.npmjs.com/package/expo-server-sdks
-//     ]);
+    const sendChunks = async () => {
+      // This code runs synchronously. We're waiting for each chunk to be send.
+      // A better approach is to use Promise.all() and send multiple chunks in parallel.
+      chunks.forEach(async (chunk) => {
+        console.log("Sending Chunk", chunk);
+        try {
+          const tickets = await expo.sendPushNotificationsAsync(chunk);
+          console.log("Tickets", tickets);
+        } catch (error) {
+          console.log("Error sending chunk", error);
+        }
+      });
+    };
 
-//     const sendChunks = async () => {
-//       // This code runs synchronously. We're waiting for each chunk to be send.
-//       // A better approach is to use Promise.all() and send multiple chunks in parallel.
-//       chunks.forEach(async (chunk) => {
-//         console.log("Sending Chunk", chunk);
-//         try {
-//           const tickets = await expo.sendPushNotificationsAsync(chunk);
-//           console.log("Tickets", tickets);
-//         } catch (error) {
-//           console.log("Error sending chunk", error);
-//         }
-//       });
-//     };
+    //     if (Platform.OS === "android") {
+    //   Notifications.setNotificationChannelAsync("default", {
+    //     name: "default",
+    //     importance: Notifications.AndroidImportance.MAX,
+    //     vibrationPattern: [0, 250, 250, 250],
+    //     lightColor: "#FF231F7C",
+    //   });
+    // }
+    await sendChunks();
+  };
 
-//     //     if (Platform.OS === "android") {
-//     //   Notifications.setNotificationChannelAsync("default", {
-//     //     name: "default",
-//     //     importance: Notifications.AndroidImportance.MAX,
-//     //     vibrationPattern: [0, 250, 250, 250],
-//     //     lightColor: "#FF231F7C",
-//     //   });
-//     // }
-//     await sendChunks();
-//   };
+  sendPushNotification();
 
-//   sendPushNotification();
-
-//   res.status(404).send("lähetetty?");
-// });
+  res.status(404).send("lähetetty");
+});
 
 router.post("/", async (req, res) => {
   const { error } = validate(req.body);
