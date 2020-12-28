@@ -4,6 +4,8 @@ const admin = require("../middleware/admin");
 const { Genre, validate } = require("../models/genre");
 const mongoose = require("mongoose");
 const express = require("express");
+
+const { Expo } = require("expo-server-sdk");
 const router = express.Router();
 const firebase = require("firebase");
 // Required for side-effects
@@ -11,48 +13,113 @@ require("firebase/firestore");
 
 router.get("/", async (req, res) => {
   // throw new Error("Could not get the genres.");
-  // firebase.initializeApp({
-  //   apiKey: "AIzaSyBtRUWm_VJznsRIWH_hGgC4M-SFCuQe1SM",
-  //   authDomain: "test2-6663b.firebaseapp.com",
-  //   projectId: "test2-6663b",
-  // });
+  firebase.initializeApp({
+    apiKey: "AIzaSyCIIA2_x2vIpq_H7h0lukW5MZejf_3YP9U",
+    authDomain: "rivers-app-9ab9d.firebaseapp.com",
+    projectId: "rivers-app-9ab9d",
+  });
 
-  // var db = firebase.firestore();
+  var db = firebase.firestore();
 
-  // try {
-  //   firebase
-  //     .auth()
-  //     //   .signInWithEmailAndPassword(this.state.email, this.state.password)
-  //     .signInWithEmailAndPassword("koivisto_timo@hotmail.com", "jaaha1234");
-  //   // .signInWithEmailAndPassword("testi@joojaa.fi", "123456");
-  //   //pitää aina varmistaa, että auth voimassa ennen muita kutsuja
-  //   firebase.auth().onAuthStateChanged((user) => {
-  //     if (user != null) {
-  //       console.log("We are authenticated now!");
-  //       // console.log(user);
-  //       db.collection("testdb")
-  //         .add({
-  //           first: "Hadnna",
-  //           last: "Koivisto",
-  //           born: 1999,
-  //         })
-  //         .then(function (docRef) {
-  //           console.log("Document written with ID: ", docRef.id);
-  //         })
-  //         .catch(function (error) {
-  //           console.error("Error adding document: ", error);
-  //         });
-  //     } else console.log("Ei olla nyt kirjautunut");
-  //     // console.log(user.email);
-  //     // Do other things
-  //   });
-  // } catch (error) {
-  //   console.log(error);
-  // }
+  try {
+    firebase
+      .auth()
+      .signInWithEmailAndPassword("koivistolle@gmail.com", "Front1213");
+
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user != null) {
+        console.log("We are authenticated now!");
+
+        try {
+          // const docRef = db.collection("testdb");
+          db.collection("pushTokens")
+            .get()
+            .then(function (querySnapshot) {
+              querySnapshot.forEach(function (doc) {
+                if (
+                  doc.data().pushToken ===
+                    "ExponentPushToken[OvWh5oAxxyXZAfQDUEY0Ez]" ||
+                  doc.data().pushToken ===
+                    "ExponentPushToken[jfKe5PF3batyNXVwRNgNvD]"
+                ) {
+                  // doc.data() is never undefined for query doc snapshots
+                  // console.log(doc.data().liveAlert2);
+                  var thisToken = doc.data().pushToken;
+                  sendPushMessage(thisToken);
+                }
+              });
+            });
+        } catch (err) {
+          console.log("jokin meni pieleen" + err);
+          // return; //tämä kai turha
+        }
+        // console.log(user);
+        // db.collection("testdb")
+        //   .add({
+        //     first: "Hadnna",
+        //     last: "Koivisto",
+        //     born: 1999,
+        //   })
+        //   .then(function (docRef) {
+        //     console.log("Document written with ID: ", docRef.id);
+        //   })
+        //   .catch(function (error) {
+        //     console.error("Error adding document: ", error);
+        //   });
+      } else console.log("Ei olla nyt kirjautunut");
+      // console.log(user.email);
+      // Do other things
+    });
+  } catch (error) {
+    console.log(error);
+  }
 
   const genres = await Genre.find().sort("name");
   res.send(genres);
 });
+
+const sendPushMessage = async (thisToken) => {
+  console.log(thisToken);
+  // const sendPushNotification = async (targetExpoPushToken, message) => {
+  const expo = new Expo();
+  const chunks = expo.chunkPushNotifications([
+    // { to: targetExpoPushToken, sound: "default", body: message },
+    // { to: targetExpoPushToken, sound: "default", body: message },
+    {
+      to: thisToken,
+      sound: "default",
+      body: "God is god",
+    },
+    // req.body,
+    // https://www.npmjs.com/package/expo-server-sdks
+  ]);
+
+  const sendChunks = async () => {
+    // This code runs synchronously. We're waiting for each chunk to be send.
+    // A better approach is to use Promise.all() and send multiple chunks in parallel.
+    chunks.forEach(async (chunk) => {
+      console.log("Sending Chunk", chunk);
+      try {
+        const tickets = await expo.sendPushNotificationsAsync(chunk);
+        console.log("Tickets", tickets);
+      } catch (error) {
+        console.log("Error sending chunk", error);
+      }
+    });
+  };
+
+  //     if (Platform.OS === "android") {
+  //   Notifications.setNotificationChannelAsync("default", {
+  //     name: "default",
+  //     importance: Notifications.AndroidImportance.MAX,
+  //     vibrationPattern: [0, 250, 250, 250],
+  //     lightColor: "#FF231F7C",
+  //   });
+  // }
+  await sendChunks();
+};
+
+// };
 
 router.post("/", auth, async (req, res) => {
   const { error } = validate(req.body);
