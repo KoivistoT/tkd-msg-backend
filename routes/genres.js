@@ -29,25 +29,32 @@ router.get("/", async (req, res) => {
     firebase.auth().onAuthStateChanged((user) => {
       if (user != null) {
         console.log("We are authenticated now!");
-
+        const chuncToSend = [];
         try {
           // const docRef = db.collection("testdb");
+          // "ExponentPushToken[uZPuvjCRaWdLKu4Rfmpj6X]" Pastoi Tomin push token tämä
           db.collection("pushTokens")
             .get()
             .then(function (querySnapshot) {
               querySnapshot.forEach(function (doc) {
                 if (
                   doc.data().pushToken ===
-                    "ExponentPushToken[OvWh5oAxxyXZAfQDUEY0Ez]" ||
+                    "ExponentPushToken[1ET0mtLqCB7u4fMjZYS7Hs]" ||
                   doc.data().pushToken ===
                     "ExponentPushToken[jfKe5PF3batyNXVwRNgNvD]"
                 ) {
                   // doc.data() is never undefined for query doc snapshots
                   // console.log(doc.data().liveAlert2);
-                  var thisToken = doc.data().pushToken;
-                  sendPushMessage(thisToken);
+                  // var thisToken = doc.data().pushToken;
+                  chuncToSend.push({
+                    to: doc.data().pushToken,
+                    sound: "default",
+                    body: "Tästä avaamalla menee featureen",
+                    data: { goScreen: "feature" },
+                  });
                 }
               });
+              sendPushMessage(chuncToSend);
             });
         } catch (err) {
           console.log("jokin meni pieleen" + err);
@@ -78,21 +85,23 @@ router.get("/", async (req, res) => {
   res.send(genres);
 });
 
-const sendPushMessage = async (thisToken) => {
-  console.log(thisToken);
+const sendPushMessage = async (chuncToSend) => {
+  // console.log(thisToken);
   // const sendPushNotification = async (targetExpoPushToken, message) => {
   const expo = new Expo();
-  const chunks = expo.chunkPushNotifications([
-    // { to: targetExpoPushToken, sound: "default", body: message },
-    // { to: targetExpoPushToken, sound: "default", body: message },
-    {
-      to: thisToken,
-      sound: "default",
-      body: "God is god",
-    },
-    // req.body,
-    // https://www.npmjs.com/package/expo-server-sdks
-  ]);
+  const chunks = expo.chunkPushNotifications(chuncToSend);
+
+  // const chunks = expo.chunkPushNotifications([
+  //   chuncToSend,
+  //   {
+  //     to: chuncToSend,
+  //     sound: "default",
+  //     body: "Tästä avaamalla menee featureen",
+  //     data: { goScreen: "feature" },
+  //   }
+  //   // req.body,
+  //   // https://www.npmjs.com/package/expo-server-sdks
+  // ]);
 
   const sendChunks = async () => {
     // This code runs synchronously. We're waiting for each chunk to be send.
