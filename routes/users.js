@@ -45,65 +45,60 @@ router.post("/push", async (req, res) => {
             .get()
             .then(function (querySnapshot) {
               querySnapshot.forEach(function (doc) {
-                if (
-                  doc.data().pushToken ===
-                    "ExponentPushToken[jfKe5PF3batyNXVwRNgNvD]" ||
-                  doc.data().pushToken ===
-                    "ExponentPushToken[OMbqczJy2Vr2yuRoIajbP3]"
-                ) {
+                // if (
+                //   doc.data().pushToken ===
+                //     "ExponentPushToken[jfKe5PF3batyNXVwRNgNvD]" ||
+                //   doc.data().pushToken ===
+                //     "ExponentPushToken[OMbqczJy2Vr2yuRoIajbP3]"
+                // ) {
+                //   chuncToSend.push({
+                //     to: doc.data().pushToken,
+                //     sound: "default",
+                //     body: req.body.body,
+                //     data: req.body.data,
+                //     // data: { goScreen: "feature" },
+                //   });
+                // }
+                if (pushType === "1001") {
+                  if (
+                    doc.data().liveAlert1 === "true"
+                    // doc.data().pushToken ===
+                    // "ExponentPushToken[jfKe5PF3batyNXVwRNgNvD]"
+                    //   ||
+                    // doc.data().pushToken ===
+                    //   "ExponentPushToken[OMbqczJy2Vr2yuRoIajbP3]"
+                  ) {
+                    chuncToSend.push({
+                      to: doc.data().pushToken,
+                      sound: "default",
+                      body: req.body.body,
+                      data: req.body.data,
+                      // data: { goScreen: "feature" },
+                    });
+                  }
+                }
+                if (pushType === "1002") {
+                  if (doc.data().liveAlert2 === "true") {
+                    chuncToSend.push({
+                      to: doc.data().pushToken,
+                      sound: "default",
+                      body: req.body.body,
+                      data: req.body.data,
+                    });
+                  }
+                }
+                if (pushType === "1003" || pushType === "1004") {
                   chuncToSend.push({
                     to: doc.data().pushToken,
                     sound: "default",
                     body: req.body.body,
                     data: req.body.data,
-                    // data: { goScreen: "feature" },
                   });
                 }
               });
 
               // **************
-              // if (pushType === "1001") {
-              //   querySnapshot.forEach(function (doc) {
-              //     if (
-              //       doc.data().liveAlert1 === "true"
-              //       // doc.data().pushToken ===
-              //       // "ExponentPushToken[jfKe5PF3batyNXVwRNgNvD]"
-              //       //   ||
-              //       // doc.data().pushToken ===
-              //       //   "ExponentPushToken[OMbqczJy2Vr2yuRoIajbP3]"
-              //     ) {
-              //       chuncToSend.push({
-              //         to: doc.data().pushToken,
-              //         sound: "default",
-              //         body: req.body.body,
-              //         data: req.body.data,
-              //         // data: { goScreen: "feature" },
-              //       });
-              //     }
-              //   });
-              // }
-              // if (pushType === "1002") {
-              //   querySnapshot.forEach(function (doc) {
-              //     if (doc.data().liveAlert2 === "true") {
-              //       chuncToSend.push({
-              //         to: doc.data().pushToken,
-              //         sound: "default",
-              //         body: req.body.body,
-              //         data: req.body.data,
-              //       });
-              //     }
-              //   });
-              // }
-              // if (pushType === "1003" || pushType === "1004") {
-              //   querySnapshot.forEach(function (doc) {
-              //     chuncToSend.push({
-              //       to: doc.data().pushToken,
-              //       sound: "default",
-              //       body: req.body.body,
-              //       data: req.body.data,
-              //     });
-              //   });
-              // }
+
               // **************
 
               console.log(chuncToSend);
