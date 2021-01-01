@@ -13,73 +13,73 @@ require("firebase/firestore");
 
 router.get("/", async (req, res) => {
   // throw new Error("Could not get the genres.");
-  firebase.initializeApp({
-    apiKey: "AIzaSyCIIA2_x2vIpq_H7h0lukW5MZejf_3YP9U",
-    authDomain: "rivers-app-9ab9d.firebaseapp.com",
-    projectId: "rivers-app-9ab9d",
-  });
+  // firebase.initializeApp({
+  //   apiKey: "AIzaSyCIIA2_x2vIpq_H7h0lukW5MZejf_3YP9U",
+  //   authDomain: "rivers-app-9ab9d.firebaseapp.com",
+  //   projectId: "rivers-app-9ab9d",
+  // });
 
-  var db = firebase.firestore();
+  // var db = firebase.firestore();
 
-  try {
-    firebase
-      .auth()
-      .signInWithEmailAndPassword("koivistolle@gmail.com", "Front1213");
+  // try {
+  //   firebase
+  //     .auth()
+  //     .signInWithEmailAndPassword("koivistolle@gmail.com", "Front1213");
 
-    firebase.auth().onAuthStateChanged((user) => {
-      if (user != null) {
-        console.log("We are authenticated now!");
-        const chuncToSend = [];
-        try {
-          // const docRef = db.collection("testdb");
-          // "ExponentPushToken[uZPuvjCRaWdLKu4Rfmpj6X]" Pastoi Tomin push token tämä
-          db.collection("pushTokens")
-            .get()
-            .then(function (querySnapshot) {
-              querySnapshot.forEach(function (doc) {
-                if (
-                  doc.data().pushToken ===
-                    "ExponentPushToken[1ET0mtLqCB7u4fMjZYS7Hs]" ||
-                  doc.data().pushToken ===
-                    "ExponentPushToken[jfKe5PF3batyNXVwRNgNvD]"
-                ) {
-                  // doc.data() is never undefined for query doc snapshots
-                  // console.log(doc.data().liveAlert2);
-                  // var thisToken = doc.data().pushToken;
-                  chuncToSend.push({
-                    to: doc.data().pushToken,
-                    sound: "default",
-                    body: "Tästä avaamalla menee featureen",
-                    data: { goScreen: "feature" },
-                  });
-                }
-              });
-              sendPushMessage(chuncToSend);
-            });
-        } catch (err) {
-          console.log("jokin meni pieleen" + err);
-          // return; //tämä kai turha
-        }
-        // console.log(user);
-        // db.collection("testdb")
-        //   .add({
-        //     first: "Hadnna",
-        //     last: "Koivisto",
-        //     born: 1999,
-        //   })
-        //   .then(function (docRef) {
-        //     console.log("Document written with ID: ", docRef.id);
-        //   })
-        //   .catch(function (error) {
-        //     console.error("Error adding document: ", error);
-        //   });
-      } else console.log("Ei olla nyt kirjautunut");
-      // console.log(user.email);
-      // Do other things
-    });
-  } catch (error) {
-    console.log(error);
-  }
+  //   firebase.auth().onAuthStateChanged((user) => {
+  //     if (user != null) {
+  //       console.log("We are authenticated now!");
+  //       const chuncToSend = [];
+  //       try {
+  //         // const docRef = db.collection("testdb");
+  //         // "ExponentPushToken[uZPuvjCRaWdLKu4Rfmpj6X]" Pastoi Tomin push token tämä
+  //         db.collection("pushTokens")
+  //           .get()
+  //           .then(function (querySnapshot) {
+  //             querySnapshot.forEach(function (doc) {
+  //               if (
+  //                 doc.data().pushToken ===
+  //                   "ExponentPushToken[1ET0mtLqCB7u4fMjZYS7Hs]" ||
+  //                 doc.data().pushToken ===
+  //                   "ExponentPushToken[jfKe5PF3batyNXVwRNgNvD]"
+  //               ) {
+  //                 // doc.data() is never undefined for query doc snapshots
+  //                 // console.log(doc.data().liveAlert2);
+  //                 // var thisToken = doc.data().pushToken;
+  //                 chuncToSend.push({
+  //                   to: doc.data().pushToken,
+  //                   sound: "default",
+  //                   body: "Tästä avaamalla menee featureen",
+  //                   data: { goScreen: "feature" },
+  //                 });
+  //               }
+  //             });
+  //             sendPushMessage(chuncToSend);
+  //           });
+  //       } catch (err) {
+  //         console.log("jokin meni pieleen" + err);
+  //         // return; //tämä kai turha
+  //       }
+  //       // console.log(user);
+  //       // db.collection("testdb")
+  //       //   .add({
+  //       //     first: "Hadnna",
+  //       //     last: "Koivisto",
+  //       //     born: 1999,
+  //       //   })
+  //       //   .then(function (docRef) {
+  //       //     console.log("Document written with ID: ", docRef.id);
+  //       //   })
+  //       //   .catch(function (error) {
+  //       //     console.error("Error adding document: ", error);
+  //       //   });
+  //     } else console.log("Ei olla nyt kirjautunut");
+  //     // console.log(user.email);
+  //     // Do other things
+  //   });
+  // } catch (error) {
+  //   console.log(error);
+  // }
 
   const genres = await Genre.find().sort("name");
   res.send(genres);
