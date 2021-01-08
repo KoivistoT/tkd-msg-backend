@@ -85,6 +85,50 @@ router.get("/videos", async (req, res) => {
   //   res.send(user);
 });
 
+router.put("/videos/:id", async (req, res) => {
+  console.log(req.params, "putissa");
+  const isLoggedIn = await firebaseLogin();
+  var db = firebase.firestore();
+
+  try {
+    if (isLoggedIn) {
+      try {
+        db.collection("appContent").doc(req.params.id).update(req.params.body);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  } catch (error) {
+    res.status(404).send(error);
+  }
+
+  res.send(video);
+});
+
+router.get("/videos/:id", async (req, res) => {
+  const isLoggedIn = await firebaseLogin();
+
+  var db = firebase.firestore();
+
+  try {
+    if (isLoggedIn) {
+      try {
+        db.collection("appContent")
+          .doc(req.params.id)
+          .get()
+          .then(function (querySnapshot) {
+            const videoData = { id: querySnapshot.id, ...querySnapshot.data() };
+            res.send(videoData);
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  } catch (error) {
+    res.status(404).send(error);
+  }
+});
+
 router.post("/", async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
