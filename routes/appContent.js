@@ -1,8 +1,9 @@
 const auth = require("../middleware/auth");
 const bcrypt = require("bcrypt");
 const _ = require("lodash");
-const { User, validate } = require("../models/user");
+// const { User, validate } = require("../models/user");
 const mongoose = require("mongoose");
+const { Video, validate } = require("../models/video");
 const express = require("express");
 const router = express.Router();
 const firebase = require("firebase");
@@ -15,17 +16,6 @@ firebase.initializeApp({
   projectId: "test2-6663b",
 });
 
-const firebaseSingIn = async () => {
-  console.log("kirjautumisessa");
-  try {
-    firebase
-      .auth()
-      .signInWithEmailAndPassword("koivistolle@gmail.com", "Front1213");
-    return user;
-  } catch (error) {
-    console.log(error);
-  }
-};
 router.get("/me", auth, async (req, res) => {
   const user = await User.findById(req.user._id).select("-password");
   res.send(user);
@@ -56,7 +46,6 @@ const firebaseLogin = async () => {
 
 // router.get("/appContent", auth, async (req, res) => {
 router.get("/videos", async (req, res) => {
-  // await firebaseSingIn();
   const isLoggedIn = await firebaseLogin();
   var db = firebase.firestore();
   try {
@@ -85,24 +74,58 @@ router.get("/videos", async (req, res) => {
   //   res.send(user);
 });
 
-router.put("/videos/:id", async (req, res) => {
-  console.log(req.params, "putissa");
+router.post("/videos", async (req, res) => {
+  const { error } = validate(req.body);
+
+  if (error) return res.status(400).send(error.details[0].message);
+
+  // const genre = await Genre.findById(req.body.genreId);
+  // if (!genre) return res.status(400).send("Invalid genre.");
+
+  const video = {
+    title: req.body.title,
+    date: req.body.date,
+  };
+
   const isLoggedIn = await firebaseLogin();
   var db = firebase.firestore();
 
   try {
     if (isLoggedIn) {
       try {
-        db.collection("appContent").doc(req.params.id).update(req.params.body);
+        db.collection("appContent").doc().set(video);
+        res.send(true);
       } catch (error) {
         console.log(error);
+        res.status(404).send(error);
       }
     }
   } catch (error) {
     res.status(404).send(error);
   }
+  // await video.save();
 
-  res.send(video);
+  // res.send(video);
+});
+
+router.put("/videos/:id", async (req, res) => {
+  console.log(req.body, "putissa");
+  const isLoggedIn = await firebaseLogin();
+  var db = firebase.firestore();
+
+  try {
+    if (isLoggedIn) {
+      try {
+        db.collection("appContent").doc(req.params.id).update(req.body);
+        res.send(true);
+      } catch (error) {
+        console.log(error);
+        res.status(404).send(error);
+      }
+    }
+  } catch (error) {
+    res.status(404).send(error);
+  }
 });
 
 router.get("/videos/:id", async (req, res) => {
@@ -129,29 +152,4 @@ router.get("/videos/:id", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
-  const { error } = validate(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-
-  let user = await User.findOne({ email: req.body.email });
-  if (user) return res.status(400).send("User already registered.");
-
-  user = new User(_.pick(req.body, ["name", "email", "password"]));
-  const salt = await bcrypt.genSalt(10);
-  user.password = await bcrypt.hash(user.password, salt);
-  await user.save();
-
-  const token = user.generateAuthToken();
-
-  res
-    .header("x-auth-token", token)
-    .header("access-control-expose-headers", "x-auth-token")
-    .send(_.pick(user, ["_id", "name", "email"]));
-});
-
 module.exports = router;
-
-router.get("/me", auth, async (req, res) => {
-  const user = await User.findById(req.user._id).select("-password");
-  res.send(user);
-});
