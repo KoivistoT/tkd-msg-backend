@@ -55,7 +55,6 @@ router.get("/videos", async (req, res) => {
         db.collection("appContent")
           .get()
           .then(function (querySnapshot) {
-            console.log("täällä");
             querySnapshot.forEach(function (doc) {
               allData.push({ id: doc.id, ...doc.data() });
               // console.log(doc.data());
@@ -76,16 +75,13 @@ router.get("/videos", async (req, res) => {
 
 router.post("/videos", async (req, res) => {
   const { error } = validate(req.body);
-
+  // console.log(error, "eriririr");
   if (error) return res.status(400).send(error.details[0].message);
 
   // const genre = await Genre.findById(req.body.genreId);
   // if (!genre) return res.status(400).send("Invalid genre.");
 
-  const video = {
-    title: req.body.title,
-    date: req.body.date,
-  };
+  const video = req.body;
 
   const isLoggedIn = await firebaseLogin();
   var db = firebase.firestore();

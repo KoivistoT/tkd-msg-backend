@@ -19,6 +19,16 @@ const Video = mongoose.model(
       min: 1,
       max: 255,
     },
+    expired: {
+      type: String,
+    },
+    isWordFor: {
+      type: Boolean,
+      required: true,
+    },
+    notesEN: {
+      type: String,
+    },
   })
 );
 
@@ -26,6 +36,9 @@ function validateVideo(video) {
   const schema = {
     title: Joi.string().min(5).max(50).required(),
     date: Joi.string().min(1).required(),
+    expired: Joi.string().allow(null, ""),
+    isWordFor: Joi.boolean().required(),
+    notesEN: Joi.string().allow(null, ""),
   };
 
   return Joi.validate(video, schema);
