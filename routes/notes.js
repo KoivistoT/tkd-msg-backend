@@ -38,7 +38,7 @@ const firebaseLogin = async () => {
   return isUser;
 };
 
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   const isLoggedIn = await firebaseLogin();
   var db = firebase.firestore();
   try {
@@ -65,7 +65,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
   const { error } = validate(req.body);
   // console.log(error, "eriririr");
   if (error) return res.status(400).send(error.details[0].message);
@@ -90,7 +90,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", auth, async (req, res) => {
   // console.log(req.body, "putissa");
   const isLoggedIn = await firebaseLogin();
   var db = firebase.firestore();
@@ -110,7 +110,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", auth, async (req, res) => {
   const isLoggedIn = await firebaseLogin();
 
   var db = firebase.firestore();
