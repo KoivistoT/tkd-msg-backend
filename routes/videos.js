@@ -11,9 +11,25 @@ require("firebase/firestore");
 const { Expo } = require("expo-server-sdk");
 
 firebase.initializeApp({
+  // *************************
+  // *************************
+  // *************************
+  //oikea ympäritstö
+  // apiKey: "AIzaSyCIIA2_x2vIpq_H7h0lukW5MZejf_3YP9U",
+  // authDomain: "rivers-app-9ab9d.firebaseapp.com",
+  // projectId: "rivers-app-9ab9d",
+  // *************************
+  // *************************
+  // VAIHDA MYÖS AUTH SÄHKÖPOSTI
+  // *************************
+  // *************************
+  // testiympäristö
   apiKey: "AIzaSyBtRUWm_VJznsRIWH_hGgC4M-SFCuQe1SM",
   authDomain: "test2-6663b.firebaseapp.com",
   projectId: "test2-6663b",
+  // *************************
+  // *************************
+  // *************************
 });
 
 router.get("/me", auth, async (req, res) => {
@@ -28,6 +44,7 @@ const firebaseLogin = async () => {
     await firebase
       .auth()
       .signInWithEmailAndPassword("testuser@riverc.com", "testUser");
+    // .signInWithEmailAndPassword("koivisto_timo@hotmail.com", "jaaha1234");
 
     await firebase.auth().onAuthStateChanged((user) => {
       if (user != null) {
@@ -39,7 +56,7 @@ const firebaseLogin = async () => {
       }
     });
   } catch (error) {
-    console.log(error);
+    console.log(error, "tästä");
   }
   return isUser;
 };
