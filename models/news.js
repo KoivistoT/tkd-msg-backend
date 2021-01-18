@@ -2,8 +2,8 @@ const Joi = require("joi");
 const mongoose = require("mongoose");
 const { genreSchema } = require("./genre");
 
-const Video = mongoose.model(
-  "Videos",
+const News = mongoose.model(
+  "News",
   new mongoose.Schema({
     titleEN: {
       type: String,
@@ -21,27 +21,15 @@ const Video = mongoose.model(
     },
     date: {
       type: String,
-      required: true,
+
       min: 1,
       max: 255,
     },
-    shareEN: {
+    imageSmall: {
       type: String,
       min: 1,
     },
-    shareFIN: {
-      type: String,
-      min: 1,
-    },
-    url: {
-      type: String,
-      min: 1,
-    },
-    thumbnailSmall: {
-      type: String,
-      min: 1,
-    },
-    thumbnailNormal: {
+    imageNormal: {
       type: String,
       min: 1,
     },
@@ -51,26 +39,14 @@ const Video = mongoose.model(
     type: {
       type: String,
     },
-    isWordFor: {
-      type: Boolean,
-      required: true,
-    },
-    isFeature: {
-      type: Boolean,
-      required: true,
-    },
-    hideDate: {
-      type: Boolean,
-      required: true,
-    },
     publish: {
       type: Boolean,
       required: true,
     },
-    notesEN: {
+    textEN: {
       type: String,
     },
-    notesFIN: {
+    textFIN: {
       type: String,
     },
     order: {
@@ -79,29 +55,23 @@ const Video = mongoose.model(
   })
 );
 
-function validateVideo(video) {
+function validateNews(news) {
   const schema = {
     titleEN: Joi.string().min(1).max(50).required(),
     titleFIN: Joi.string().min(1).max(50).required(),
     date: Joi.string().min(1).required(),
-    shareEN: Joi.string().min(1).required(),
-    shareFIN: Joi.string().min(1).required(),
-    url: Joi.string().min(1).required(),
-    thumbnailSmall: Joi.string().min(1).required(),
-    thumbnailNormal: Joi.string().min(1).required(),
+    imageSmall: Joi.string().min(1).required(),
+    imageNormal: Joi.string().min(1).required(),
     type: Joi.string().required(),
     expired: Joi.string().allow(null, ""),
-    isWordFor: Joi.boolean().required(),
-    isFeature: Joi.boolean().required(),
-    hideDate: Joi.boolean().required(),
     publish: Joi.boolean().required(),
-    notesEN: Joi.string().allow(null, ""),
-    notesFIN: Joi.string().allow(null, ""),
+    textEN: Joi.string().allow(null, ""),
+    textFIN: Joi.string().allow(null, ""),
     order: Joi.number().allow(null, ""),
   };
 
-  return Joi.validate(video, schema);
+  return Joi.validate(news, schema);
 }
 
-exports.Video = Video;
-exports.validate = validateVideo;
+exports.News = News;
+exports.validate = validateNews;

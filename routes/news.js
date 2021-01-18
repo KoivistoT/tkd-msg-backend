@@ -1,20 +1,14 @@
 const auth = require("../middleware/auth");
 const bcrypt = require("bcrypt");
 const _ = require("lodash");
-// const { User, validate } = require("../models/user");
+
 const mongoose = require("mongoose");
-const { Video, validate } = require("../models/video");
+const { News, validate } = require("../models/news");
 const express = require("express");
 const router = express.Router();
 const firebase = require("firebase");
 require("firebase/firestore");
 const { Expo } = require("expo-server-sdk");
-
-firebase.initializeApp({
-  apiKey: "AIzaSyBtRUWm_VJznsRIWH_hGgC4M-SFCuQe1SM",
-  authDomain: "test2-6663b.firebaseapp.com",
-  projectId: "test2-6663b",
-});
 
 router.get("/me", auth, async (req, res) => {
   const user = await User.findById(req.user._id).select("-password");
@@ -44,35 +38,7 @@ const firebaseLogin = async () => {
   return isUser;
 };
 
-const changeFeatured = async (videoId) => {
-  console.log(videoId, "tässä video id");
-  var db = firebase.firestore();
-  try {
-    try {
-      const ref = db.collection("appContent");
-      const snapshot = await ref.where("isFeature", "==", true).get();
-      if (snapshot.empty) {
-        console.log("No matching documents.");
-        return;
-      }
-      snapshot.forEach((doc) => {
-        if (doc.id !== videoId && videoId !== "new") {
-          ref.doc(doc.id).update({ isFeature: false });
-        }
-        if (videoId === "new") {
-          // jos on uusi niin poistaa ensin kaikki truet ja sitten lisää uuden videon vasta, jossa true
-          ref.doc(doc.id).update({ isFeature: false });
-        }
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  } catch (error) {
-    res.status(404).send(error);
-  }
-};
-// router.get("/appContent", auth, async (req, res) => {
-router.get("/videos", async (req, res) => {
+router.get("/", async (req, res) => {
   const isLoggedIn = await firebaseLogin();
   var db = firebase.firestore();
   try {
@@ -83,7 +49,9 @@ router.get("/videos", async (req, res) => {
           .get()
           .then(function (querySnapshot) {
             querySnapshot.forEach(function (doc) {
-              allData.push({ id: doc.id, ...doc.data() });
+              if (doc.data().type === "news") {
+                allData.push({ id: doc.id, ...doc.data() });
+              }
               // console.log(doc.data());
             });
             res.send(allData);
@@ -95,34 +63,22 @@ router.get("/videos", async (req, res) => {
   } catch (error) {
     res.status(404).send(error);
   }
-
-  //   console.log("ttässä mnee");
-  //   res.send(user);
 });
 
-router.post("/videos", async (req, res) => {
+router.post("/", async (req, res) => {
   const { error } = validate(req.body);
   // console.log(error, "eriririr");
   if (error) return res.status(400).send(error.details[0].message);
 
-  // const genre = await Genre.findById(req.body.genreId);
-  // if (!genre) return res.status(400).send("Invalid genre.");
-
-  const video = req.body;
-  console.log(req.body, "tässsä body");
+  const news = req.body;
+  console.log(req.body, "tässsä  news body");
   const isLoggedIn = await firebaseLogin();
   var db = firebase.firestore();
 
   try {
     if (isLoggedIn) {
       try {
-        console.log("tämänäin", req.body.isFeature, req.body.publish);
-        if (req.body.isFeature === true && req.body.publish === true) {
-          const videoId = "new"; //tässä tekee ensin muutoksen ja lisää sitten videon, koska videolla ei ole vielä id:tä
-          await changeFeatured(videoId);
-        }
-        await db.collection("appContent").doc().set(video);
-
+        await db.collection("appContent").doc().set(news);
         res.send(true);
       } catch (error) {
         console.log(error);
@@ -132,12 +88,9 @@ router.post("/videos", async (req, res) => {
   } catch (error) {
     res.status(404).send(error);
   }
-  // await video.save();
-
-  // res.send(video);
 });
 
-router.put("/videos/:id", async (req, res) => {
+router.put("/:id", async (req, res) => {
   // console.log(req.body, "putissa");
   const isLoggedIn = await firebaseLogin();
   var db = firebase.firestore();
@@ -146,10 +99,6 @@ router.put("/videos/:id", async (req, res) => {
     if (isLoggedIn) {
       try {
         db.collection("appContent").doc(req.params.id).update(req.body);
-        // console.log(req.body.isFeature);
-        if (req.body.isFeature === true && req.body.publish === true) {
-          await changeFeatured(req.params.id);
-        }
         res.send(true);
       } catch (error) {
         console.log(error);
@@ -161,7 +110,7 @@ router.put("/videos/:id", async (req, res) => {
   }
 });
 
-router.get("/videos/:id", async (req, res) => {
+router.get("/:id", async (req, res) => {
   const isLoggedIn = await firebaseLogin();
 
   var db = firebase.firestore();
@@ -173,8 +122,8 @@ router.get("/videos/:id", async (req, res) => {
           .doc(req.params.id)
           .get()
           .then(function (querySnapshot) {
-            const videoData = { id: querySnapshot.id, ...querySnapshot.data() };
-            res.send(videoData);
+            const newsData = { id: querySnapshot.id, ...querySnapshot.data() };
+            res.send(newsData);
           });
       } catch (error) {
         console.log(error);
