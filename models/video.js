@@ -12,7 +12,6 @@ const Video = mongoose.model(
       minlength: 5,
       maxlength: 255,
     },
-
     date: {
       type: String,
       required: true,
@@ -22,7 +21,14 @@ const Video = mongoose.model(
     expired: {
       type: String,
     },
+    type: {
+      type: String,
+    },
     isWordFor: {
+      type: Boolean,
+      required: true,
+    },
+    isFeature: {
       type: Boolean,
       required: true,
     },
@@ -37,7 +43,7 @@ const Video = mongoose.model(
       type: String,
     },
     order: {
-      type: String,
+      type: Number,
     },
   })
 );
@@ -46,12 +52,14 @@ function validateVideo(video) {
   const schema = {
     title: Joi.string().min(5).max(50).required(),
     date: Joi.string().min(1).required(),
+    type: Joi.string().required(),
     expired: Joi.string().allow(null, ""),
     isWordFor: Joi.boolean().required(),
+    isFeature: Joi.boolean().required(),
     publish: Joi.boolean().required(),
     notesEN: Joi.string().allow(null, ""),
     notesFIN: Joi.string().allow(null, ""),
-    order: Joi.string().allow(null, ""),
+    order: Joi.number().allow(null, ""),
   };
 
   return Joi.validate(video, schema);
