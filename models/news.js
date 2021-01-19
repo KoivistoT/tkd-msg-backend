@@ -7,14 +7,14 @@ const News = mongoose.model(
   new mongoose.Schema({
     titleEN: {
       type: String,
-      required: true,
+
       trim: true,
       minlength: 1,
       maxlength: 255,
     },
     titleFIN: {
       type: String,
-      required: true,
+
       trim: true,
       minlength: 1,
       maxlength: 255,
@@ -57,8 +57,8 @@ const News = mongoose.model(
 
 function validateNews(news) {
   const schema = {
-    titleEN: Joi.string().min(1).max(50).required(),
-    titleFIN: Joi.string().min(1).max(50).required(),
+    titleEN: Joi.string().min(1).max(50),
+    titleFIN: Joi.string().min(1).max(50),
     date: Joi.string().min(1).required(),
     imageSmall: Joi.string().min(1).required(),
     imageNormal: Joi.string().min(1).required(),

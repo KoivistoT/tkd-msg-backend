@@ -21,7 +21,8 @@ const firebaseLogin = async () => {
   try {
     await firebase
       .auth()
-      .signInWithEmailAndPassword("testuser@riverc.com", "testUser");
+      // .signInWithEmailAndPassword("testuser@riverc.com", "testUser");
+      .signInWithEmailAndPassword("koivisto_timo@hotmail.com", "jaaha1234");
 
     await firebase.auth().onAuthStateChanged((user) => {
       if (user != null) {
