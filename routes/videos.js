@@ -15,18 +15,18 @@ firebase.initializeApp({
   // *************************
   // *************************
   //oikea ympäritstö
-  // apiKey: "AIzaSyCIIA2_x2vIpq_H7h0lukW5MZejf_3YP9U",
-  // authDomain: "rivers-app-9ab9d.firebaseapp.com",
-  // projectId: "rivers-app-9ab9d",
+  apiKey: "AIzaSyCIIA2_x2vIpq_H7h0lukW5MZejf_3YP9U",
+  authDomain: "rivers-app-9ab9d.firebaseapp.com",
+  projectId: "rivers-app-9ab9d",
   // *************************
   // *************************
   // VAIHDA MYÖS AUTH SÄHKÖPOSTI
   // *************************
   // *************************
   // testiympäristö
-  apiKey: "AIzaSyBtRUWm_VJznsRIWH_hGgC4M-SFCuQe1SM",
-  authDomain: "test2-6663b.firebaseapp.com",
-  projectId: "test2-6663b",
+  // apiKey: "AIzaSyBtRUWm_VJznsRIWH_hGgC4M-SFCuQe1SM",
+  // authDomain: "test2-6663b.firebaseapp.com",
+  // projectId: "test2-6663b",
   // *************************
   // *************************
   // *************************
@@ -44,7 +44,10 @@ const firebaseLogin = async () => {
   try {
     await firebase
       .auth()
-      .signInWithEmailAndPassword("testuser@riverc.com", "testUser");
+      .signInWithEmailAndPassword(
+        "dev.riverchurch@gmail.com",
+        process.env.vidly_jwtPrivateKey
+      );
     // .signInWithEmailAndPassword("koivisto_timo@hotmail.com", "jaaha1234");
 
     await firebase.auth().onAuthStateChanged((user) => {

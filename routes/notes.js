@@ -21,7 +21,11 @@ const firebaseLogin = async () => {
   try {
     await firebase
       .auth()
-      .signInWithEmailAndPassword("testuser@riverc.com", "testUser");
+      .signInWithEmailAndPassword(
+        "dev.riverchurch@gmail.com",
+        process.env.vidly_jwtPrivateKey
+      );
+    // .signInWithEmailAndPassword("testuser@riverc.com", "testUser");
     // .signInWithEmailAndPassword("koivisto_timo@hotmail.com", "jaaha1234");
 
     await firebase.auth().onAuthStateChanged((user) => {
