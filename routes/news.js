@@ -21,8 +21,8 @@ const firebaseLogin = async () => {
   try {
     await firebase
       .auth()
-      // .signInWithEmailAndPassword("testuser@riverc.com", "testUser");//tämä testiympäristö
-      .signInWithEmailAndPassword("koivisto_timo@hotmail.com", "jaaha1234");
+      .signInWithEmailAndPassword("testuser@riverc.com", "testUser"); //tämä testiympäristö
+    // .signInWithEmailAndPassword("koivisto_timo@hotmail.com", "jaaha1234");
 
     await firebase.auth().onAuthStateChanged((user) => {
       if (user != null) {
@@ -37,6 +37,22 @@ const firebaseLogin = async () => {
     console.log(error);
   }
   return isUser;
+};
+
+const converter = (value) => {
+  var reutrnValue;
+
+  if (typeof value === "boolean") {
+    if (value === true) {
+      reutrnValue = "true";
+      return reutrnValue;
+    } else {
+      reutrnValue = "false";
+      return reutrnValue;
+    }
+  } else {
+    return value;
+  }
 };
 
 router.get("/", auth, async (req, res) => {
@@ -71,15 +87,33 @@ router.post("/", auth, async (req, res) => {
   // console.log(error, "eriririr");
   if (error) return res.status(400).send(error.details[0].message);
 
-  const news = req.body;
-  console.log(req.body, "tässsä  news body");
+  // const news = req.body;
+  // console.log(req.body, "tässsä  news body");
   const isLoggedIn = await firebaseLogin();
   var db = firebase.firestore();
+
+  const reqData = req.body;
+  const dataToSave = {
+    type: reqData.type,
+    titleEN: reqData.titleEN,
+    titleFIN: reqData.titleFIN,
+    imageSmall: reqData.imageSmall,
+    imageNormal: reqData.imageNormal,
+    date: reqData.date,
+    publish: converter(reqData.publish),
+    expired: reqData.expired,
+    textEN: reqData.textEN,
+    textFIN: reqData.textFIN,
+    order: reqData.order,
+    //extrat vanhan koodin takia sovelluksessa
+    title: reqData.titleEN,
+    text: reqData.textEN,
+  };
 
   try {
     if (isLoggedIn) {
       try {
-        await db.collection("appContent").doc().set(news);
+        await db.collection("appContent").doc().set(dataToSave);
         res.send(true);
       } catch (error) {
         console.log(error);
@@ -96,10 +130,28 @@ router.put("/:id", auth, async (req, res) => {
   const isLoggedIn = await firebaseLogin();
   var db = firebase.firestore();
 
+  const reqData = req.body;
+  const dataToSave = {
+    type: reqData.type,
+    titleEN: reqData.titleEN,
+    titleFIN: reqData.titleFIN,
+    imageSmall: reqData.imageSmall,
+    imageNormal: reqData.imageNormal,
+    date: reqData.date,
+    publish: converter(reqData.publish),
+    expired: reqData.expired,
+    textEN: reqData.textEN,
+    textFIN: reqData.textFIN,
+    order: reqData.order,
+    //extrat vanhan koodin takia sovelluksessa
+    title: reqData.titleEN,
+    text: reqData.textEN,
+  };
+
   try {
     if (isLoggedIn) {
       try {
-        db.collection("appContent").doc(req.params.id).update(req.body);
+        db.collection("appContent").doc(req.params.id).update(dataToSave);
         res.send(true);
       } catch (error) {
         console.log(error);

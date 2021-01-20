@@ -57,9 +57,9 @@ const News = mongoose.model(
 
 function validateNews(news) {
   const schema = {
-    titleEN: Joi.string().min(1).max(50),
-    titleFIN: Joi.string().min(1).max(50),
-    date: Joi.string().min(1).required(),
+    titleEN: Joi.string().min(1).max(50).allow(null, ""),
+    titleFIN: Joi.string().min(1).max(50).allow(null, ""),
+    date: Joi.string().allow(null, ""),
     imageSmall: Joi.string().min(1).required(),
     imageNormal: Joi.string().min(1).required(),
     type: Joi.string().required(),

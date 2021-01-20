@@ -15,18 +15,18 @@ firebase.initializeApp({
   // *************************
   // *************************
   //oikea ympäritstö
-  apiKey: "AIzaSyCIIA2_x2vIpq_H7h0lukW5MZejf_3YP9U",
-  authDomain: "rivers-app-9ab9d.firebaseapp.com",
-  projectId: "rivers-app-9ab9d",
+  // apiKey: "AIzaSyCIIA2_x2vIpq_H7h0lukW5MZejf_3YP9U",
+  // authDomain: "rivers-app-9ab9d.firebaseapp.com",
+  // projectId: "rivers-app-9ab9d",
   // *************************
   // *************************
   // VAIHDA MYÖS AUTH SÄHKÖPOSTI
   // *************************
   // *************************
   // testiympäristö
-  // apiKey: "AIzaSyBtRUWm_VJznsRIWH_hGgC4M-SFCuQe1SM",
-  // authDomain: "test2-6663b.firebaseapp.com",
-  // projectId: "test2-6663b",
+  apiKey: "AIzaSyBtRUWm_VJznsRIWH_hGgC4M-SFCuQe1SM",
+  authDomain: "test2-6663b.firebaseapp.com",
+  projectId: "test2-6663b",
   // *************************
   // *************************
   // *************************
@@ -44,8 +44,8 @@ const firebaseLogin = async () => {
   try {
     await firebase
       .auth()
-      // .signInWithEmailAndPassword("testuser@riverc.com", "testUser");//tämä testiympäristö
-      .signInWithEmailAndPassword("koivisto_timo@hotmail.com", "jaaha1234");
+      .signInWithEmailAndPassword("testuser@riverc.com", "testUser"); //tämä testiympäristö
+    // .signInWithEmailAndPassword("koivisto_timo@hotmail.com", "jaaha1234");
 
     await firebase.auth().onAuthStateChanged((user) => {
       if (user != null) {
@@ -68,18 +68,18 @@ const changeFeatured = async (videoId) => {
   try {
     try {
       const ref = db.collection("appContent");
-      const snapshot = await ref.where("isFeature", "==", true).get();
+      const snapshot = await ref.where("isFeature", "==", "true").get();
       if (snapshot.empty) {
         console.log("No matching documents.");
         return;
       }
       snapshot.forEach((doc) => {
         if (doc.id !== videoId && videoId !== "new") {
-          ref.doc(doc.id).update({ isFeature: false });
+          ref.doc(doc.id).update({ isFeature: "false" });
         }
         if (videoId === "new") {
           // jos on uusi niin poistaa ensin kaikki truet ja sitten lisää uuden videon vasta, jossa true
-          ref.doc(doc.id).update({ isFeature: false });
+          ref.doc(doc.id).update({ isFeature: "false" });
         }
       });
     } catch (error) {
@@ -89,7 +89,7 @@ const changeFeatured = async (videoId) => {
     res.status(404).send(error);
   }
 };
-// router.get("/appContent", auth, async (req, res) => {
+
 router.get("/", auth, async (req, res) => {
   const isLoggedIn = await firebaseLogin();
   var db = firebase.firestore();
@@ -119,6 +119,22 @@ router.get("/", auth, async (req, res) => {
   //   res.send(user);
 });
 
+const converter = (value) => {
+  var reutrnValue;
+
+  if (typeof value === "boolean") {
+    if (value === true) {
+      reutrnValue = "true";
+      return reutrnValue;
+    } else {
+      reutrnValue = "false";
+      return reutrnValue;
+    }
+  } else {
+    return value;
+  }
+};
+
 router.post("/", auth, async (req, res) => {
   const { error } = validate(req.body);
   // console.log(error, "eriririr");
@@ -127,20 +143,48 @@ router.post("/", auth, async (req, res) => {
   // const genre = await Genre.findById(req.body.genreId);
   // if (!genre) return res.status(400).send("Invalid genre.");
 
-  const video = req.body;
-  console.log(req.body, "tässsä body");
+  //!!!!!!!
+  //huomaa, että feature muuttujatyökalu changeFeatured pitää kanssa vaihtaa booleaniksi myöhemmin. sekä kutsussa, että itse functiossa
+  //!!!!!!!
+  const reqData = req.body;
+  const dataToSave = {
+    type: reqData.type,
+    titleEN: reqData.titleEN,
+    titleFIN: reqData.titleFIN,
+    shareEN: reqData.shareEN,
+    shareFIN: reqData.shareFIN,
+    url: reqData.url,
+    thumbnailSmall: reqData.thumbnailSmall,
+    thumbnailNormal: reqData.thumbnailNormal,
+    date: reqData.date,
+    isWordFor: converter(reqData.isWordFor),
+    isFeature: converter(reqData.isFeature),
+    hideDate: converter(reqData.hideDate),
+    publish: converter(reqData.publish),
+    expired: reqData.expired,
+    notesEN: reqData.notesEN,
+    notesFIN: reqData.notesFIN,
+    order: reqData.order,
+    //extrat vanhan koodin takia sovelluksessa
+    title: reqData.titleEN,
+    share: reqData.shareEN,
+    notes: reqData.notesEN,
+  };
+
+  // console.log(req.body, "tässsä body");
   const isLoggedIn = await firebaseLogin();
   var db = firebase.firestore();
 
   try {
     if (isLoggedIn) {
       try {
-        console.log("tämänäin", req.body.isFeature, req.body.publish);
+        // console.log("tämänäin", req.body.isFeature, req.body.publish);
         if (req.body.isFeature === true && req.body.publish === true) {
+          // tämä ei convertoitu, tulee suodaan frontissta
           const videoId = "new"; //tässä tekee ensin muutoksen ja lisää sitten videon, koska videolla ei ole vielä id:tä
           await changeFeatured(videoId);
         }
-        await db.collection("appContent").doc().set(video);
+        await db.collection("appContent").doc().set(dataToSave);
         // await db.collection("test").doc().set(video);
 
         res.send(true);
@@ -162,12 +206,39 @@ router.put("/:id", auth, async (req, res) => {
   const isLoggedIn = await firebaseLogin();
   var db = firebase.firestore();
 
+  const reqData = req.body;
+  console.log(converter(reqData));
+  const dataToSave = {
+    type: reqData.type,
+    titleEN: reqData.titleEN,
+    titleFIN: reqData.titleFIN,
+    shareEN: reqData.shareEN,
+    shareFIN: reqData.shareFIN,
+    url: reqData.url,
+    thumbnailSmall: reqData.thumbnailSmall,
+    thumbnailNormal: reqData.thumbnailNormal,
+    date: reqData.date,
+    isWordFor: converter(reqData.isWordFor),
+    isFeature: converter(reqData.isFeature),
+    hideDate: converter(reqData.hideDate),
+    publish: converter(reqData.publish),
+    expired: reqData.expired,
+    notesEN: reqData.notesEN,
+    notesFIN: reqData.notesFIN,
+    order: reqData.order,
+    //extrat vanhan koodin takia sovelluksessa
+    title: reqData.titleEN,
+    share: reqData.shareEN,
+    notes: reqData.notesEN,
+  };
+
   try {
     if (isLoggedIn) {
       try {
-        db.collection("appContent").doc(req.params.id).update(req.body);
+        db.collection("appContent").doc(req.params.id).update(dataToSave);
         // console.log(req.body.isFeature);
         if (req.body.isFeature === true && req.body.publish === true) {
+          // ei convertoitu vaan tulee suoraan frontista
           await changeFeatured(req.params.id);
         }
         res.send(true);
