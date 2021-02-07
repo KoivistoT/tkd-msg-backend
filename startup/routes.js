@@ -5,6 +5,7 @@ const movies = require("../routes/movies");
 const videos = require("../routes/videos");
 const notes = require("../routes/notes");
 const news = require("../routes/news");
+const bibleSearch = require("../routes/bibleSearch");
 const rentals = require("../routes/rentals");
 const users = require("../routes/users");
 const auth = require("../routes/auth");
@@ -18,6 +19,7 @@ module.exports = function (app) {
   app.use("/api/movies", movies);
   app.use("/api/videos", videos);
   app.use("/api/notes", notes);
+  app.use("/api/bibleSearch", bibleSearch);
   app.use("/api/news", news);
   app.use("/api/rentals", rentals);
   app.use("/api/users", users);

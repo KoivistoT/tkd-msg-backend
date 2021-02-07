@@ -30,6 +30,11 @@ firebase.initializeApp({
   // *************************
   // *************************
   // *************************
+  //tämä raamattuhaku
+  // apiKey: "AIzaSyCn-YZvbuefdELoBgmD9BfybSbZJx7AH_c",
+  // authDomain: "test-cfdd9.firebaseapp.com",
+  // databaseURL: "https://test-cfdd9-default-rtdb.firebaseio.com",
+  // projectId: "test-cfdd9",
 });
 
 router.get("/me", auth, async (req, res) => {
