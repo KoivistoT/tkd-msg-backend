@@ -24,9 +24,11 @@ router.get("/me", auth, async (req, res) => {
 router.post("/push", async (req, res) => {
   var db = firebase.firestore();
 
+  // console.log("tässä ollaan");
+  // return;
   // console.log(req.body.pushContent.pushMessage);
   const pushType = req.body.pushType;
-  console.log(pushType);
+  // console.log(pushType);
   try {
     firebase
       .auth()
@@ -39,7 +41,7 @@ router.post("/push", async (req, res) => {
         try {
           // const docRef = db.collection("testdb");
           // ExponentPushToken[OMbqczJy2Vr2yuRoIajbP3] minun expo
-          // ExponentPushToken[jfKe5PF3batyNXVwRNgNvD] Minun oikea
+          // ExponentPushToken[YqIYMgGwfvUNVvk7t2Fl3r] Minun oikea
           // "ExponentPushToken[uZPuvjCRaWdLKu4Rfmpj6X]" Pastoi Tomin push token tämä
           db.collection("pushTokens")
             .get()
@@ -62,12 +64,14 @@ router.post("/push", async (req, res) => {
                 if (pushType === "1001") {
                   if (
                     doc.data().liveAlert1 === "true"
+
                     // doc.data().pushToken ===
                     // "ExponentPushToken[jfKe5PF3batyNXVwRNgNvD]"
                     //   ||
                     // doc.data().pushToken ===
                     //   "ExponentPushToken[OMbqczJy2Vr2yuRoIajbP3]"
                   ) {
+                    console.log(doc.data().pushToken, "tämä täältä");
                     chuncToSend.push({
                       to: doc.data().pushToken,
                       sound: "default",
@@ -101,7 +105,6 @@ router.post("/push", async (req, res) => {
 
               // **************
 
-              console.log(chuncToSend);
               sendPushMessage(chuncToSend);
             });
         } catch (err) {
