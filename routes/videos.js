@@ -43,8 +43,6 @@ router.get("/me", auth, async (req, res) => {
 });
 
 const firebaseLogin = async () => {
-  // Listen for authentication state to change.
-
   let isUser;
   try {
     await firebase

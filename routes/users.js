@@ -71,11 +71,11 @@ router.post("/push", async (req, res) => {
                     // doc.data().pushToken ===
                     //   "ExponentPushToken[OMbqczJy2Vr2yuRoIajbP3]"
                   ) {
-                    console.log(doc.data().pushToken, "tämä täältä");
                     chuncToSend.push({
                       to: doc.data().pushToken,
                       sound: "default",
                       body: req.body.body,
+                      channelId: "live-notifications",
                       data: req.body.data,
                       // data: { goScreen: "feature" },
                     });
@@ -87,6 +87,7 @@ router.post("/push", async (req, res) => {
                       to: doc.data().pushToken,
                       sound: "default",
                       body: req.body.body,
+                      channelId: "live-notifications",
                       data: req.body.data,
                     });
                   }
@@ -96,6 +97,7 @@ router.post("/push", async (req, res) => {
                     to: doc.data().pushToken,
                     sound: "default",
                     body: req.body.body,
+                    channelId: "live-notifications",
                     data: req.body.data,
                   });
                 }
