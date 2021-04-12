@@ -14,7 +14,7 @@ firebase.initializeApp({
   // *************************
   // *************************
   // *************************
-  //oikea ympäritstö
+  //oikea ympäristö
   apiKey: "AIzaSyCIIA2_x2vIpq_H7h0lukW5MZejf_3YP9U",
   authDomain: "rivers-app-9ab9d.firebaseapp.com",
   projectId: "rivers-app-9ab9d",
@@ -104,7 +104,7 @@ router.get("/", auth, async (req, res) => {
           .get()
           .then(function (querySnapshot) {
             querySnapshot.forEach(function (doc) {
-              if (doc.data().type === "video")
+              if (doc.data().type === "video" && doc.data().isDeleted !== true)
                 allData.push({ id: doc.id, ...doc.data() });
               // console.log(doc.data());
             });
@@ -210,30 +210,57 @@ router.put("/:id", auth, async (req, res) => {
   var db = firebase.firestore();
 
   const reqData = req.body;
-  console.log(converter(reqData));
-  const dataToSave = {
-    type: reqData.type,
-    titleEN: reqData.titleEN,
-    titleFIN: reqData.titleFIN,
-    shareEN: reqData.shareEN,
-    shareFIN: reqData.shareFIN,
-    url: reqData.url,
-    thumbnailSmall: reqData.thumbnailSmall,
-    thumbnailNormal: reqData.thumbnailNormal,
-    date: reqData.date,
-    isWordFor: converter(reqData.isWordFor),
-    isFeature: converter(reqData.isFeature),
-    hideDate: converter(reqData.hideDate),
-    publish: converter(reqData.publish),
-    expired: reqData.expired,
-    notesEN: reqData.notesEN,
-    notesFIN: reqData.notesFIN,
-    order: reqData.order,
-    //extrat vanhan koodin takia sovelluksessa
-    title: reqData.titleEN,
-    share: reqData.shareEN,
-    notes: reqData.notesEN,
-  };
+  var dataToSave;
+  if (reqData.isDeleted === true) {
+    dataToSave = {
+      type: reqData.type,
+      titleEN: reqData.titleEN,
+      titleFIN: reqData.titleFIN,
+      shareEN: reqData.shareEN,
+      shareFIN: reqData.shareFIN,
+      url: reqData.url,
+      thumbnailSmall: reqData.thumbnailSmall,
+      thumbnailNormal: reqData.thumbnailNormal,
+      date: reqData.date,
+      isWordFor: false,
+      isFeature: false,
+      hideDate: converter(reqData.hideDate),
+      publish: false,
+      expired: reqData.expired,
+      notesEN: reqData.notesEN,
+      notesFIN: reqData.notesFIN,
+      order: reqData.order,
+      //extrat vanhan koodin takia sovelluksessa
+      title: reqData.titleEN,
+      share: reqData.shareEN,
+      notes: reqData.notesEN,
+      isDeleted: true,
+    };
+  } else {
+    dataToSave = {
+      type: reqData.type,
+      titleEN: reqData.titleEN,
+      titleFIN: reqData.titleFIN,
+      shareEN: reqData.shareEN,
+      shareFIN: reqData.shareFIN,
+      url: reqData.url,
+      thumbnailSmall: reqData.thumbnailSmall,
+      thumbnailNormal: reqData.thumbnailNormal,
+      date: reqData.date,
+      isWordFor: converter(reqData.isWordFor),
+      isFeature: converter(reqData.isFeature),
+      hideDate: converter(reqData.hideDate),
+      publish: converter(reqData.publish),
+      expired: reqData.expired,
+      notesEN: reqData.notesEN,
+      notesFIN: reqData.notesFIN,
+      order: reqData.order,
+      //extrat vanhan koodin takia sovelluksessa
+      title: reqData.titleEN,
+      share: reqData.shareEN,
+      notes: reqData.notesEN,
+    };
+  }
 
   try {
     if (isLoggedIn) {

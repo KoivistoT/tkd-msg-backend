@@ -50,7 +50,10 @@ router.get("/", auth, async (req, res) => {
           .get()
           .then(function (querySnapshot) {
             querySnapshot.forEach(function (doc) {
-              if (doc.data().type === "notes") {
+              if (
+                doc.data().type === "notes" &&
+                doc.data().isDeleted !== true
+              ) {
                 allData.push({ id: doc.id, ...doc.data() });
               }
               // console.log(doc.data());
@@ -92,19 +95,37 @@ router.post("/", auth, async (req, res) => {
   var db = firebase.firestore();
 
   const reqData = req.body;
-  const dataToSave = {
-    type: reqData.type,
-    titleEN: reqData.titleEN,
-    titleFIN: reqData.titleFIN,
-    date: reqData.date,
-    publish: converter(reqData.publish),
-    expired: reqData.expired,
-    textEN: reqData.textEN,
-    textFIN: reqData.textFIN,
-    //extrat vanhan koodin takia sovelluksessa
-    title: reqData.titleEN,
-    text: reqData.textEN,
-  };
+  var dataToSave;
+  if (reqData.isDeleted === true) {
+    dataToSave = {
+      type: reqData.type,
+      titleEN: reqData.titleEN,
+      titleFIN: reqData.titleFIN,
+      date: reqData.date,
+      publish: false,
+      expired: reqData.expired,
+      textEN: reqData.textEN,
+      textFIN: reqData.textFIN,
+      //extrat vanhan koodin takia sovelluksessa
+      title: reqData.titleEN,
+      text: reqData.textEN,
+      isDeleted: true,
+    };
+  } else {
+    dataToSave = {
+      type: reqData.type,
+      titleEN: reqData.titleEN,
+      titleFIN: reqData.titleFIN,
+      date: reqData.date,
+      publish: converter(reqData.publish),
+      expired: reqData.expired,
+      textEN: reqData.textEN,
+      textFIN: reqData.textFIN,
+      //extrat vanhan koodin takia sovelluksessa
+      title: reqData.titleEN,
+      text: reqData.textEN,
+    };
+  }
 
   try {
     if (isLoggedIn) {

@@ -106,7 +106,7 @@ router.post("/push", async (req, res) => {
               // **************
 
               // **************
-
+              // console.log(chuncToSend);
               sendPushMessage(chuncToSend);
             });
         } catch (err) {

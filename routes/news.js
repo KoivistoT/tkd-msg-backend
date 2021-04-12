@@ -66,7 +66,7 @@ router.get("/", auth, async (req, res) => {
           .get()
           .then(function (querySnapshot) {
             querySnapshot.forEach(function (doc) {
-              if (doc.data().type === "news") {
+              if (doc.data().type === "news" && doc.data().isDeleted !== true) {
                 allData.push({ id: doc.id, ...doc.data() });
               }
               // console.log(doc.data());
@@ -131,22 +131,43 @@ router.put("/:id", auth, async (req, res) => {
   var db = firebase.firestore();
 
   const reqData = req.body;
-  const dataToSave = {
-    type: reqData.type,
-    titleEN: reqData.titleEN,
-    titleFIN: reqData.titleFIN,
-    imageSmall: reqData.imageSmall,
-    imageNormal: reqData.imageNormal,
-    date: reqData.date,
-    publish: converter(reqData.publish),
-    expired: reqData.expired,
-    textEN: reqData.textEN,
-    textFIN: reqData.textFIN,
-    order: reqData.order,
-    //extrat vanhan koodin takia sovelluksessa
-    title: reqData.titleEN,
-    text: reqData.textEN,
-  };
+  var dataToSave;
+  if (reqData.isDeleted === true) {
+    dataToSave = {
+      type: reqData.type,
+      titleEN: reqData.titleEN,
+      titleFIN: reqData.titleFIN,
+      imageSmall: reqData.imageSmall,
+      imageNormal: reqData.imageNormal,
+      date: reqData.date,
+      publish: false,
+      expired: reqData.expired,
+      textEN: reqData.textEN,
+      textFIN: reqData.textFIN,
+      order: reqData.order,
+      //extrat vanhan koodin takia sovelluksessa
+      title: reqData.titleEN,
+      text: reqData.textEN,
+      isDeleted: true,
+    };
+  } else {
+    dataToSave = {
+      type: reqData.type,
+      titleEN: reqData.titleEN,
+      titleFIN: reqData.titleFIN,
+      imageSmall: reqData.imageSmall,
+      imageNormal: reqData.imageNormal,
+      date: reqData.date,
+      publish: converter(reqData.publish),
+      expired: reqData.expired,
+      textEN: reqData.textEN,
+      textFIN: reqData.textFIN,
+      order: reqData.order,
+      //extrat vanhan koodin takia sovelluksessa
+      title: reqData.titleEN,
+      text: reqData.textEN,
+    };
+  }
 
   try {
     if (isLoggedIn) {
