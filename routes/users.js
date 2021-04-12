@@ -9,7 +9,7 @@ const router = express.Router();
 const firebase = require("firebase");
 // Required for side-effects
 // require("firebase/firestore");
-// const { Expo } = require("expo-server-sdk");
+const { Expo } = require("expo-server-sdk");
 // firebase.initializeApp({
 //   apiKey: "AIzaSyCIIA2_x2vIpq_H7h0lukW5MZejf_3YP9U",
 //   authDomain: "rivers-app-9ab9d.firebaseapp.com",
@@ -93,6 +93,9 @@ router.post("/push", async (req, res) => {
                   }
                 }
                 if (pushType === "1003" || pushType === "1004") {
+                  //ExponentPushToken[bGQTppFdxjZ04h2W4NvWT5] nyt mun expo android
+                  //oma oikea ios ExponentPushToken[YqIYMgGwfvUNVvk7t2Fl3r]
+                  // oma oikea android ExponentPushToken[_xlvR7CQR1Ls-C94xWTz-y]
                   chuncToSend.push({
                     to: doc.data().pushToken,
                     sound: "default",
@@ -124,8 +127,13 @@ router.post("/push", async (req, res) => {
 const sendPushMessage = async (chuncToSend) => {
   // console.log(thisToken);
   // const sendPushNotification = async (targetExpoPushToken, message) => {
+  var chunks;
   const expo = new Expo();
-  const chunks = expo.chunkPushNotifications(chuncToSend);
+  try {
+    chunks = expo.chunkPushNotifications(chuncToSend);
+  } catch (error) {
+    console.log(error, "kk");
+  }
 
   // const chunks = expo.chunkPushNotifications([
   //   chuncToSend,
