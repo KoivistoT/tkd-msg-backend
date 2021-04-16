@@ -77,7 +77,7 @@ router.post("/push", async (req, res) => {
                       body: req.body.body,
                       channelId: "live-notifications",
                       data: req.body.data,
-                      ttl: 2419200,
+                      ttl: 1000,
                       priority: "high",
                       // data: { goScreen: "feature" },
                     });
@@ -91,7 +91,7 @@ router.post("/push", async (req, res) => {
                       body: req.body.body,
                       channelId: "live-notifications",
                       data: req.body.data,
-                      ttl: 2419200,
+                      ttl: 1000,
                       priority: "high",
                     });
                   }
@@ -106,7 +106,7 @@ router.post("/push", async (req, res) => {
                     body: req.body.body,
                     channelId: "live-notifications",
                     data: req.body.data,
-                    ttl: 2419200,
+                    ttl: 1000,
                     priority: "high",
                   });
                 }
