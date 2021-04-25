@@ -133,7 +133,7 @@ router.post("/push", async (req, res) => {
 const sendPushMessage = async (chuncToSend) => {
   // console.log(thisToken);
   // const sendPushNotification = async (targetExpoPushToken, message) => {
-  var chunks;
+  var chunks = chuncToSend;
   const expo = new Expo();
   try {
     chunks = expo.chunkPushNotifications(chuncToSend);
@@ -156,8 +156,9 @@ const sendPushMessage = async (chuncToSend) => {
   const sendChunks = async () => {
     // This code runs synchronously. We're waiting for each chunk to be send.
     // A better approach is to use Promise.all() and send multiple chunks in parallel.
+    // console.log("Sending Chunk", chunks);
     chunks.forEach(async (chunk) => {
-      console.log("Sending Chunk", chunk);
+      // return;
       try {
         const tickets = await expo.sendPushNotificationsAsync(chunk);
         console.log("Tickets", tickets);
