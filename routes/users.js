@@ -68,8 +68,8 @@ router.post("/push", async (req, res) => {
                   chuncToSend.push(pushTokenObject);
                 }
               });
-              console.log(chuncToSend);
-              console.log(chuncToSend.length);
+              // console.log(chuncToSend);
+              // console.log(chuncToSend.length);
               sendPushMessage(chuncToSend);
             });
         } catch (err) {
