@@ -24,11 +24,12 @@ router.get("/me", auth, async (req, res) => {
 router.post("/push", async (req, res) => {
   var db = firebase.firestore();
 
-  // console.log("tässä ollaan");
-  // return;
+  const language = req.body.language;
+
   // console.log(req.body.pushContent.pushMessage);
   const pushType = req.body.pushType;
-  // console.log(pushType);
+  // console.log(language);
+  // return;
   try {
     firebase
       .auth()
@@ -47,75 +48,28 @@ router.post("/push", async (req, res) => {
             .get()
             .then(function (querySnapshot) {
               querySnapshot.forEach(function (doc) {
-                // if (
-                //   doc.data().pushToken ===
-                //     "ExponentPushToken[jfKe5PF3batyNXVwRNgNvD]" ||
-                //   doc.data().pushToken ===
-                //     "ExponentPushToken[OMbqczJy2Vr2yuRoIajbP3]"
-                // ) {
-                //   chuncToSend.push({
-                //     to: doc.data().pushToken,
-                //     sound: "default",
-                //     body: req.body.body,
-                //     data: req.body.data,
-                //     // data: { goScreen: "feature" },
-                //   });
-                // }
-                if (pushType === "1001") {
-                  if (
-                    doc.data().liveAlert1 === "true"
-
-                    // doc.data().pushToken ===
-                    // "ExponentPushToken[jfKe5PF3batyNXVwRNgNvD]"
-                    //   ||
-                    // doc.data().pushToken ===
-                    //   "ExponentPushToken[OMbqczJy2Vr2yuRoIajbP3]"
-                  ) {
-                    chuncToSend.push({
-                      to: doc.data().pushToken,
-                      sound: "default",
-                      body: req.body.body,
-                      channelId: "live-notifications",
-                      data: req.body.data,
-                      ttl: 1000,
-                      priority: "high",
-                      // data: { goScreen: "feature" },
-                    });
-                  }
+                const docObject = doc.data();
+                var pushTokenObject;
+                if (language === "ALL") {
+                  pushTokenObject = getPushToken(pushType, docObject, req);
+                } else if (
+                  doc.data().selectedLanguage === "FIN" &&
+                  language === "FIN"
+                ) {
+                  pushTokenObject = getPushToken(pushType, docObject, req);
+                } else if (
+                  language === "EN" &&
+                  (doc.data().selectedLanguage === undefined ||
+                    doc.data().selectedLanguage === "EN")
+                ) {
+                  pushTokenObject = getPushToken(pushType, docObject, req);
                 }
-                if (pushType === "1002") {
-                  if (doc.data().liveAlert2 === "true") {
-                    chuncToSend.push({
-                      to: doc.data().pushToken,
-                      sound: "default",
-                      body: req.body.body,
-                      channelId: "live-notifications",
-                      data: req.body.data,
-                      ttl: 1000,
-                      priority: "high",
-                    });
-                  }
-                }
-                if (pushType === "1003" || pushType === "1004") {
-                  //ExponentPushToken[bGQTppFdxjZ04h2W4NvWT5] nyt mun expo android
-                  //oma oikea ios ExponentPushToken[YqIYMgGwfvUNVvk7t2Fl3r]
-                  // oma oikea android ExponentPushToken[_xlvR7CQR1Ls-C94xWTz-y]
-                  chuncToSend.push({
-                    to: doc.data().pushToken,
-                    sound: "default",
-                    body: req.body.body,
-                    channelId: "live-notifications",
-                    data: req.body.data,
-                    ttl: 1000,
-                    priority: "high",
-                  });
+                if (pushTokenObject) {
+                  chuncToSend.push(pushTokenObject);
                 }
               });
-
-              // **************
-
-              // **************
-              // console.log(chuncToSend);
+              console.log(chuncToSend);
+              console.log(chuncToSend.length);
               sendPushMessage(chuncToSend);
             });
         } catch (err) {
@@ -205,3 +159,28 @@ router.get("/me", auth, async (req, res) => {
   const user = await User.findById(req.user._id).select("-password");
   res.send(user);
 });
+
+const getPushToken = (pushType, docObject, req) => {
+  const pushTokenObject = {
+    to: docObject.pushToken,
+    sound: "default",
+    body: req.body.body,
+    channelId: "live-notifications",
+    data: req.body.data,
+    ttl: 1000,
+    priority: "high",
+  };
+  if (pushType === "1001") {
+    if (docObject.liveAlert1 === "true") {
+      return pushTokenObject;
+    }
+  }
+  if (pushType === "1002") {
+    if (docObject.liveAlert2 === "true") {
+      return pushTokenObject;
+    }
+  }
+  if (pushType === "1003" || pushType === "1004") {
+    return pushTokenObject;
+  }
+};
