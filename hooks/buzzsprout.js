@@ -66,6 +66,7 @@ const populateData = (result, language) => {
         description: item.description,
         duration: item.duration,
         title: item.title,
+        published_at: item.published_at,
       };
 
       data.push(newItem);
