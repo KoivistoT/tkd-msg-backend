@@ -55,10 +55,20 @@ const populateData = (result, language) => {
   const data = [];
   result.forEach((item) => {
     if (item.private === false) {
-      item.type = "podcasts";
-      item.language = language;
-      item.publish = true;
-      data.push(item);
+      const newItem = {
+        type: "podcasts",
+        language: language,
+        publish: true,
+        id: item.id,
+        artist: item.artist,
+        artwork_url: item.artwork_url,
+        audio_url: item.audio_url,
+        description: item.description,
+        duration: item.duration,
+        title: item.title,
+      };
+
+      data.push(newItem);
     }
   });
   console.log(data);
