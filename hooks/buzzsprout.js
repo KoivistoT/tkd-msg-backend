@@ -54,10 +54,14 @@ const fetchAudioList = async (url) => {
 const populateData = (result, language) => {
   const data = [];
   result.forEach((item) => {
-    item.type = "podcasts";
-    item.language = language;
-    data.push(item);
+    if (item.private === false) {
+      item.type = "podcasts";
+      item.language = language;
+      item.publish = true;
+      data.push(item);
+    }
   });
+  console.log(data);
   return data;
 };
 const saveDataToFirebase = async (data) => {
