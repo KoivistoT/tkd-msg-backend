@@ -11,11 +11,13 @@ const users = require("../routes/users");
 const auth = require("../routes/auth");
 const returns = require("../routes/returns");
 const error = require("../middleware/error");
+const podcasts = require("../routes/podcasts");
 
 module.exports = function (app) {
   app.use(express.json());
   app.use("/api/genres", genres);
   app.use("/api/customers", customers);
+  app.use("/api/podcasts", podcasts);
   app.use("/api/movies", movies);
   app.use("/api/videos", videos);
   app.use("/api/notes", notes);

@@ -18,6 +18,7 @@
     "compression": "^1.7.4",
     "config": "^3.3.2",
     "cors": "^2.8.5",
+    "dayjs": "^1.10.7",
     "expo-server-sdk": "^3.6.0",
     "express": "^4.16.2",
     "express-async-errors": "^3.1.1",
@@ -30,6 +31,7 @@
     "lodash": "^4.17.20",
     "moment": "^2.29.0",
     "mongoose": "^5.10.6",
+    "node-schedule": "^2.0.0",
     "vimeo": "^2.1.1",
     "winston": "^3.3.3",
     "winston-mongodb": "^5.0.5"
