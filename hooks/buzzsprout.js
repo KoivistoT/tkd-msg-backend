@@ -72,7 +72,7 @@ const populateData = (result, language) => {
       data.push(newItem);
     }
   });
-  console.log(data);
+  // console.log(data);
   return data;
 };
 const saveDataToFirebase = async (data) => {
@@ -95,7 +95,39 @@ const saveDataToFirebase = async (data) => {
   }
 };
 
-module.exports.getAndSavePodcasts = function () {
+const getAppContent = async () => {
+  await firebaseLogin();
+
+  var db = firebase.firestore();
+  try {
+    var allData = [];
+    db.collection("appContent")
+      .where("type", "==", "podcasts")
+      .get()
+      .then(function (querySnapshot) {
+        querySnapshot.forEach(function (doc) {
+          allData.push({ id: doc.id, ...doc.data() });
+        });
+      });
+    return allData;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const checkNewPodcasts = (buzzsproutPodcasts, appPodcasts) => {
+  const data = [];
+
+  buzzsproutPodcasts.forEach((item) => {
+    const index = appPodcasts.findIndex((x) => x.id === item.id);
+    if (index === -1) {
+      data.push(item);
+    }
+  });
+  return data;
+};
+
+module.exports.getAndSavePodcasts = async function () {
   const urls = [
     {
       url: "https://www.buzzsprout.com/api/1726915/episodes.json",
@@ -107,12 +139,16 @@ module.exports.getAndSavePodcasts = function () {
     },
   ];
 
-  var result;
-  var data;
+  const appPodcasts = await getAppContent();
+  // console.log(appPodcasts);
   urls.forEach(async (item) => {
-    result = await fetchAudioList(item.url);
-    data = populateData(result, item.language);
-    saveDataToFirebase(data);
+    const result = await fetchAudioList(item.url);
+    const buzzsproutPodcasts = await populateData(result, item.language);
+
+    const data = await checkNewPodcasts(buzzsproutPodcasts, appPodcasts);
+    if (data.length > 0) {
+      saveDataToFirebase(data);
+    }
   });
 
   // setData();
@@ -126,7 +162,7 @@ module.exports.getAndSavePodcasts = function () {
 };
 
 module.exports.saveFetchTime = async function () {
-  const dateNow = dayjs().format("DD-MM-YYYY HH:mm");
+  const dateNow = dayjs().add(3, "hour").format("DD-MM-YYYY HH:mm");
   const isLoggedIn = await firebaseLogin();
   var db = firebase.firestore();
 
