@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const express = require("express");
 const { Room } = require("../models/room");
 const _ = require("lodash");
+const auth = require("../middleware/auth");
 const router = express.Router();
 const { messageType2Schema } = require("../models/messageType2");
 const {
@@ -41,7 +42,7 @@ router.post("/create_room2", async (req, res) => {
   res.send(room);
 });
 
-router.get("/all", async (req, res) => {
+router.get("/all", auth, async (req, res) => {
   // const room = await Room.find({}).select("-messages");
   const room = await Room.find({});
   if (!room) return res.status(404).send("Rooms not found");
