@@ -1,3 +1,4 @@
+const { Socket } = require("dgram");
 const express = require("express");
 
 const app = express();
@@ -18,6 +19,10 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", (reason) => {
     console.log(`[${socket.id}] socket disconnected - ${reason}`);
+  });
+  socket.on("chat message", (msg) => {
+    console.log("message: " + msg);
+    socket.emit("chat message", msg);
   });
 });
 
