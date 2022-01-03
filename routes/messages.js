@@ -61,10 +61,14 @@ router.post("/edit2", async (req, res) => {
 });
 
 router.get("/:id", async (req, res) => {
-  const result = await Room.find({ _id: req.params.id });
+  console.log(req.params.id);
+  const result = await MessagesType2.find({ _id: req.params.id });
+  console.log(
+    "olisi hyvä laittaa dataan, monta viestiä haluaa jne. eli ei id:llä?"
+  );
   if (!result) return res.status(404).send("Messages not found");
 
-  res.send(result[0].messages);
+  res.send(result[0]);
 });
 
 module.exports = router;
