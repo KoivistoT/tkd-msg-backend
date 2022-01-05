@@ -1,3 +1,4 @@
+const { WebSockets } = require("./utils/WebSockets.js");
 const { Socket } = require("dgram");
 const express = require("express");
 
@@ -12,19 +13,19 @@ require("./startup/db")();
 
 // const server = http.createServer(app);
 
-const io = new Server(server);
+global.io = new Server(server);
+global.io.on("connection", WebSockets.connection);
+// io.on("connection", (socket) => {
+//   console.log(`[${socket.id}] socket connected`);
 
-io.on("connection", (socket) => {
-  console.log(`[${socket.id}] socket connected`);
-
-  socket.on("disconnect", (reason) => {
-    console.log(`[${socket.id}] socket disconnected - ${reason}`);
-  });
-  socket.on("chat message", (msg) => {
-    console.log("message: " + msg);
-    socket.emit("chat message", msg);
-  });
-});
+//   socket.on("disconnect", (reason) => {
+//     console.log(`[${socket.id}] socket disconnected - ${reason}`);
+//   });
+//   socket.on("chat message", (msg) => {
+//     console.log("message: " + msg);
+//     socket.emit("chat message", msg);
+//   });
+// });
 
 const port = process.env.PORT || 3000;
 
