@@ -4,7 +4,7 @@ const { messageSchema } = require("./message");
 
 //https://stackfame.com/mongodb-chat-schema-mongoose-chat-schema-chat-application
 const roomSchema = new mongoose.Schema({
-  name: {
+  roomName: {
     type: String,
     required: true,
     trim: true,

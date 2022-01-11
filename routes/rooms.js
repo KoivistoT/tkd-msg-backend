@@ -16,9 +16,10 @@ router.post("/create_room", async (req, res) => {
   res.send(room);
 });
 
-router.post("/create_room2", async (req, res) => {
+router.post("/create_room2", auth, async (req, res) => {
+  console.log(req.body);
   let room = new Room({
-    name: req.body.name,
+    roomName: req.body.roomName,
     // messagesType2Id: req.body.messagesType2Id,
   });
   console.log(
