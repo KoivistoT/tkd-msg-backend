@@ -3,7 +3,7 @@ const express = require("express");
 const { Message } = require("../models/message");
 const { Room } = require("../models/room");
 const { MessageType2 } = require("../models/messageType2");
-const { MessagesType2 } = require("../models/messagesType2");
+const { MessagesType2, validate } = require("../models/messagesType2");
 const auth = require("../middleware/auth");
 
 const router = express.Router();
@@ -29,12 +29,23 @@ router.post("/send_message", auth, async (req, res) => {
   res.send(message);
 });
 
-router.post("/send_message2", async (req, res) => {
+router.post("/send_message2", auth, async (req, res) => {
   //post_message on parempi nimi
+
+  if (!req.body.roomId)
+    return res
+      .status(400)
+      .send(
+        "ei id:tä. Jos sitä ei laita, niin antaa laittaa silti jonkun idn tää. en tiedä miksi. Eiku update one joka tapauksessa updataa jonkun"
+      );
+
   let message = new MessageType2({
     messageBody: req.body.messageBody,
     roomId: req.body.roomId,
   });
+  console.log(
+    "updateOne päivittää jonkun, vaikka ei osuisi mikään filteristä. Eli täytyy olla tarkkana sen kanssa, ehkä käyttää jotain muuta"
+  );
   console.log(
     "katso: https://www.codegrepper.com/code-examples/javascript/how+to+add+items+into+a+document+array+mongoose"
   );
@@ -45,7 +56,7 @@ router.post("/send_message2", async (req, res) => {
     function (err, result) {}
   );
   //   message = await message.save();
-
+  console.log(message);
   res.send(message);
 });
 

@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema({
     online: { type: Boolean, default: false },
     available: { type: Boolean, default: false },
   },
+  userRooms: { type: Array, default: [] },
   // contacts: [userId:s]
   password: {
     type: String,
@@ -28,7 +29,7 @@ const userSchema = new mongoose.Schema({
     minlength: 5,
     maxlength: 1024,
   },
-  isAdmin: Boolean,
+  accountType: { type: String },
   is_active: { type: Boolean, dafault: false },
   created_at: { type: Date, default: Date.now() },
   updated_at: { type: Date, default: Date.now() },

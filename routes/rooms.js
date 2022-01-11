@@ -42,7 +42,7 @@ router.post("/create_room2", async (req, res) => {
   res.send(room);
 });
 
-router.get("/all", async (req, res) => {
+router.get("/all", auth, async (req, res) => {
   // const room = await Room.find({}).select("-messages");
   // global.io.sockets.emit("chat message", "täältä");
   global.io.sockets.to("12345").emit("chat message", { msg: "123441243" });

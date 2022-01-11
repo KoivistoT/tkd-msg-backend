@@ -6,7 +6,14 @@ const router = express.Router();
 const _ = require("lodash");
 
 router.post("/create_user", async (req, res) => {
-  let user = new User({ username: req.body.username, email: req.body.email });
+  //tässä username ja userName!!!!!!!!!!!
+
+  let user = new User({
+    username: req.body.userName,
+    password: req.body.password,
+    accountType: req.body.accountType,
+    email: req.body.userName,
+  });
   user = await user.save();
 
   res.send(user);
