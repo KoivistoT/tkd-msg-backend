@@ -4,13 +4,14 @@ const config = require("config");
 const jwt = require("jsonwebtoken");
 
 const userSchema = new mongoose.Schema({
-  username: {
+  userName: {
     type: String,
     // required: true,
     trim: true,
     unique: true,
   },
-  name: { type: String },
+  firstName: { type: String },
+  lastName: { type: String },
   logs: {
     last_login: { type: Date },
     last_activity: { type: Date },

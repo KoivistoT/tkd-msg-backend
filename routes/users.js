@@ -9,10 +9,12 @@ router.post("/create_user", async (req, res) => {
   //tässä username ja userName!!!!!!!!!!!
 
   let user = new User({
-    username: req.body.userName,
+    userName: req.body.userName,
     password: req.body.password,
     accountType: req.body.accountType,
     email: req.body.userName,
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
   });
   user = await user.save();
 
