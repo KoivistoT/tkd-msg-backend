@@ -26,16 +26,17 @@ class WebSockets {
       });
     });
     // subscribe person to chat & other user as well
-    client.on("login", ({ name, room }, callback) => {
+    client.on("login", ({ name, roomId }, callback) => {
       // const { user, error } = addUser(socket.id, name, room);
       // if (error) return callback(error);
       // const error = "nyt meni pieleen"
       // return callback(error)
-      client.join(room);
-      console.log(
-        "katso saako tämän niin, että ei lähetä ollenkaan lähettäjälle tieota. Tee ensin erikseen yksinkertaisesti"
-      );
-      global.io.sockets.in(room).emit("notification", {
+
+      client.join(roomId);
+      // console.log(
+      //   "katso saako tämän niin, että ei lähetä ollenkaan lähettäjälle tieota. Tee ensin erikseen yksinkertaisesti"
+      // );
+      global.io.sockets.in(roomId).emit("notification", {
         title: "Someone's here",
         description: `"tähän muuttuja" just entered the room`,
       });
@@ -44,28 +45,51 @@ class WebSockets {
       callback();
     });
 
-    client.on("subscribe", (room, otherUserId = "") => {
-      subscribeOtherUser(room, otherUserId);
-      console.log("käy täällä");
-      console.log(room, "huone id, join");
-      client.join(room);
+    client.on("subscribe", async (roomId, otherUserId = "") => {
+      subscribeOtherUser(roomId, otherUserId);
+      // console.log(global.io.sockets, "täältä tää");
+
+      client.join(roomId);
+
+      // const socketsInARoomInSomeNamespace = io
+      //   .of("/")
+      //   .in("/" + roomId)
+      //   .fetchSockets()
+      //   .then((room) => {
+      //     console.log("clients in this room: ", room.length);
+      //   });
+
+      const sockets = await client.in(roomId).fetchSockets();
+
+      console.log(roomId, "huone id, join");
     });
 
     // mute a chat room
-    client.on("unsubscribe", (room) => {
-      client.leave(room);
+    client.on("unsubscribe", (roomId) => {
+      client.leave(roomId);
+      console.log("lähti", roomId);
     });
   }
 }
 
-const subscribeOtherUser = (room, otherUserId) => {
-  console.log(users);
+function listSocketsProperty(myProperty) {
+  let sck = global.io.sockets.sockets;
+  const mapIter = sck.entries();
+  while (1) {
+    let en = mapIter.next().value?.[0];
+    if (en) console.log(sck.get(en)[myProperty]);
+    else break;
+  }
+}
+
+const subscribeOtherUser = (roomId, otherUserId) => {
+  // console.log(users);
   const userSockets = users.filter((user) => user.userId === otherUserId);
 
   userSockets.map((userInfo) => {
     const socketConn = global.io.sockets.connected(userInfo.socketId);
     if (socketConn) {
-      socketConn.join(room);
+      socketConn.join(roomId);
     }
   });
 };
