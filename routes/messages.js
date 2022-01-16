@@ -57,6 +57,9 @@ router.post("/send_message2", auth, async (req, res) => {
   );
   //   message = await message.save();
   console.log(message);
+  global.io.sockets.to(req.body.roomId).emit("new message", {
+    message,
+  });
   res.send(message);
 });
 

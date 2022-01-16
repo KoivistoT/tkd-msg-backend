@@ -2,15 +2,52 @@ users = [];
 class WebSockets {
   connection(client) {
     console.log(`[${client.id}] socket connected`);
-
+    global.io.client = client;
     // client.join("1111");
     // io.to("1111").emit("some event");
 
-    client.on("chat message", (msg) => {
+    client.on("chat message", ({ msg, roomId }) => {
       // console.log("tämä kyl käy");
       // console.log("message: " + msg);
-
-      client.emit("chat message", msg);
+      // client.emit("chat message", msg);
+      // global.io.sockets.emit("new message", {
+      //   message: msg,
+      //   roomId: roomId,
+      // });
+      // console.log(roomId, msg);
+      // global.io.sockets.in(roomId).emit("new message", { message: msg });
+      // client.broadcast.to('my room').emit('hello', msg);
+      //tämä toimii, mut global ei
+      //tässä ei ehkä tiedä kuka lähettää?
+      //kuitenkin siinä esimerkissä se toimii globalin kautta
+      // client.broadcast.in(roomId).emit("new message", {
+      //   message: msg,
+      //   roomId: roomId,
+      // });
+      // global.io.client.broadcast.in(roomId).emit("new message", {
+      //   message: msg,
+      //   roomId: roomId,
+      // });
+      // global.io.sockets.broadcast.to(roomId).emit("new message", {
+      //   message: msg,
+      //   roomId: roomId,
+      // });
+      //tee index uusiksi
+      //tee index uusiksi
+      //tee index uusiksi
+      //tee index uusiksi
+      //tee index uusiksi
+      //tee index uusiksi
+      //tee index uusiksi
+      //tee index uusiksi
+      //tee index uusiksi
+      //tee index uusiksi
+      //tee index uusiksi
+      //tee index uusiksi
+      // global.io.sockets.in(roomId).emit("new message", {
+      //   message: msg,
+      //   roomId: roomId,
+      // });
     });
 
     // event fired when the chat room is disconnected
@@ -59,7 +96,7 @@ class WebSockets {
       //     console.log("clients in this room: ", room.length);
       //   });
 
-      const sockets = await client.in(roomId).fetchSockets();
+      // const sockets = await client.in(roomId).fetchSockets();
 
       console.log(roomId, "huone id, join");
     });
