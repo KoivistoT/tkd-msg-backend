@@ -43,23 +43,31 @@ router.post("/send_message2", auth, async (req, res) => {
     messageBody: req.body.messageBody,
     roomId: req.body.roomId,
   });
-  console.log(
-    "updateOne päivittää jonkun, vaikka ei osuisi mikään filteristä. Eli täytyy olla tarkkana sen kanssa, ehkä käyttää jotain muuta"
-  );
-  console.log(
-    "katso: https://www.codegrepper.com/code-examples/javascript/how+to+add+items+into+a+document+array+mongoose"
-  );
+
+  // console.log(
+  //   "updateOne päivittää jonkun, vaikka ei osuisi mikään filteristä. Eli täytyy olla tarkkana sen kanssa, ehkä käyttää jotain muuta"
+  // );
+  // console.log(
+  //   "katso: https://www.codegrepper.com/code-examples/javascript/how+to+add+items+into+a+document+array+mongoose"
+  // );
   //   const room = await Room.find({ _id: req.body.roomId });
   MessagesType2.updateOne(
     { _id: req.body.roomId },
     { $addToSet: { messages: message } },
     function (err, result) {}
   );
+
   //   message = await message.save();
-  console.log(message);
-  global.io.sockets.to(req.body.roomId).emit("new message", {
-    message,
+  // console.log(message);
+  // global.io.emit("chat message", {
+  //   message,
+  // });
+  io.emit("chat message", {
+    message: "tähäb message",
+    roomId: req.body.roomId,
   });
+
+  // console.log(taalla);
   res.send(message);
 });
 

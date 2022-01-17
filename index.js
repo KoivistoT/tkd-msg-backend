@@ -1,7 +1,7 @@
 const { WebSockets } = require("./utils/WebSockets.js");
 const { Socket } = require("dgram");
 const express = require("express");
-
+const socketIO = require("socket.io");
 const app = express();
 const http = require("http");
 const server = http.createServer(app);
@@ -13,8 +13,8 @@ require("./startup/db")();
 
 // const server = http.createServer(app);
 
-global.io = new Server(server);
-global.io.on("connection", WebSockets.connection);
+io = new Server(server);
+io.on("connection", WebSockets.connection);
 // io.on("connection", (socket) => {
 //   console.log(`[${socket.id}] socket connected`);
 

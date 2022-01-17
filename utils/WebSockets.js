@@ -2,10 +2,11 @@ users = [];
 class WebSockets {
   connection(client) {
     console.log(`[${client.id}] socket connected`);
-    global.io.client = client;
+
     // client.join("1111");
     // io.to("1111").emit("some event");
 
+    // console.log(client.server.engine.clients);
     client.on("chat message", ({ msg, roomId }) => {
       // console.log("tämä kyl käy");
       // console.log("message: " + msg);
@@ -20,18 +21,21 @@ class WebSockets {
       //tämä toimii, mut global ei
       //tässä ei ehkä tiedä kuka lähettää?
       //kuitenkin siinä esimerkissä se toimii globalin kautta
+      client.to(roomId).emit("new message", {
+        message: msg,
+        roomId: roomId,
+      });
       // client.broadcast.in(roomId).emit("new message", {
       //   message: msg,
       //   roomId: roomId,
       // });
-      // global.io.client.broadcast.in(roomId).emit("new message", {
+      // client.broadcast.emit(/* ... */);
+      // console.log(roomId);
+      // client.broadcast.to(roomId).emit("new message", {
       //   message: msg,
       //   roomId: roomId,
       // });
-      // global.io.sockets.broadcast.to(roomId).emit("new message", {
-      //   message: msg,
-      //   roomId: roomId,
-      // });
+      // global.io.sockets.broadcast
       //tee index uusiksi
       //tee index uusiksi
       //tee index uusiksi
@@ -44,7 +48,10 @@ class WebSockets {
       //tee index uusiksi
       //tee index uusiksi
       //tee index uusiksi
-      // global.io.sockets.in(roomId).emit("new message", {
+      console.log(client.id, "tämä lähettää");
+      console.log(users, "tässä käyttäjät");
+      console.log(roomId, "room id johon lähettää");
+      // global.io.sockets.to(roomId).emit("new message", {
       //   message: msg,
       //   roomId: roomId,
       // });
@@ -61,29 +68,30 @@ class WebSockets {
         socketId: client.id,
         userId: userId,
       });
+      // console.log(users);
     });
     // subscribe person to chat & other user as well
-    client.on("login", ({ name, roomId }, callback) => {
-      // const { user, error } = addUser(socket.id, name, room);
-      // if (error) return callback(error);
-      // const error = "nyt meni pieleen"
-      // return callback(error)
+    // client.on("login", ({ name, roomId }, callback) => {
+    //   // const { user, error } = addUser(socket.id, name, room);
+    //   // if (error) return callback(error);
+    //   // const error = "nyt meni pieleen"
+    //   // return callback(error)
 
-      client.join(roomId);
-      // console.log(
-      //   "katso saako tämän niin, että ei lähetä ollenkaan lähettäjälle tieota. Tee ensin erikseen yksinkertaisesti"
-      // );
-      global.io.sockets.in(roomId).emit("notification", {
-        title: "Someone's here",
-        description: `"tähän muuttuja" just entered the room`,
-      });
+    //   client.join(roomId);
+    //   // console.log(
+    //   //   "katso saako tämän niin, että ei lähetä ollenkaan lähettäjälle tieota. Tee ensin erikseen yksinkertaisesti"
+    //   // );
+    //   global.io.sockets.in(roomId).emit("notification", {
+    //     title: "Someone's here",
+    //     description: `"tähän muuttuja" just entered the room`,
+    //   });
 
-      // global.io.in(room).emit("users", "ljjowiejfiwjelfij");
-      callback();
-    });
+    //   // global.io.in(room).emit("users", "ljjowiejfiwjelfij");
+    //   callback();
+    // });
 
     client.on("subscribe", async (roomId, otherUserId = "") => {
-      subscribeOtherUser(roomId, otherUserId);
+      // subscribeOtherUser(roomId, otherUserId);
       // console.log(global.io.sockets, "täältä tää");
 
       client.join(roomId);
@@ -120,9 +128,8 @@ function listSocketsProperty(myProperty) {
 }
 
 const subscribeOtherUser = (roomId, otherUserId) => {
-  // console.log(users);
   const userSockets = users.filter((user) => user.userId === otherUserId);
-
+  console.log(userSockets);
   userSockets.map((userInfo) => {
     const socketConn = global.io.sockets.connected(userInfo.socketId);
     if (socketConn) {

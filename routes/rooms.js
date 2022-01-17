@@ -46,7 +46,7 @@ router.post("/create_room2", auth, async (req, res) => {
 router.get("/all", auth, async (req, res) => {
   // const room = await Room.find({}).select("-messages");
   // global.io.sockets.emit("chat message", "täältä");
-  global.io.sockets.to("12345").emit("chat message", { msg: "123441243" });
+  // global.io.sockets.to("12345").emit("chat message", { msg: "123441243" });
   const room = await Room.find({});
   if (!room) return res.status(404).send("Rooms not found");
   // console.log(room);
