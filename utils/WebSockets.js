@@ -21,6 +21,7 @@ class WebSockets {
       //tämä toimii, mut global ei
       //tässä ei ehkä tiedä kuka lähettää?
       //kuitenkin siinä esimerkissä se toimii globalin kautta
+
       client.to(roomId).emit("new message", {
         message: msg,
         roomId: roomId,
@@ -61,14 +62,22 @@ class WebSockets {
     client.on("disconnect", () => {
       users = users.filter((user) => user.socketId !== client.id);
       console.log("lähti pois", client.id);
+      io.emit("users live", {
+        users,
+      });
     });
     // // add identity of user mapped to the socket id
+    client.on("getUsers", () => {
+      io.emit("users live", {
+        users,
+      });
+    });
+
     client.on("identity", (userId) => {
       users.push({
         socketId: client.id,
         userId: userId,
       });
-      // console.log(users);
     });
     // subscribe person to chat & other user as well
     // client.on("login", ({ name, roomId }, callback) => {
