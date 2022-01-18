@@ -14,7 +14,6 @@ router.post("/create_user", async (req, res) => {
 
   user = new User(
     _.pick(req.body, [
-      "userName",
       "email",
       "password",
       "firstName",

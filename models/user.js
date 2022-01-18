@@ -5,12 +5,12 @@ const jwt = require("jsonwebtoken");
 
 const userSchema = new mongoose.Schema(
   {
-    userName: {
-      type: String,
-      // required: true,
-      trim: true,
-      unique: true,
-    },
+    // userName: {
+    //   type: String,
+    //   // required: true,
+    //   trim: true,
+    //   unique: true,
+    // },
     firstName: { type: String },
     lastName: { type: String },
     displayName: { type: String },
@@ -24,6 +24,7 @@ const userSchema = new mongoose.Schema(
       online: { type: Boolean, default: false },
       available: { type: Boolean, default: false },
     },
+    last_seen_messages: { type: Array, default: [] },
     userRooms: { type: Array, default: [] },
     contacts: { type: Array, default: [] },
     password: {

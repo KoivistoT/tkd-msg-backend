@@ -40,7 +40,7 @@ router.post("/create_room", auth, async (req, res) => {
   // );
   messages = await messages.save();
 
-  res.send(room);
+  res.status(200).send(room);
 });
 
 router.get("/all", auth, async (req, res) => {
@@ -49,8 +49,18 @@ router.get("/all", auth, async (req, res) => {
   // global.io.sockets.to("12345").emit("chat message", { msg: "123441243" });
   const room = await Room.find({});
   if (!room) return res.status(404).send("Rooms not found");
-  // console.log(room);
-  res.send(room);
+
+  // room.forEach((item) => {
+  //   roomsToObject = { [item._id]: item, ...roomsToObject };
+  // });
+
+  //tämä voisi olla jossain yleisenä utils functiona
+  const roomsObject = room.reduce((newObject, item) => {
+    newObject[item._id] = item;
+    return newObject;
+  }, {});
+
+  res.status(200).send(roomsObject);
 });
 
 router.get("/:id", async (req, res) => {
@@ -58,7 +68,15 @@ router.get("/:id", async (req, res) => {
   if (!result) return res.status(404).send("Messages not found");
 
   // res.send(_.pick(result[0], ["_id"]));
-  res.send(result[0]);
+  res.status(200).send(result[0]);
+});
+
+router.get("/members/:id", async (req, res) => {
+  const result = await Room.find({ _id: req.params.id }).select("members");
+  if (!result) return res.status(404).send("Members not found");
+
+  // res.send(_.pick(result[0], ["_id"]));
+  res.status(200).send(result[0]);
 });
 
 module.exports = router;

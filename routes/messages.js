@@ -50,7 +50,7 @@ router.post("/send_message", auth, async (req, res) => {
   });
 
   // console.log(taalla);
-  res.send(message);
+  res.status(200).json({ success: true, message }); //send(message);
 });
 
 router.post("/edit2", async (req, res) => {
@@ -72,7 +72,7 @@ router.get("/:id", async (req, res) => {
   // );
   if (!result) return res.status(404).send("Messages not found");
 
-  res.send(result[0]);
+  res.status(200).send(result[0]);
 });
 
 module.exports = router;

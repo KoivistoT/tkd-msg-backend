@@ -16,7 +16,8 @@ const roomSchema = new mongoose.Schema(
     topic: { type: String },
     // members: [userSchema],
     members: { type: Array, default: [] },
-    messages: [messageSchema],
+    // messages: [messageSchema],
+    messageSum: { type: Number }, //tarvitseeko tätä...
   },
   {
     timestamps: true,
