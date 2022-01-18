@@ -6,29 +6,23 @@ const router = express.Router();
 const _ = require("lodash");
 
 router.post("/create_user", async (req, res) => {
-  //tässä username ja userName!!!!!!!!!!!
-
-  let user = new User({
-    userName: req.body.userName,
-    password: req.body.password,
-    accountType: req.body.accountType,
-    email: req.body.userName,
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-  });
-  user = await user.save();
-
-  res.send(user);
-});
-
-router.post("/", async (req, res) => {
   const { error } = schema.validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
-  // let user = await User.findOne({ email: req.body.email });
-  // if (user) return res.status(400).send("User already registered.");
+  let user = await User.findOne({ email: req.body.email });
+  if (user) return res.status(400).send("User already registered.");
 
-  user = new User(_.pick(req.body, ["name", "email", "password"]));
+  user = new User(
+    _.pick(req.body, [
+      "userName",
+      "email",
+      "password",
+      "firstName",
+      "lastName",
+      "displayName",
+      "accountType",
+    ])
+  );
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(user.password, salt);
   await user.save();

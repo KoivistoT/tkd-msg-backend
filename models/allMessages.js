@@ -4,12 +4,12 @@ const mongoose = require("mongoose");
 
 // const { messageType2Schema } = require("./messageType2");
 //https://stackfame.com/mongodb-chat-schema-mongoose-chat-schema-chat-application
-const messagesType2Schema = new mongoose.Schema({
+const allMessagesSchema = new mongoose.Schema({
   // _id: { type: String },
   messages: [],
 });
 
-const MessagesType2 = mongoose.model("MessagesType2", messagesType2Schema);
+const AllMessages = mongoose.model("AllMessages", allMessagesSchema);
 
-exports.roomSchema = messagesType2Schema;
-exports.MessagesType2 = MessagesType2;
+exports.roomSchema = allMessagesSchema;
+exports.AllMessages = AllMessages;

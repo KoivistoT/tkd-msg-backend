@@ -1,39 +1,39 @@
 const mongoose = require("mongoose");
 const express = require("express");
-const { Room } = require("../models/room");
+const { Room, schema } = require("../models/room");
 const _ = require("lodash");
 const auth = require("../middleware/auth");
 const router = express.Router();
-const { messageType2Schema } = require("../models/messageType2");
-const {
-  messagesType2Schema,
-  MessagesType2,
-} = require("../models/messagesType2");
-router.post("/create_room", async (req, res) => {
-  let room = new Room({ name: req.body.name });
-  room = await room.save();
+const { message } = require("../models/message");
+const { AllMessagesSchema, AllMessages } = require("../models/allMessages");
 
-  res.send(room);
-});
+router.post("/create_room", auth, async (req, res) => {
+  const { error } = schema.validate(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
 
-router.post("/create_room2", auth, async (req, res) => {
-  console.log(req.body);
+  let roomCheck = await Room.findOne({ roomName: req.body.roomName });
+  if (roomCheck)
+    return res
+      .status(400)
+      .send("Room with the same name is already registered.");
+
   let room = new Room({
     roomName: req.body.roomName,
-    // messagesType2Id: req.body.messagesType2Id,
+    type: req.body.type,
+    // AllMessagesId: req.body.AllMessagesId,
   });
   console.log(
     "ei voi lisätä toista, koska lisää userSchema null, pitää aina kun luo huoneen olla ainakin se ketä lisää sen niin käyttäjissä, usereissa"
   );
   room = await room.save();
 
-  // let firstMessage = new messageType2Schema({
+  // let firstMessage = new message({
   //   messageBody: "first message",
   //   roomId: room._id,
   // });
 
-  let messages = new MessagesType2({ _id: room._id });
-  // MessagesType2.updateOne(
+  let messages = new AllMessages({ _id: room._id });
+  // AllMessages.updateOne(
   //   { _id: req.body.roomId },
   //   { $addToSet: { messages: firstMessage } },
   //   function (err, result) {}

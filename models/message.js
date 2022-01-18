@@ -1,19 +1,49 @@
 const Joi = require("joi");
 const mongoose = require("mongoose");
-const { roomSchema } = require("./room");
+
 const { userSchema } = require("./user");
 
-const messageSchema = new mongoose.Schema({
-  roomId: { type: String, required: true }, // tässä voisi käyttää roomSchemaa, mutta se ei toiminut mulla, kun jotenkin ristiin menee schemat
-  user: userSchema,
-  messageBody: {
-    type: String,
+const MESSAGE_TYPES = {
+  TYPE_TEXT: "text",
+};
+
+const readByRecipientSchema = new mongoose.Schema(
+  {
+    _id: false,
+    readByUserId: String,
+    readAt: {
+      type: Date,
+      default: Date.now(),
+    },
   },
-  messageStatus: { type: Boolean, default: false },
-  is_deleted: { type: Boolean, default: false },
-  created_at: { type: Date, default: Date.now() },
-  updated_at: { type: Date, default: Date.now() },
-});
+  {
+    timestamps: false,
+  }
+);
+
+const messageSchema = new mongoose.Schema(
+  {
+    //   roomId: { type: String, required: true }, // tässä voisi käyttää roomSchemaa, mutta se ei toiminut mulla, kun jotenkin ristiin menee schemat
+    postedByUser: { type: String },
+    messageBody: {
+      type: String,
+    },
+    roomId: { type: String },
+    messageStatus: { type: Boolean, default: false },
+    is_deleted: { type: Boolean, default: false },
+    type: {
+      type: String,
+      default: () => MESSAGE_TYPES.TYPE_TEXT,
+    },
+    readByRecipients: [readByRecipientSchema],
+    // created_at: { type: Date, default: Date.now() },
+    // updated_at: { type: Date, default: Date.now() },
+  },
+  {
+    timestamps: true,
+    collection: "messages",
+  }
+);
 
 const Message = mongoose.model("Message", messageSchema);
 
