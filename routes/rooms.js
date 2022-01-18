@@ -6,6 +6,7 @@ const auth = require("../middleware/auth");
 const router = express.Router();
 const { message } = require("../models/message");
 const { AllMessagesSchema, AllMessages } = require("../models/allMessages");
+const arrayToObject = require("../utils/arrayToObject");
 
 router.post("/create_room", auth, async (req, res) => {
   const { error } = schema.validate(req.body);
@@ -50,15 +51,7 @@ router.get("/all", auth, async (req, res) => {
   const room = await Room.find({});
   if (!room) return res.status(404).send("Rooms not found");
 
-  // room.forEach((item) => {
-  //   roomsToObject = { [item._id]: item, ...roomsToObject };
-  // });
-
-  //tämä voisi olla jossain yleisenä utils functiona
-  const roomsObject = room.reduce((newObject, item) => {
-    newObject[item._id] = item;
-    return newObject;
-  }, {});
+  const roomsObject = arrayToObject(room);
 
   res.status(200).send(roomsObject);
 });
