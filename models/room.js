@@ -14,10 +14,9 @@ const roomSchema = new mongoose.Schema(
     },
     type: { type: String, required: true }, //private or group or...
     topic: { type: String },
-    members: [userSchema],
+    // members: [userSchema],
+    members: { type: Array, default: [] },
     messages: [messageSchema],
-    created_at: { type: Date, default: Date.now() },
-    updated_at: { type: Date, default: Date.now() },
   },
   {
     timestamps: true,

@@ -45,7 +45,7 @@ router.post("/send_message", auth, async (req, res) => {
   //   message,
   // });
   io.emit("chat message", {
-    message: "tähäb message",
+    message: req.body.messageBody,
     roomId: req.body.roomId,
   });
 

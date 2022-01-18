@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 //https://stackfame.com/mongodb-chat-schema-mongoose-chat-schema-chat-application
 const allMessagesSchema = new mongoose.Schema({
   // _id: { type: String },
-  messages: [],
+  messages: { type: Array, default: [] },
 });
 
 const AllMessages = mongoose.model("AllMessages", allMessagesSchema);

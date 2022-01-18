@@ -25,17 +25,16 @@ const userSchema = new mongoose.Schema(
       available: { type: Boolean, default: false },
     },
     userRooms: { type: Array, default: [] },
-    // contacts: [userId:s]
+    contacts: { type: Array, default: [] },
     password: {
       type: String,
       required: true,
       minlength: 5,
       maxlength: 1024,
     },
+    pushNotificationToken: { type: String },
     accountType: { type: String },
     is_active: { type: Boolean, dafault: false },
-    // created_at: { type: Date, default: Date.now() },
-    // updated_at: { type: Date, default: Date.now() },
   },
   {
     timestamps: true,
