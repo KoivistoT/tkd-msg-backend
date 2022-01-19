@@ -7,6 +7,7 @@ const router = express.Router();
 const { message } = require("../models/message");
 const { AllMessagesSchema, AllMessages } = require("../models/allMessages");
 const arrayToObject = require("../utils/arrayToObject");
+const { User } = require("../models/user");
 
 router.post("/create_room", auth, async (req, res) => {
   const { error } = schema.validate(req.body);
@@ -44,17 +45,18 @@ router.post("/create_room", auth, async (req, res) => {
   res.status(200).send(room);
 });
 
-router.post("/change_member", auth, async (req, res) => {
+router.post("/change_membership", auth, async (req, res) => {
   // tähän validointi
 
   let roomCheck = await Room.findOne({ _id: req.body.roomId });
   if (!roomCheck) return res.status(400).send("Can't find room"); // tämä ei ehkä tarpeen, jos alussa validointi. toki aina parempi mitä enemmän varmuutta
 
+  const action = req.body.membership ? "$addToSet" : "$pull";
   try {
     Room.updateOne(
       { _id: req.body.roomId },
       {
-        [req.body.membership ? "$addToSet" : "$pull"]: {
+        [action]: {
           members: req.body.userId,
         },
       },
@@ -63,9 +65,19 @@ router.post("/change_member", auth, async (req, res) => {
           const membersNow = await Room.find({ _id: req.body.roomId }).select(
             "members"
           );
-          console.log(membersNow[0]);
           res.status(200).send(membersNow[0]);
         }
+      }
+    );
+    User.updateOne(
+      { _id: req.body.userId },
+      {
+        [action]: {
+          userRooms: req.body.roomId,
+        },
+      },
+      async function (err, result) {
+        if (err) console.log(err);
       }
     );
   } catch (error) {
