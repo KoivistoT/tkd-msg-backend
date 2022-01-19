@@ -44,6 +44,35 @@ router.post("/create_room", auth, async (req, res) => {
   res.status(200).send(room);
 });
 
+router.post("/change_member", auth, async (req, res) => {
+  // tähän validointi
+
+  let roomCheck = await Room.findOne({ _id: req.body.roomId });
+  if (!roomCheck) return res.status(400).send("Can't find room"); // tämä ei ehkä tarpeen, jos alussa validointi. toki aina parempi mitä enemmän varmuutta
+
+  try {
+    Room.updateOne(
+      { _id: req.body.roomId },
+      {
+        [req.body.membership ? "$addToSet" : "$pull"]: {
+          members: req.body.userId,
+        },
+      },
+      async function (err, result) {
+        if (!err) {
+          const membersNow = await Room.find({ _id: req.body.roomId }).select(
+            "members"
+          );
+          console.log(membersNow[0]);
+          res.status(200).send(membersNow[0]);
+        }
+      }
+    );
+  } catch (error) {
+    res.status(400).send("something faild");
+  }
+});
+
 router.get("/all", auth, async (req, res) => {
   // const room = await Room.find({}).select("-messages");
   // global.io.sockets.emit("chat message", "täältä");
