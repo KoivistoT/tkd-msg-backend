@@ -44,11 +44,11 @@ router.post("/send_message", auth, async (req, res) => {
   // global.io.emit("chat message", {
   //   message,
   // });
-  io.emit("chat message", {
-    message: req.body.messageBody,
+
+  io.to(req.body.roomId).emit("new message", {
+    message: message,
     roomId: req.body.roomId,
   });
-
   // console.log(taalla);
   res.status(200).json({ success: true, message }); //send(message);
 });

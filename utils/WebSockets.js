@@ -8,6 +8,7 @@ class WebSockets {
 
     // console.log(client.server.engine.clients);
     client.on("chat message", ({ msg, roomId }) => {
+      console.log("täällä hei on joo juu");
       // console.log("tämä kyl käy");
       // console.log("message: " + msg);
       // client.emit("chat message", msg);
@@ -21,11 +22,11 @@ class WebSockets {
       //tämä toimii, mut global ei
       //tässä ei ehkä tiedä kuka lähettää?
       //kuitenkin siinä esimerkissä se toimii globalin kautta
-
-      client.to(roomId).emit("new message", {
-        message: msg,
-        roomId: roomId,
-      });
+      // console.log(roomId);
+      // client.to(roomId).emit("new message", {
+      //   message: msg,
+      //   roomId: roomId,
+      // });
       // client.broadcast.in(roomId).emit("new message", {
       //   message: msg,
       //   roomId: roomId,
@@ -49,9 +50,9 @@ class WebSockets {
       //tee index uusiksi
       //tee index uusiksi
       //tee index uusiksi
-      console.log(client.id, "tämä lähettää");
-      console.log(users, "tässä käyttäjät");
-      console.log(roomId, "room id johon lähettää");
+      // console.log(client.id, "tämä lähettää");
+      // console.log(users, "tässä käyttäjät");
+      // console.log(roomId, "room id johon lähettää");
       // global.io.sockets.to(roomId).emit("new message", {
       //   message: msg,
       //   roomId: roomId,
@@ -74,12 +75,19 @@ class WebSockets {
       });
     });
     client.on("id connect", (data) => {
+      console.log("täällä on nyt");
       data.users.forEach((userId) => {
         const index = users.findIndex((user) => user.userId === userId);
-        const socketId = users[index].socketId;
-        console.log(socketId, "Tässä kyseisen socket Id");
+        if (index !== -1) {
+          const socketId = users[index].socketId;
+          console.log(socketId, "Tässä kyseisen socket Id");
 
-        io.to(socketId).emit("updates", "roomRemoved", { roomId: data.roomId });
+          io.to(socketId).emit("updates", "roomRemoved", {
+            roomId: data.roomId,
+          });
+        } else {
+          console.log(user, "ei ole nyt yhteydessä");
+        }
       });
     });
 
