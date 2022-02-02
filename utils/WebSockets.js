@@ -68,8 +68,18 @@ class WebSockets {
     });
     // // add identity of user mapped to the socket id
     client.on("getUsers", () => {
+      console.log("tässä on nyt");
       io.emit("users live", {
         users,
+      });
+    });
+    client.on("id connect", (data) => {
+      data.users.forEach((userId) => {
+        const index = users.findIndex((user) => user.userId === userId);
+        const socketId = users[index].socketId;
+        console.log(socketId, "Tässä kyseisen socket Id");
+
+        io.to(socketId).emit("updates", "roomAdded", { id: "123331" });
       });
     });
 
@@ -78,6 +88,7 @@ class WebSockets {
         socketId: client.id,
         userId: userId,
       });
+      // console.log(users);
     });
     // subscribe person to chat & other user as well
     // client.on("login", ({ name, roomId }, callback) => {
