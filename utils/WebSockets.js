@@ -79,7 +79,7 @@ class WebSockets {
         const socketId = users[index].socketId;
         console.log(socketId, "Tässä kyseisen socket Id");
 
-        io.to(socketId).emit("updates", "roomAdded", { id: "123331" });
+        io.to(socketId).emit("updates", "roomRemoved", { roomId: data.roomId });
       });
     });
 
