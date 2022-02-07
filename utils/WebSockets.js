@@ -168,9 +168,9 @@ const subscribeOtherUser = (roomId, otherUserId) => {
 
 function ioUpdate(users, action, roomId) {
   users.forEach((userId) => {
-    const userSocketId = getUserSocketId(userId);
-    console.log(action, userSocketId);
-    if (!userSocketId) return;
+    const userSocketId = getUserSocketIdByUserId(userId);
+
+    if (!userSocketId) return; // user is not connected
 
     io.to(userSocketId).emit("updates", action, {
       roomId: roomId,
@@ -178,7 +178,7 @@ function ioUpdate(users, action, roomId) {
   });
 }
 
-function getUserSocketId(userId) {
+function getUserSocketIdByUserId(userId) {
   const index = users.findIndex((user) => user.userId === userId);
   return index === -1 ? false : users[index].socketId;
 }
