@@ -53,24 +53,19 @@ router.post("/change_membership", auth, async (req, res) => {
   if (!roomCheck) return res.status(400).send("Can't find room"); // tämä ei ehkä tarpeen, jos alussa validointi. toki aina parempi mitä enemmän varmuutta
 
   const dbAction = req.body.membership ? "$addToSet" : "$pull";
+
   try {
-    Room.updateOne(
+    const updatedRoomData = await Room.findByIdAndUpdate(
       { _id: req.body.roomId },
       {
         [dbAction]: {
           members: req.body.userId,
         },
       },
-      async function (err, result) {
-        if (!err) {
-          const membersNow = await Room.find({ _id: req.body.roomId }).select(
-            "members"
-          );
-
-          res.status(200).send(membersNow[0]);
-        }
-      }
+      { new: true }
     );
+
+    //tämä voisi olla jossain muualla functioissa., kuten muutkin, jottaon puhtaat nämä jutut täällä
     User.updateOne(
       { _id: req.body.userId },
       {
@@ -83,18 +78,13 @@ router.post("/change_membership", auth, async (req, res) => {
       }
     );
 
-    // console.log(
-    //   "joko täällä users, joka on exportattu, sieltä katsoo socket id:n tai sitten niin, että tekee function, joka kutsutaan, siellä tekee sitten tarvittavat. Eli tässä laittaa henkilölle, jolta poistuu huone, että room removed"
-    // );
-    try {
-      const users = [req.body.userId];
-      const action = req.body.membership ? "roomAdded" : "roomRemoved";
-      const roomId = req.body.roomId;
+    const users = [req.body.userId];
+    const action = req.body.membership ? "roomAdded" : "roomRemoved";
+    const roomId = req.body.roomId;
 
-      ioUpdate(users, action, roomId);
-    } catch (error) {
-      console.log(error, "code 9329");
-    }
+    ioUpdate(users, action, roomId);
+
+    res.status(200).send(updatedRoomData);
   } catch (error) {
     res.status(400).send("something faild");
   }
