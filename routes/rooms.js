@@ -80,9 +80,8 @@ router.post("/change_membership", auth, async (req, res) => {
 
     const users = [req.body.userId];
     const action = req.body.membership ? "roomAdded" : "roomRemoved";
-    const roomId = req.body.roomId;
 
-    ioUpdate(users, action, roomId);
+    ioUpdate(users, action, updatedRoomData);
 
     res.status(200).send(updatedRoomData);
   } catch (error) {

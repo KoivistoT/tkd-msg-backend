@@ -166,14 +166,14 @@ const subscribeOtherUser = (roomId, otherUserId) => {
   });
 };
 
-function ioUpdate(users, action, roomId) {
+function ioUpdate(users, action, data) {
   users.forEach((userId) => {
     const userSocketId = getUserSocketIdByUserId(userId);
 
     if (!userSocketId) return; // user is not connected
 
     io.to(userSocketId).emit("updates", action, {
-      roomId: roomId,
+      [data._id]: data,
     });
   });
 }
