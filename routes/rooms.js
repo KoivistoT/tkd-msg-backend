@@ -8,6 +8,7 @@ const { message } = require("../models/message");
 const { AllMessagesSchema, AllMessages } = require("../models/allMessages");
 const arrayToObject = require("../utils/arrayToObject");
 const { User } = require("../models/user");
+const { ioUpdate } = require("../utils/WebSockets");
 
 router.post("/create_room", auth, async (req, res) => {
   const { error } = schema.validate(req.body);
@@ -51,12 +52,12 @@ router.post("/change_membership", auth, async (req, res) => {
   let roomCheck = await Room.findOne({ _id: req.body.roomId });
   if (!roomCheck) return res.status(400).send("Can't find room"); // tämä ei ehkä tarpeen, jos alussa validointi. toki aina parempi mitä enemmän varmuutta
 
-  const action = req.body.membership ? "$addToSet" : "$pull";
+  const dbAction = req.body.membership ? "$addToSet" : "$pull";
   try {
     Room.updateOne(
       { _id: req.body.roomId },
       {
-        [action]: {
+        [dbAction]: {
           members: req.body.userId,
         },
       },
@@ -65,6 +66,7 @@ router.post("/change_membership", auth, async (req, res) => {
           const membersNow = await Room.find({ _id: req.body.roomId }).select(
             "members"
           );
+
           res.status(200).send(membersNow[0]);
         }
       }
@@ -72,7 +74,7 @@ router.post("/change_membership", auth, async (req, res) => {
     User.updateOne(
       { _id: req.body.userId },
       {
-        [action]: {
+        [dbAction]: {
           userRooms: req.body.roomId,
         },
       },
@@ -80,6 +82,19 @@ router.post("/change_membership", auth, async (req, res) => {
         if (err) console.log(err);
       }
     );
+
+    // console.log(
+    //   "joko täällä users, joka on exportattu, sieltä katsoo socket id:n tai sitten niin, että tekee function, joka kutsutaan, siellä tekee sitten tarvittavat. Eli tässä laittaa henkilölle, jolta poistuu huone, että room removed"
+    // );
+    try {
+      const users = [req.body.userId];
+      const action = req.body.membership ? "roomAdded" : "roomRemoved";
+      const roomId = req.body.roomId;
+
+      ioUpdate(users, action, roomId);
+    } catch (error) {
+      console.log(error, "code 9329");
+    }
   } catch (error) {
     res.status(400).send("something faild");
   }

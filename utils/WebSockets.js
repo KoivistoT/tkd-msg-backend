@@ -74,22 +74,22 @@ class WebSockets {
         users,
       });
     });
-    client.on("id connect", (data) => {
-      console.log("täällä on nyt");
-      data.users.forEach((userId) => {
-        const index = users.findIndex((user) => user.userId === userId);
-        if (index !== -1) {
-          const socketId = users[index].socketId;
-          console.log(socketId, "Tässä kyseisen socket Id");
+    // client.on("id connect", (data) => {
+    //   console.log("täällä on nyt");
+    //   data.users.forEach((userId) => {
+    //     const index = users.findIndex((user) => user.userId === userId);
+    //     if (index !== -1) {
+    //       const socketId = users[index].socketId;
+    //       console.log(socketId, "Tässä kyseisen socket Id");
 
-          io.to(socketId).emit("updates", "roomRemoved", {
-            roomId: data.roomId,
-          });
-        } else {
-          console.log(user, "ei ole nyt yhteydessä");
-        }
-      });
-    });
+    //       io.to(socketId).emit("updates", "roomRemoved", {
+    //         roomId: data.roomId,
+    //       });
+    //     } else {
+    //       console.log("ei ole nyt yhteydessä");
+    //     }
+    //   });
+    // });
 
     client.on("identity", (userId) => {
       users.push({
@@ -165,4 +165,23 @@ const subscribeOtherUser = (roomId, otherUserId) => {
     }
   });
 };
+
+function ioUpdate(users, action, roomId) {
+  users.forEach((userId) => {
+    const userSocketId = getUserSocketId(userId);
+    console.log(action, userSocketId);
+    if (!userSocketId) return;
+
+    io.to(userSocketId).emit("updates", action, {
+      roomId: roomId,
+    });
+  });
+}
+
+function getUserSocketId(userId) {
+  const index = users.findIndex((user) => user.userId === userId);
+  return index === -1 ? false : users[index].socketId;
+}
+
 module.exports.WebSockets = new WebSockets();
+module.exports.ioUpdate = ioUpdate;
