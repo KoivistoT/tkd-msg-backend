@@ -5,6 +5,7 @@ const { Room } = require("../models/room");
 const { Message } = require("../models/message");
 const { AllMessages, validate } = require("../models/allMessages");
 const auth = require("../middleware/auth");
+const arrayToObject = require("../utils/arrayToObject");
 
 const router = express.Router();
 
@@ -66,13 +67,14 @@ router.post("/edit2", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   // console.log(req.params.id);
-  const result = await AllMessages.find({ _id: req.params.id });
+  const result = await AllMessages.findById(req.params.id);
   // console.log(
   //   "olisi hyvä laittaa dataan, monta viestiä haluaa jne. eli ei id:llä?"
   // );
   if (!result) return res.status(404).send("Messages not found");
 
-  res.status(200).send(result[0]);
+  const messages = { [req.params.id]: result };
+  res.status(200).send(messages);
 });
 
 module.exports = router;
