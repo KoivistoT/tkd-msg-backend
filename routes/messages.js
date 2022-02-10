@@ -39,7 +39,7 @@ router.post("/send_message", auth, async (req, res) => {
     { $addToSet: { messages: message } },
     function (err, result) {}
   );
-
+  console.log("voiko lähettää viestin enenen tallentamista, jotta nopeampi?");
   //   message = await message.save();
   // console.log(message);
   // global.io.emit("chat message", {

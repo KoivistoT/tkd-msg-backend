@@ -9,7 +9,23 @@ const allMessagesSchema = new mongoose.Schema({
   messages: { type: Array, default: [] },
 });
 
+allMessagesSchema.statics.findSomething = function (roomId, callback) {
+  // return this.findOne(
+  //   { _id: roomId, "messages.messageBody": "123123123123" },
+  //   function (err, list) {
+  //     console.log(list);
+  //   }
+  // );
+  //https://masteringjs.io/tutorials/mongoose/aggregate
+  // this.aggregate(
+  //   [{ $match: "61e6a80eb30d002e91d67b5a" }],
+  //   function (err, list) {
+  //     console.log(list);
+  //   }
+  // );
+};
+
 const AllMessages = mongoose.model("AllMessages", allMessagesSchema);
 
-exports.roomSchema = allMessagesSchema;
+exports.allMessagesSchema = allMessagesSchema;
 exports.AllMessages = AllMessages;
