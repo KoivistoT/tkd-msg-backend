@@ -21,16 +21,16 @@ router.get("/:id", async (req, res) => {
 
   await Promise.all(
     user.userRooms.map(async (roomId) => {
-      var start = +new Date();
+      // var start = +new Date();
       const [room, allMessages] = await Promise.all([
         Room.findById(roomId).lean(),
         AllMessages.findById(roomId).lean(),
         // AllMessages.findById(roomId).slice("messages", 2).lean(),
       ]);
 
-      var end = +new Date();
-      var diff = end - start;
-      console.log(diff);
+      // var end = +new Date();
+      // var diff = end - start;
+      // console.log(diff);
 
       // AllMessages.findSomething(roomId, function (err, products) {
       //   // console.log(err);
@@ -69,7 +69,7 @@ router.get("/:id", async (req, res) => {
     rooms: arrayToObject(userRoomsData),
     messages: arrayToObject(userAllMessages),
   };
-
+  // console.log(initialData.messages["61e6b87218d455cf6ecdb913"].messages);
   res.send(initialData);
 });
 
