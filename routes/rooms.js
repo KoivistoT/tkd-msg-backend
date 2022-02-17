@@ -20,7 +20,7 @@ router.post("/create_room", auth, async (req, res) => {
       .status(400)
       .send("Room with the same name is already registered.");
 
-  let room = new Room({
+  let room = await Room.create({
     roomName: req.body.roomName,
     type: req.body.type,
     // AllMessagesId: req.body.AllMessagesId,
@@ -35,7 +35,7 @@ router.post("/create_room", auth, async (req, res) => {
   //   roomId: room._id,
   // });
 
-  let messages = new AllMessages({ _id: room._id });
+  let messages = await AllMessages.create({ _id: room._id });
   // AllMessages.updateOne(
   //   { _id: req.body.roomId },
   //   { $addToSet: { messages: firstMessage } },

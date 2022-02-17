@@ -19,11 +19,19 @@ router.post("/send_message", auth, async (req, res) => {
         "ei id:tä. Jos sitä ei laita, niin antaa laittaa silti jonkun idn tää. en tiedä miksi. Eiku update one joka tapauksessa updataa jonkun"
       );
 
-  let message = new Message({
+  // let message = new Message({
+  //   messageBody: req.body.messageBody,
+  //   roomId: req.body.roomId,
+  // });
+
+  const message = await Message.create({
     messageBody: req.body.messageBody,
     roomId: req.body.roomId,
   });
-
+  io.to(req.body.roomId).emit("new message", {
+    message: message,
+    roomId: req.body.roomId,
+  });
   // console.log(
   //   "katso: https://www.codegrepper.com/code-examples/javascript/how+to+add+items+into+a+document+array+mongoose"
   // );
@@ -39,17 +47,13 @@ router.post("/send_message", auth, async (req, res) => {
     { $addToSet: { messages: message } },
     function (err, result) {}
   );
-  console.log("voiko lähettää viestin enenen tallentamista, jotta nopeampi?");
+
   //   message = await message.save();
   // console.log(message);
   // global.io.emit("chat message", {
   //   message,
   // });
 
-  io.to(req.body.roomId).emit("new message", {
-    message: message,
-    roomId: req.body.roomId,
-  });
   // console.log(taalla);
   res.status(200).json({ success: true, message }); //send(message);
 });
