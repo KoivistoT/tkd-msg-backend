@@ -19,6 +19,7 @@ router.post("/create_user", async (req, res) => {
       "password",
       "firstName",
       "lastName",
+      "userName",
       "displayName",
       "accountType",
     ])
