@@ -8,7 +8,7 @@ const auth = require("../middleware/auth");
 const { Room } = require("../models/room");
 const { AllMessages, allMessagesSchema } = require("../models/allMessages");
 const router = express.Router();
-const arrayToObject = require("../utils/arrayToObject");
+const addObjectIds = require("../utils/addObjectIds");
 
 // router.get("/:id", auth, async (req, res) => {
 router.get("/:id", async (req, res) => {
@@ -53,11 +53,17 @@ router.get("/:id", async (req, res) => {
       // const AllMessagesTest2 = mongoose.model("AllMessages", allMessagesSchema);
       // katso jotain tuosta
 
+      const messagesObject = {
+        _id: allMessages._id,
+        messages: addObjectIds(allMessages.messages),
+      };
+
       if (room) {
         userRoomsData.push(room);
       }
+
       if (allMessages) {
-        userAllMessages.push(allMessages);
+        userAllMessages.push(messagesObject);
       }
     })
   );
@@ -66,8 +72,8 @@ router.get("/:id", async (req, res) => {
 
   const initialData = {
     user,
-    rooms: arrayToObject(userRoomsData),
-    messages: arrayToObject(userAllMessages),
+    rooms: addObjectIds(userRoomsData),
+    messages: addObjectIds(userAllMessages),
   };
   // console.log(initialData.messages["61e6b87218d455cf6ecdb913"].messages);
   res.send(initialData);

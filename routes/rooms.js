@@ -6,7 +6,7 @@ const auth = require("../middleware/auth");
 const router = express.Router();
 const { message } = require("../models/message");
 const { AllMessagesSchema, AllMessages } = require("../models/allMessages");
-const arrayToObject = require("../utils/arrayToObject");
+const addObjectIds = require("../utils/addObjectIds");
 const { User } = require("../models/user");
 const { ioUpdate } = require("../utils/WebSockets");
 
@@ -96,9 +96,9 @@ router.get("/all", auth, async (req, res) => {
   const room = await Room.find({});
   if (!room) return res.status(404).send("Rooms not found");
 
-  const roomsObject = arrayToObject(room);
+  const roomsArray = addObjectIds(room);
 
-  res.status(200).send(roomsObject);
+  res.status(200).send(roomsArray);
 });
 
 router.get("/:id", async (req, res) => {

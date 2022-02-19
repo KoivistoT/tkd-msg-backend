@@ -4,7 +4,7 @@ const { User, validate, schema } = require("../models/user");
 const bcrypt = require("bcrypt");
 const router = express.Router();
 const _ = require("lodash");
-const arrayToObject = require("../utils/arrayToObject");
+const addObjectIds = require("../utils/addObjectIds");
 
 router.post("/create_user", async (req, res) => {
   const { error } = schema.validate(req.body);
@@ -40,7 +40,7 @@ router.get("/all", async (req, res) => {
   const users = await User.find({});
   if (!users) return res.status(404).send("Users not found");
 
-  const usersObjects = arrayToObject(users);
+  const usersObjects = addObjectIds(users);
   res.send(usersObjects);
 });
 

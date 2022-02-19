@@ -5,7 +5,7 @@ const { Room } = require("../models/room");
 const { Message } = require("../models/message");
 const { AllMessages, validate } = require("../models/allMessages");
 const auth = require("../middleware/auth");
-const arrayToObject = require("../utils/arrayToObject");
+const addObjectIds = require("../utils/addObjectIds");
 
 const router = express.Router();
 
@@ -28,10 +28,14 @@ router.post("/send_message", auth, async (req, res) => {
     messageBody: req.body.messageBody,
     roomId: req.body.roomId,
   });
+
+  const messageWithId = { [message._id]: message };
+
   io.to(req.body.roomId).emit("new message", {
-    message: message,
+    message: messageWithId,
     roomId: req.body.roomId,
   });
+
   // console.log(
   //   "katso: https://www.codegrepper.com/code-examples/javascript/how+to+add+items+into+a+document+array+mongoose"
   // );
@@ -55,7 +59,7 @@ router.post("/send_message", auth, async (req, res) => {
   // });
 
   // console.log(taalla);
-  res.status(200).json({ success: true, message }); //send(message);
+  res.status(200).json({ success: true, message: messageWithId }); //send(message);
 });
 
 router.post("/edit2", async (req, res) => {
