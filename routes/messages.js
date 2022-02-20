@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const express = require("express");
 
 const { Room } = require("../models/room");
-const { Message } = require("../models/message");
+const { Message, messageSchema } = require("../models/message");
 const { AllMessages, validate } = require("../models/allMessages");
 const auth = require("../middleware/auth");
 const addObjectIds = require("../utils/addObjectIds");
@@ -60,6 +60,30 @@ router.post("/send_message", auth, async (req, res) => {
 
   // console.log(taalla);
   res.status(200).json({ success: true, message: messageWithId }); //send(message);
+});
+
+router.get("/test2", auth, async (req, res) => {
+  AllMessages.updateOne(
+    {
+      _id: "62123aa5890a7f6b6d1233e3",
+      "messages._id": "62123abc890a7f6b6d1233f4",
+    },
+    //päivitä teksti
+    // { $set: { "messages.$.messageBody": "lfffffjlkj" } },
+
+    //lisää arrayhin objecti
+    { $addToSet: { "messages.$.readByRecipients": { aa: "kj" } } },
+    //muokkaa objectia arrayssa
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(result);
+      }
+    }
+  );
+
+  res.status(200).send("joo"); //send(message);
 });
 
 router.post("/edit2", async (req, res) => {

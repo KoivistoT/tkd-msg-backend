@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { messageSchema } = require("./message");
 // const { userSchema } = require("./user");
 // const { messageSchema } = require("./message");
 
@@ -6,7 +7,7 @@ const mongoose = require("mongoose");
 //https://stackfame.com/mongodb-chat-schema-mongoose-chat-schema-chat-application
 const allMessagesSchema = new mongoose.Schema({
   // _id: { type: String },
-  messages: { type: Array, default: [] },
+  messages: [messageSchema],
 });
 
 allMessagesSchema.statics.findSomething = function (roomId, callback) {

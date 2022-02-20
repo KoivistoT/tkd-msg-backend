@@ -9,7 +9,7 @@ const MESSAGE_TYPES = {
 
 const readByRecipientSchema = new mongoose.Schema(
   {
-    _id: false,
+    _id: true,
     readByUserId: String,
     readAt: {
       type: Date,
