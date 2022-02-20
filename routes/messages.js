@@ -63,25 +63,24 @@ router.post("/send_message", auth, async (req, res) => {
 });
 
 router.get("/test2", auth, async (req, res) => {
-  AllMessages.updateOne(
-    {
-      _id: "62123aa5890a7f6b6d1233e3",
-      "messages._id": "62123abc890a7f6b6d1233f4",
-    },
-    //päivitä teksti
-    // { $set: { "messages.$.messageBody": "lfffffjlkj" } },
+  // AllMessages.updateOne(
+  //   {
+  //     _id: "62123aa5890a7f6b6d1233e3",
+  //     "messages._id": "62123abc890a7f6b6d1233f4",
+  //   },
+  //   //päivitä teksti
+  //   // { $set: { "messages.$.messageBody": "lfffffjlkj" } },
+  //   //lisää arrayhin objecti
+  //   // { $addToSet: { "messages.$.readByRecipients": { readByUserId: "1234" } } },
 
-    //lisää arrayhin objecti
-    { $addToSet: { "messages.$.readByRecipients": { aa: "kj" } } },
-    //muokkaa objectia arrayssa
-    (err, result) => {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log(result);
-      }
-    }
-  );
+  //   (err, result) => {
+  //     if (err) {
+  //       console.log(err);
+  //     } else {
+  //       console.log(result);
+  //     }
+  //   }
+  // );
 
   res.status(200).send("joo"); //send(message);
 });
