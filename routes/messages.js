@@ -63,6 +63,39 @@ router.post("/send_message", auth, async (req, res) => {
 });
 
 router.get("/test2", auth, async (req, res) => {
+  console.log(
+    "tee tämä sama, mutta vain niin, että saa tuloksen. Opettele tekemään tuloksia niin, että saat vain haetun jutun"
+  );
+  console.log("testaa findAndUpdateOne, tulee ihan eri tulos. Tutki niitä");
+  AllMessages.updateOne(
+    {
+      _id: "62123aa5890a7f6b6d1233e3",
+      messages: {
+        $elemMatch: {
+          _id: "62123abc890a7f6b6d1233f4",
+          "readByRecipients._id": "62124ce1e807749f8165fb91",
+        },
+      },
+    },
+    {
+      $set: {
+        "messages.$[outer].readByRecipients.$[inner].readByUserId": "1",
+      },
+    },
+    {
+      arrayFilters: [
+        { "outer._id": "62123abc890a7f6b6d1233f4" },
+        { "inner._id": "62124ce1e807749f8165fb91" },
+      ],
+    },
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(result);
+      }
+    }
+  );
   // AllMessages.updateOne(
   //   {
   //     _id: "62123aa5890a7f6b6d1233e3",
