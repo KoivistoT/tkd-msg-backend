@@ -9,6 +9,7 @@ const MESSAGE_TYPES = {
 
 const readByRecipientSchema = new mongoose.Schema(
   {
+    //voi olla myös ilman id:tä, eli laita id false, katso vielä miten laitetaan. Vie turhaa tilaa se
     readByUserId: String,
     readAt: {
       type: Date,

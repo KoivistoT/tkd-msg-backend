@@ -63,39 +63,71 @@ router.post("/send_message", auth, async (req, res) => {
 });
 
 router.get("/test2", auth, async (req, res) => {
-  console.log(
-    "tee tämä sama, mutta vain niin, että saa tuloksen. Opettele tekemään tuloksia niin, että saat vain haetun jutun"
-  );
-  console.log("testaa findAndUpdateOne, tulee ihan eri tulos. Tutki niitä");
-  AllMessages.updateOne(
+  console.log("tämä riittää, koska hakee vain yhden viestin");
+  AllMessages.findOne(
+    { _id: "62123aa5890a7f6b6d1233e3" },
     {
-      _id: "62123aa5890a7f6b6d1233e3",
       messages: {
         $elemMatch: {
           _id: "62123abc890a7f6b6d1233f4",
-          "readByRecipients._id": "62124ce1e807749f8165fb91",
+          // "readByRecipients._id": "62124ce1e807749f8165fb91", tämäkin ehto pätee
         },
       },
     },
-    {
-      $set: {
-        "messages.$[outer].readByRecipients.$[inner].readByUserId": "1",
-      },
-    },
-    {
-      arrayFilters: [
-        { "outer._id": "62123abc890a7f6b6d1233f4" },
-        { "inner._id": "62124ce1e807749f8165fb91" },
-      ],
-    },
+    // {
+    //   ["messages.$.readByRecipients"]: {
+    //     $elemMatch: { _id: "62124ce1e807749f8165fb91" },
+    //   },
+    // },
     (err, result) => {
       if (err) {
         console.log(err);
       } else {
         console.log(result);
+        // console.log(result.messages[0].readByRecipients);
       }
     }
   );
+  // .then((result, err) => {
+  //   console.log(result, err);
+  // });
+
+  // console.log(
+  //   "tee tämä sama, mutta vain niin, että saa tuloksen. Opettele tekemään tuloksia niin, että saat vain haetun jutun"
+  // );
+  // console.log("testaa findAndUpdateOne, tulee ihan eri tulos. Tutki niitä");
+  // console.log(
+  //   "onko exec sama kun se että laittaa tuon err result jutun loppuun, koska se vasta teki sen mitä piti"
+  // );
+  // AllMessages.updateOne(
+  //   {
+  //     _id: "62123aa5890a7f6b6d1233e3",
+  //     messages: {
+  //       $elemMatch: {
+  //         _id: "62123abc890a7f6b6d1233f4",
+  //         "readByRecipients._id": "62124ce1e807749f8165fb91",
+  //       },
+  //     },
+  //   },
+  //   {
+  //     $set: {
+  //       "messages.$[outer].readByRecipients.$[inner].readByUserId": "1",
+  //     },
+  //   },
+  //   {
+  //     arrayFilters: [
+  //       { "outer._id": "62123abc890a7f6b6d1233f4" },
+  //       { "inner._id": "62124ce1e807749f8165fb91" },
+  //     ],
+  //   },
+  //   (err, result) => {
+  //     if (err) {
+  //       console.log(err);
+  //     } else {
+  //       console.log(result);
+  //     }
+  //   }
+  // );
   // AllMessages.updateOne(
   //   {
   //     _id: "62123aa5890a7f6b6d1233e3",
