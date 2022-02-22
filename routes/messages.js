@@ -27,6 +27,7 @@ router.post("/send_message", auth, async (req, res) => {
   const message = new Message({
     messageBody: req.body.messageBody,
     roomId: req.body.roomId,
+    postedByUser: req.body.userId,
   });
 
   const messageWithId = { [message._id]: message };
