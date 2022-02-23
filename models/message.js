@@ -5,6 +5,8 @@ const { userSchema } = require("./user");
 
 const MESSAGE_TYPES = {
   TYPE_TEXT: "text",
+  TYPE_IMAGE: "image",
+  TYPE_DOCUMENT: "document",
 };
 
 const readByRecipientSchema = new mongoose.Schema(
@@ -29,6 +31,7 @@ const messageSchema = new mongoose.Schema(
       type: String,
     },
     roomId: { type: String },
+    imageURLs: { type: Array },
     messageStatus: { type: Boolean, default: false },
     is_deleted: { type: Boolean, default: false },
     type: {

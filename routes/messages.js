@@ -28,6 +28,8 @@ router.post("/send_message", auth, async (req, res) => {
     messageBody: req.body.messageBody,
     roomId: req.body.roomId,
     postedByUser: req.body.userId,
+    type: req.body.messageType,
+    imageURLs: req.body.imageURLs || null,
   });
 
   const messageWithId = { [message._id]: message };
