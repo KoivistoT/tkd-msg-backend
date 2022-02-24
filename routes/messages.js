@@ -153,6 +153,43 @@ router.get("/test2", auth, async (req, res) => {
   res.status(200).send("joo"); //send(message);
 });
 
+router.get("/room_images", async (req, res) => {
+  console.log(
+    "https://stackoverflow.com/questions/66136029/how-to-query-returns-all-values-in-the-array-that-match-the-criteria-in-mongoose"
+  );
+  const a = await AllMessages.findById(
+    "6214ebe20f8502580b0e19a1",
+    { messages: { $elemMatch: { type: "image" } } }
+    // (err, result) => {
+    //   if (err) {
+    //     console.log(err);
+    //   } else {
+    //     console.log(result);
+    //   }
+    // }
+  );
+  console.log(a);
+  // AllMessages.find(
+  //   { _id: "6214ebe20f8502580b0e19a1" },
+  //   {
+  //     messages: {
+  //       $elemMatch: {
+  //         type: "text",
+  //       },
+  //     },
+  //   },
+
+  //   (err, result) => {
+  //     if (err) {
+  //       console.log(err);
+  //     } else {
+  //       console.log(result[0]);
+  //     }
+  //   }
+  // );
+  res.send("joo");
+});
+
 router.post("/edit2", async (req, res) => {
   //post_message on parempi nimi
 
