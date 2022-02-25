@@ -154,10 +154,11 @@ router.get("/test2", auth, async (req, res) => {
 });
 
 router.get("/room_images/:id", async (req, res) => {
+  const roomId = req.params.id;
   const roomImageURLs = await AllMessages.aggregate([
     {
       $match: {
-        _id: new mongoose.Types.ObjectId(req.params.id),
+        _id: new mongoose.Types.ObjectId(roomId),
       },
     },
     {
@@ -187,7 +188,7 @@ router.get("/room_images/:id", async (req, res) => {
     (message) => Object.values(message)[0].imageURLs
   );
 
-  res.send(imageURLs);
+  res.send({ imageURLs, roomId });
 });
 
 router.post("/edit2", async (req, res) => {
