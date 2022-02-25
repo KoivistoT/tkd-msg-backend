@@ -18,7 +18,7 @@ router.get("/:id", async (req, res) => {
 
   const userRoomsData = [];
   const userAllMessages = [];
-  const userAllImages = [];
+  const userAllImages = {};
 
   await Promise.all(
     user.userRooms.map(async (roomId) => {
@@ -94,7 +94,7 @@ router.get("/:id", async (req, res) => {
         userAllMessages.push(messagesObject);
       }
       if (allImages) {
-        userAllImages.push({
+        Object.assign(userAllImages, {
           [roomId]: allImages.map(
             (message) => Object.values(message)[0].imageURLs
           ),
