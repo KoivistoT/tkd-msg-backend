@@ -18,14 +18,43 @@ router.get("/:id", async (req, res) => {
 
   const userRoomsData = [];
   const userAllMessages = [];
+  const userAllImages = [];
 
   await Promise.all(
     user.userRooms.map(async (roomId) => {
       // var start = +new Date();
-      const [room, allMessages] = await Promise.all([
+      const [room, allMessages, allImages] = await Promise.all([
         Room.findById(roomId).lean(),
         AllMessages.findById(roomId).lean(),
         // AllMessages.findById(roomId).slice("messages", 2).lean(),
+        AllMessages.aggregate([
+          {
+            $match: {
+              _id: new mongoose.Types.ObjectId(roomId),
+            },
+          },
+          {
+            $set: {
+              messages: {
+                $filter: {
+                  input: "$messages",
+                  as: "m",
+                  cond: { $eq: ["$$m.type", "image"] },
+                },
+              },
+            },
+          },
+          { $unwind: { path: "$messages" } },
+          { $unwind: { path: "$messages.imageURLs" } },
+          {
+            $project: {
+              "messages.imageURLs": 1,
+              _id: 0,
+            },
+          },
+
+          // { $limit: 1 },
+        ]),
       ]);
 
       // var end = +new Date();
@@ -53,17 +82,23 @@ router.get("/:id", async (req, res) => {
       // const AllMessagesTest2 = mongoose.model("AllMessages", allMessagesSchema);
       // katso jotain tuosta
 
-      const messagesObject = {
-        _id: allMessages._id,
-        messages: addObjectIds(allMessages.messages),
-      };
-
       if (room) {
         userRoomsData.push(room);
       }
 
       if (allMessages) {
+        const messagesObject = {
+          _id: allMessages._id,
+          messages: addObjectIds(allMessages.messages),
+        };
         userAllMessages.push(messagesObject);
+      }
+      if (allImages) {
+        userAllImages.push({
+          [roomId]: allImages.map(
+            (message) => Object.values(message)[0].imageURLs
+          ),
+        });
       }
     })
   );
@@ -74,6 +109,7 @@ router.get("/:id", async (req, res) => {
     user,
     rooms: addObjectIds(userRoomsData),
     messages: addObjectIds(userAllMessages),
+    allImages: userAllImages,
   };
   // console.log(initialData.messages["61e6b87218d455cf6ecdb913"].messages);
   res.send(initialData);
