@@ -66,31 +66,63 @@ router.post("/send_message", auth, async (req, res) => {
 });
 
 router.get("/test2", auth, async (req, res) => {
-  console.log("tämä riittää, koska hakee vain yhden viestin");
-  AllMessages.findOne(
-    { _id: "62123aa5890a7f6b6d1233e3" },
+  const a = await AllMessages.aggregate([
     {
-      messages: {
-        $elemMatch: {
-          _id: "62123abc890a7f6b6d1233f4",
-          // "readByRecipients._id": "62124ce1e807749f8165fb91", tämäkin ehto pätee
-        },
+      $match: {
+        _id: new mongoose.Types.ObjectId("6214ebe20f8502580b0e19a1"),
       },
     },
+
     // {
-    //   ["messages.$.readByRecipients"]: {
-    //     $elemMatch: { _id: "62124ce1e807749f8165fb91" },
+    //   $set: {
+    //     messages: {
+    //       $filter: {
+    //         input: "$messages",
+    //         as: "m",
+    //         cond: { $eq: ["$$m.type", "image"] },
+    //       },
+    //     },
     //   },
     // },
-    (err, result) => {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log(result);
-        // console.log(result.messages[0].readByRecipients);
-      }
-    }
-  );
+
+    { $unwind: { path: "$messages" } },
+    // { $unwind: { path: "$messages.imageURLs" } },
+    // {
+    //   $project: {
+    //     "messages.imageURLs": 1,
+    //     _id: 0,
+    //   },
+    // },
+    // { $sort: { "messages.createdAt": 1 } }, // -1 päin vastoin,
+    { $skip: 2 },
+    { $limit: 2 },
+  ]);
+  console.log(a);
+  // console.log("tämä riittää, koska hakee vain yhden viestin");
+  // AllMessages.findOne(
+  //   { _id: "62123aa5890a7f6b6d1233e3" },
+  //   {
+  //     messages: {
+  //       $elemMatch: {
+  //         _id: "62123abc890a7f6b6d1233f4",
+  //         // "readByRecipients._id": "62124ce1e807749f8165fb91", tämäkin ehto pätee
+  //       },
+  //     },
+  //   },
+  //   // {
+  //   //   ["messages.$.readByRecipients"]: {
+  //   //     $elemMatch: { _id: "62124ce1e807749f8165fb91" },
+  //   //   },
+  //   // },
+  //   (err, result) => {
+  //     if (err) {
+  //       console.log(err);
+  //     } else {
+  //       console.log(result);
+  //       // console.log(result.messages[0].readByRecipients);
+  //     }
+  //   }
+  // );
   // .then((result, err) => {
   //   console.log(result, err);
   // });
