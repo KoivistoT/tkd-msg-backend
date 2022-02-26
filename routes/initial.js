@@ -20,6 +20,15 @@ router.get("/:id", async (req, res) => {
   const userAllMessages = [];
   const userAllImages = {};
 
+  //hae tämä erikseen
+  //hae tämä erikseen
+  const allUsers = await User.find(
+    {},
+    "-password -last_seen_messages -userRooms -contacts"
+  ).lean();
+  //hae tämä erikseen
+  //hae tämä erikseen
+
   await Promise.all(
     user.userRooms.map(async (roomId) => {
       // var start = +new Date();
@@ -107,10 +116,12 @@ router.get("/:id", async (req, res) => {
 
   const initialData = {
     user,
+    allUsers: addObjectIds(allUsers),
     rooms: addObjectIds(userRoomsData),
     messages: addObjectIds(userAllMessages),
     allImages: userAllImages,
   };
+  console.log(initialData.allUsers);
   // console.log(initialData.messages["61e6b87218d455cf6ecdb913"].messages);
   res.send(initialData);
 });

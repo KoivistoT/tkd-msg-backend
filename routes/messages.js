@@ -6,6 +6,7 @@ const { Message, messageSchema } = require("../models/message");
 const { AllMessages, validate } = require("../models/allMessages");
 const auth = require("../middleware/auth");
 const addObjectIds = require("../utils/addObjectIds");
+const { User } = require("../models/user");
 
 const router = express.Router();
 
@@ -66,37 +67,42 @@ router.post("/send_message", auth, async (req, res) => {
 });
 
 router.get("/test2", auth, async (req, res) => {
-  const a = await AllMessages.aggregate([
-    {
-      $match: {
-        _id: new mongoose.Types.ObjectId("6214ebe20f8502580b0e19a1"),
-      },
-    },
+  // const a = await User.find(
+  //   {},
+  //   "-password -last_seen_messages -userRooms -contacts"
+  // ).lean();
+  // console.log(a);
+  // const a = await AllMessages.aggregate([
+  //   {
+  //     $match: {
+  //       _id: new mongoose.Types.ObjectId("6214ebe20f8502580b0e19a1"),
+  //     },
+  //   },
 
-    // {
-    //   $set: {
-    //     messages: {
-    //       $filter: {
-    //         input: "$messages",
-    //         as: "m",
-    //         cond: { $eq: ["$$m.type", "image"] },
-    //       },
-    //     },
-    //   },
-    // },
+  //   // {
+  //   //   $set: {
+  //   //     messages: {
+  //   //       $filter: {
+  //   //         input: "$messages",
+  //   //         as: "m",
+  //   //         cond: { $eq: ["$$m.type", "image"] },
+  //   //       },
+  //   //     },
+  //   //   },
+  //   // },
 
-    { $unwind: { path: "$messages" } },
-    // { $unwind: { path: "$messages.imageURLs" } },
-    // {
-    //   $project: {
-    //     "messages.imageURLs": 1,
-    //     _id: 0,
-    //   },
-    // },
-    // { $sort: { "messages.createdAt": 1 } }, // -1 päin vastoin,
-    { $skip: 2 },
-    { $limit: 2 },
-  ]);
+  //   { $unwind: { path: "$messages" } },
+  //   // { $unwind: { path: "$messages.imageURLs" } },
+  //   // {
+  //   //   $project: {
+  //   //     "messages.imageURLs": 1,
+  //   //     _id: 0,
+  //   //   },
+  //   // },
+  //   // { $sort: { "messages.createdAt": 1 } }, // -1 päin vastoin,
+  //   { $skip: 2 },
+  //   { $limit: 2 },
+  // ]);
   console.log(a);
   // console.log("tämä riittää, koska hakee vain yhden viestin");
   // AllMessages.findOne(
