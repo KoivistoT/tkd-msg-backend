@@ -166,13 +166,24 @@ const subscribeOtherUser = (roomId, otherUserId) => {
   });
 };
 
-function ioUpdate(users, action, data) {
-  users.forEach((userId) => {
+function ioUpdateById(targetUsers, action, data) {
+  targetUsers.forEach((userId) => {
     const userSocketId = getUserSocketIdByUserId(userId);
 
     if (!userSocketId) return; // user is not connected
 
     io.to(userSocketId).emit("updates", action, {
+      [data._id]: data,
+    });
+  });
+}
+
+function ioUpdateToAllActiveUsers(action, data) {
+  users.forEach((user) => {
+    console.log(user.socketId, "tässä tämä");
+    if (!user.socketId) return; // user is not connected
+
+    io.to(user.socketId).emit("updates", action, {
       [data._id]: data,
     });
   });
@@ -184,4 +195,5 @@ function getUserSocketIdByUserId(userId) {
 }
 
 module.exports.WebSockets = new WebSockets();
-module.exports.ioUpdate = ioUpdate;
+module.exports.ioUpdateById = ioUpdateById;
+module.exports.ioUpdateToAllActiveUsers = ioUpdateToAllActiveUsers;

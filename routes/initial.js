@@ -121,7 +121,7 @@ router.get("/:id", async (req, res) => {
     messages: addObjectIds(userAllMessages),
     allImages: userAllImages,
   };
-  console.log(initialData.allUsers);
+
   // console.log(initialData.messages["61e6b87218d455cf6ecdb913"].messages);
   res.send(initialData);
 });

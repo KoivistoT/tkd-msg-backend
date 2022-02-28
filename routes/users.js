@@ -5,6 +5,10 @@ const bcrypt = require("bcrypt");
 const router = express.Router();
 const _ = require("lodash");
 const addObjectIds = require("../utils/addObjectIds");
+const {
+  ioUpdateById,
+  ioUpdateToAllActiveUsers,
+} = require("../utils/WebSockets");
 
 router.post("/create_user", async (req, res) => {
   const { error } = schema.validate(req.body);
@@ -29,6 +33,14 @@ router.post("/create_user", async (req, res) => {
   await user.save();
 
   const token = user.generateAuthToken();
+
+  const newUser = await User.findById(
+    user._id,
+    "-password -last_seen_messages -userRooms -contacts"
+  ).lean();
+
+  const action = "newUser";
+  ioUpdateToAllActiveUsers(action, newUser);
 
   res
     .header("x-auth-token", token)
