@@ -242,14 +242,24 @@ router.post("/edit2", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   // console.log(req.params.id);
-  const result = await AllMessages.findById(req.params.id);
+  const roomId = req.params.id;
+  const result = await AllMessages.findById(roomId).lean();
+
   // console.log(
   //   "olisi hyvä laittaa dataan, monta viestiä haluaa jne. eli ei id:llä?"
   // );
   if (!result) return res.status(404).send("Messages not found");
 
-  const messages = { [req.params.id]: result };
-  res.status(200).send(messages);
+  const messagesObject = {
+    [roomId]: {
+      _id: result._id,
+      messages: addObjectIds(result.messages),
+    },
+  };
+
+  // console.log(messagesObject);
+  // const messages = { [roomId]: result };
+  res.status(200).send(messagesObject);
 });
 
 module.exports = router;
