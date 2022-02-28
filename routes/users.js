@@ -37,7 +37,7 @@ router.post("/create_user", async (req, res) => {
 
   const newUser = await User.findById(
     user._id,
-    "-password -last_seen_messages -userRooms -contacts"
+    "-password -last_seen_messages -contacts"
   ).lean();
 
   const action = "newUser";

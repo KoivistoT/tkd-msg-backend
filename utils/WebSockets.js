@@ -167,6 +167,9 @@ const subscribeOtherUser = (roomId, otherUserId) => {
 };
 
 function ioUpdateById(targetUsers, action, data) {
+  //tee niin, että ne, jotka vain pääkäyttäjille, menee vain nille, eli on tunniste, jonka avulla lähettää nille, ja muuttuja, johon voi määrittää, sendOnlyProUsers
+  //tee niin, että ne, jotka vain pääkäyttäjille, menee vain nille, eli on tunniste, jonka avulla lähettää nille, ja muuttuja, johon voi määrittää, sendOnlyProUsers
+  //tee niin, että ne, jotka vain pääkäyttäjille, menee vain nille, eli on tunniste, jonka avulla lähettää nille, ja muuttuja, johon voi määrittää, sendOnlyProUsers
   targetUsers.forEach((userId) => {
     const userSocketId = getUserSocketIdByUserId(userId);
 
@@ -179,6 +182,9 @@ function ioUpdateById(targetUsers, action, data) {
 }
 
 function ioUpdateToAllActiveUsers(action, data) {
+  //tee niin, että ne, jotka vain pääkäyttäjille, menee vain nille, eli on tunniste, jonka avulla lähettää nille, ja muuttuja, johon voi määrittää, sendOnlyProUsers
+  //tee niin, että ne, jotka vain pääkäyttäjille, menee vain nille, eli on tunniste, jonka avulla lähettää nille, ja muuttuja, johon voi määrittää, sendOnlyProUsers
+  //tee niin, että ne, jotka vain pääkäyttäjille, menee vain nille, eli on tunniste, jonka avulla lähettää nille, ja muuttuja, johon voi määrittää, sendOnlyProUsers
   users.forEach((user) => {
     console.log(user.socketId, "tässä tämä");
     if (!user.socketId) return; // user is not connected

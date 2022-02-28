@@ -8,6 +8,7 @@ const { message } = require("../models/message");
 const { AllMessagesSchema, AllMessages } = require("../models/allMessages");
 const addObjectIds = require("../utils/addObjectIds");
 const { User } = require("../models/user");
+const { ioUpdateToAllActiveUsers } = require("../utils/WebSockets");
 
 router.post("/create_room", auth, async (req, res) => {
   const { error } = schema.validate(req.body);
@@ -77,8 +78,8 @@ router.post("/change_membership", auth, async (req, res) => {
       }
     );
 
-    const targetUsers = [req.body.userId];
-    const action = req.body.membership ? "roomAdded" : "roomRemoved";
+    const action = "membersChanged";
+    ioUpdateToAllActiveUsers(action, updatedRoomData);
 
     res.status(200).send(updatedRoomData);
   } catch (error) {
