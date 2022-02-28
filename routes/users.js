@@ -66,20 +66,27 @@ router.get("/delete_user/:id", async (req, res) => {
 
   const targetRooms = await Room.find({ members: { $all: [userId] } });
 
-  targetRooms.forEach((room) => {
-    Room.findByIdAndUpdate(
-      { _id: room._id },
-      {
-        $pull: {
-          members: userId,
-        },
-      },
-      { new: true }
-    ).exec();
-  });
+  var changeMembers = new Promise((resolve) => {
+    let i = 0;
 
-  const action = "userDeleted";
-  ioUpdateToAllActiveUsers(action, { _id: userId });
+    targetRooms.forEach(async (room) => {
+      const updatedRoomData = await Room.findByIdAndUpdate(
+        { _id: room._id },
+        {
+          $pull: {
+            members: userId,
+          },
+        },
+        { new: true }
+      ).exec();
+      ioUpdateToAllActiveUsers("membersChanged", updatedRoomData);
+      i++;
+      if (targetRooms.length === i) resolve();
+    });
+  });
+  Promise.all([changeMembers]);
+
+  ioUpdateToAllActiveUsers("userDeleted", { _id: userId });
 
   res.send(userId);
 });
