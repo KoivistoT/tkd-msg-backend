@@ -91,10 +91,11 @@ class WebSockets {
     //   });
     // });
 
-    client.on("identity", (userId) => {
+    client.on("identity", (userId, accountType) => {
       users.push({
         socketId: client.id,
         userId: userId,
+        accountType,
       });
       // console.log(users);
     });
@@ -181,16 +182,31 @@ function ioUpdateById(targetUsers, action, data) {
   });
 }
 
-function ioUpdateToAllActiveUsers(action, data) {
+function ioUpdateToAllActiveUsers(
+  action,
+  data,
+  onlyForAdmins = false,
+  byPass = false
+) {
   //tee niin, että ne, jotka vain pääkäyttäjille, menee vain nille, eli on tunniste, jonka avulla lähettää nille, ja muuttuja, johon voi määrittää, sendOnlyProUsers
   //tee niin, että ne, jotka vain pääkäyttäjille, menee vain nille, eli on tunniste, jonka avulla lähettää nille, ja muuttuja, johon voi määrittää, sendOnlyProUsers
   //tee niin, että ne, jotka vain pääkäyttäjille, menee vain nille, eli on tunniste, jonka avulla lähettää nille, ja muuttuja, johon voi määrittää, sendOnlyProUsers
-  console.log(users, "tässä idt");
+  // console.log(users, "tässä idt");
   users.forEach((user) => {
-    console.log(user.socketId, "tässä yksi id");
+    // console.log(user.socketId, "tässä yksi id");
     if (!user.socketId) return; // user is not connected
+    if (user.userId === byPass) return;
+    if (onlyForAdmins === true && user.accountType !== "admin") return;
 
     io.to(user.socketId).emit("updates", action, {
+      [data._id]: data,
+    });
+  });
+}
+
+function ioUpdateToByRoomId(rooms, action, data) {
+  rooms.forEach((roomId) => {
+    io.to(roomId).emit("updates", action, {
       [data._id]: data,
     });
   });
@@ -204,3 +220,4 @@ function getUserSocketIdByUserId(userId) {
 module.exports.WebSockets = new WebSockets();
 module.exports.ioUpdateById = ioUpdateById;
 module.exports.ioUpdateToAllActiveUsers = ioUpdateToAllActiveUsers;
+module.exports.ioUpdateToByRoomId = ioUpdateToByRoomId;

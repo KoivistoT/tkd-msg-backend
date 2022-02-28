@@ -8,6 +8,7 @@ const addObjectIds = require("../utils/addObjectIds");
 const {
   ioUpdateById,
   ioUpdateToAllActiveUsers,
+  ioUpdateToByRoomId,
 } = require("../utils/WebSockets");
 const { roomSchema, Room } = require("../models/room");
 
@@ -79,7 +80,12 @@ router.get("/delete_user/:id", async (req, res) => {
         },
         { new: true }
       ).exec();
-      ioUpdateToAllActiveUsers("membersChanged", updatedRoomData);
+      // tämä control muutokseen. Menee vain admineille
+      ioUpdateToAllActiveUsers("controlMembersChanged", updatedRoomData, true);
+      // tämä yleiseen huoneiden muutokseen. Menee niille,
+      //joillle kuuluu, eli on kyseinen huone
+      ioUpdateToByRoomId([room._id], "membersChanged", updatedRoomData);
+
       i++;
       if (targetRooms.length === i) resolve();
     });

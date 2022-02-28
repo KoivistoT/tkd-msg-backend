@@ -8,7 +8,11 @@ const { message } = require("../models/message");
 const { AllMessagesSchema, AllMessages } = require("../models/allMessages");
 const addObjectIds = require("../utils/addObjectIds");
 const { User } = require("../models/user");
-const { ioUpdateToAllActiveUsers } = require("../utils/WebSockets");
+const {
+  ioUpdateToAllActiveUsers,
+  ioUpdateToByRoomId,
+  ioUpdateById,
+} = require("../utils/WebSockets");
 
 router.post("/create_room", auth, async (req, res) => {
   const { error } = schema.validate(req.body);
@@ -77,12 +81,25 @@ router.post("/change_membership", auth, async (req, res) => {
         if (err) console.log(err);
       }
     );
+    const targetUsers = [req.body.userId];
+    const action = req.body.membership ? "roomAdded" : "roomRemoved";
 
-    const action = "membersChanged";
-    ioUpdateToAllActiveUsers(action, updatedRoomData);
+    //muutaa kyseisen käyttäjän huoneet, jotka näkyy
+    ioUpdateById(targetUsers, action, updatedRoomData);
+    //muuttaa kaikkien pääkäyttäjien controllin
+    ioUpdateToAllActiveUsers("controlMembersChanged", updatedRoomData, true);
+    //muuttaa kaikkien membersit, joilla on ks huone, paitsi target userin, joka on tuossa ekana
+    ioUpdateToAllActiveUsers(
+      "membersChanged",
+      updatedRoomData,
+      false,
+      req.body.userId
+    );
+    // ioUpdateToByRoomId([req.body.roomId], "membersChanged", updatedRoomData);
 
     res.status(200).send(updatedRoomData);
   } catch (error) {
+    console.log(error);
     res.status(400).send("something faild");
   }
 });
