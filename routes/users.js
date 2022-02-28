@@ -9,6 +9,7 @@ const {
   ioUpdateById,
   ioUpdateToAllActiveUsers,
 } = require("../utils/WebSockets");
+const { roomSchema, Room } = require("../models/room");
 
 router.post("/create_user", async (req, res) => {
   const { error } = schema.validate(req.body);
@@ -54,6 +55,33 @@ router.get("/all", async (req, res) => {
 
   const usersObjects = addObjectIds(users);
   res.send(usersObjects);
+});
+
+router.get("/delete_user/:id", async (req, res) => {
+  const userId = req.params.id;
+
+  const result = await User.deleteOne({ _id: userId });
+
+  if (result.deletedCount !== 1) return res.status(404).send("User not found");
+
+  const targetRooms = await Room.find({ members: { $all: [userId] } });
+
+  targetRooms.forEach((room) => {
+    Room.findByIdAndUpdate(
+      { _id: room._id },
+      {
+        $pull: {
+          members: userId,
+        },
+      },
+      { new: true }
+    ).exec();
+  });
+
+  const action = "userDeleted";
+  ioUpdateToAllActiveUsers(action, { _id: userId });
+
+  res.send(userId);
 });
 
 router.get("/:id", async (req, res) => {
