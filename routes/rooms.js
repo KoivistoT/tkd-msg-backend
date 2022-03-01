@@ -184,6 +184,72 @@ router.get("/delete_room/:id", async (req, res) => {
   res.status(200).send(roomId);
 });
 
+router.get("/archive_room/:id", async (req, res) => {
+  const roomId = req.params.id;
+  console.log("täällä arkistoi nyt");
+
+  const roomData = await Room.findOneAndUpdate(
+    { _id: roomId },
+    { status: "archived" },
+    { new: true }
+  );
+
+  roomData.members.forEach((userId) => {
+    User.findByIdAndUpdate(
+      { _id: userId },
+      {
+        $pull: {
+          userRooms: roomId,
+        },
+      }
+    ).exec();
+  });
+
+  const roomIdObject = { _id: roomId };
+
+  if (roomData.type === "group") {
+    ioUpdateToAllActiveUsers("controRoomArchived", roomIdObject, true);
+    ioUpdateToByRoomId([roomId], "roomRemoved", roomIdObject);
+  } else {
+    ioUpdateToByRoomId([roomId], "roomArchived", roomIdObject);
+  }
+
+  res.status(200).send(roomId);
+});
+
+router.get("/activate_room/:id", async (req, res) => {
+  const roomId = req.params.id;
+  console.log("täällä activoi nyt");
+
+  const roomData = await Room.findOneAndUpdate(
+    { _id: roomId },
+    { status: "active" },
+    { new: true }
+  );
+
+  roomData.members.forEach((userId) => {
+    User.findByIdAndUpdate(
+      { _id: userId },
+      {
+        $addToSet: {
+          userRooms: roomId,
+        },
+      }
+    ).exec();
+  });
+
+  const roomIdObject = { _id: roomId };
+
+  if (roomData.type === "group") {
+    ioUpdateToAllActiveUsers("controRoomActivated", roomIdObject, true);
+    ioUpdateToByRoomId([roomId], "roomAdded", roomData);
+  } else {
+    ioUpdateToByRoomId([roomId], "roomActivated", roomIdObject);
+  }
+
+  res.status(200).send(roomId);
+});
+
 router.get("/:id", async (req, res) => {
   const result = await Room.find({ _id: req.params.id }); //.select("-messages");
   if (!result) return res.status(404).send("Room not found");

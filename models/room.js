@@ -13,6 +13,7 @@ const roomSchema = new mongoose.Schema(
       unique: true,
     },
     type: { type: String, required: true }, //private or group or...
+    status: { type: String, default: "active" },
     topic: { type: String },
     // members: [userSchema],
     members: { type: Array, default: [] },
@@ -33,6 +34,7 @@ const schema = Joi.object({
   userId: Joi.string(),
   otherUserId: Joi.string(),
   members: Joi.array(),
+  status: Joi.string(),
 });
 
 exports.roomSchema = roomSchema;
