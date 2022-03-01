@@ -29,7 +29,10 @@ const Room = mongoose.model("Room", roomSchema);
 
 const schema = Joi.object({
   type: Joi.string().min(1).max(50).required(),
-  roomName: Joi.string().min(1).max(50).required(),
+  roomName: Joi.string().min(1).max(100).required(),
+  userId: Joi.string(),
+  otherUserId: Joi.string(),
+  members: Joi.array(),
 });
 
 exports.roomSchema = roomSchema;

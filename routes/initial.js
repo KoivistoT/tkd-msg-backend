@@ -36,20 +36,7 @@ router.get("/:id", async (req, res) => {
         contacts: 0,
       },
     },
-
-    // {
-    //   $set: {
-    //     archived: {
-    //       $filter: {
-    //         input: "$archived",
-    //         as: "a",
-    //         cond: { $eq: ["$$a", false] },
-    //       },
-    //     },
-    //   },
-    // },
   ]);
-  // console.log(allUsers);
 
   //hae tämä erikseen
   //hae tämä erikseen

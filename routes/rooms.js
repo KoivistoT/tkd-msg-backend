@@ -13,39 +13,73 @@ const {
   ioUpdateToByRoomId,
   ioUpdateById,
 } = require("../utils/WebSockets");
+const sortArray = require("../utils/sortArray");
 
 router.post("/create_room", auth, async (req, res) => {
   const { error } = schema.validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
-  let roomCheck = await Room.findOne({ roomName: req.body.roomName });
-  if (roomCheck)
-    return res
-      .status(400)
-      .send("Room with the same name is already registered.");
+  let room;
 
-  let room = await Room.create({
-    roomName: req.body.roomName,
-    type: req.body.type,
-    // AllMessagesId: req.body.AllMessagesId,
-  });
-  console.log(
-    "ei voi lisätä toista, koska lisää userSchema null, pitää aina kun luo huoneen olla ainakin se ketä lisää sen niin käyttäjissä, usereissa"
-  );
-  room = await room.save();
+  if (req.body.type === "group") {
+    let roomCheck = await Room.findOne({ roomName: req.body.roomName });
+    if (roomCheck)
+      return res
+        .status(400)
+        .send("Room with the same name is already registered.");
 
-  // let firstMessage = new message({
-  //   messageBody: "first message",
-  //   roomId: room._id,
-  // });
+    room = await Room.create({
+      roomName: req.body.roomName,
+      type: req.body.type,
+    });
+    room = await room.save();
 
-  let messages = await AllMessages.create({ _id: room._id });
-  // AllMessages.updateOne(
-  //   { _id: req.body.roomId },
-  //   { $addToSet: { messages: firstMessage } },
-  //   function (err, result) {}
-  // );
-  messages = await messages.save();
+    let messages = await AllMessages.create({ _id: room._id });
+    messages = await messages.save();
+  } else {
+    const sortedIdArray = await sortArray([
+      req.body.userId,
+      req.body.otherUserId,
+    ]);
+
+    let roomCheck = await Room.findOne({
+      roomName: sortedIdArray[0] + sortedIdArray[1],
+    });
+    if (roomCheck)
+      return res
+        .status(400)
+        .send("Room with the same name is already registered.");
+
+    const members =
+      req.body.userId === req.body.otherUserId
+        ? [req.body.userId]
+        : [req.body.userId, req.body.otherUserId];
+    room = await Room.create({
+      roomName: sortedIdArray[0] + sortedIdArray[1],
+      type: req.body.type,
+      members: members,
+    });
+    room = await room.save();
+
+    members.forEach((userId) => {
+      User.updateOne(
+        { _id: userId },
+        {
+          $addToSet: {
+            userRooms: room._id.toString(),
+          },
+        },
+        async function (err, result) {
+          if (err) console.log(err);
+        }
+      );
+    });
+
+    let messages = await AllMessages.create({ _id: room._id });
+    messages = await messages.save();
+
+    ioUpdateById([req.body.userId, req.body.otherUserId], "roomAdded", room);
+  }
 
   res.status(200).send(room);
 });
