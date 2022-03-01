@@ -82,6 +82,48 @@ router.post("/create_room", auth, async (req, res) => {
   res.status(200).send(room);
 });
 
+router.post("/create_direct_room", auth, async (req, res) => {
+  const { error } = schema.validate(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  const roomType = "direct";
+  const roomCreator = req.body.userId;
+  const otherUsers = req.body.otherUsers;
+  const roomName = roomCreator + "-" + Date.now();
+
+  let roomUsers;
+  if (otherUsers.includes(roomCreator)) {
+    roomUsers = otherUsers;
+  } else {
+    roomUsers = [...otherUsers, roomCreator];
+  }
+
+  const room = await Room.create({
+    roomName,
+    type: roomType,
+    roomCreator,
+    members: roomUsers,
+  });
+  // room = await room.save();
+
+  await AllMessages.create({ _id: room._id });
+  // messages = await messages.save();
+
+  roomUsers.forEach((userId) => {
+    User.updateOne(
+      { _id: userId },
+      { $addToSet: { userRooms: room._id.toString() } },
+      async function (err, result) {
+        if (err) console.log(err);
+      }
+    );
+  });
+
+  ioUpdateById(roomUsers, "roomAdded", room);
+
+  res.status(200).send(room);
+});
+
 router.post("/change_membership", auth, async (req, res) => {
   // tähän validointi
 

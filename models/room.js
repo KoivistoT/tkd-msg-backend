@@ -12,6 +12,7 @@ const roomSchema = new mongoose.Schema(
       trim: true,
       unique: true,
     },
+    roomCreator: { type: String },
     type: { type: String, required: true }, //private or group or...
     status: { type: String, default: "active" },
     topic: { type: String },
@@ -29,12 +30,14 @@ const roomSchema = new mongoose.Schema(
 const Room = mongoose.model("Room", roomSchema);
 
 const schema = Joi.object({
-  type: Joi.string().min(1).max(50).required(),
+  type: Joi.string(),
   roomName: Joi.string().min(1).max(100).required(),
   userId: Joi.string(),
   otherUserId: Joi.string(),
   members: Joi.array(),
   status: Joi.string(),
+  roomCreator: Joi.string(),
+  otherUsers: Joi.array(),
 });
 
 exports.roomSchema = roomSchema;
