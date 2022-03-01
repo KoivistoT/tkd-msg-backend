@@ -62,13 +62,11 @@ router.get("/all", async (req, res) => {
 
 router.get("/delete_user/:id", async (req, res) => {
   const userId = req.params.id;
-
   const userData = await User.find({ _id: userId });
 
   if (userData.length === 0) return res.status(404).send("User not found");
 
   await User.deleteOne({ _id: userId });
-
   const targetRooms = await Room.find({ members: { $all: [userId] } });
 
   var changeMembers = new Promise((resolve) => {
