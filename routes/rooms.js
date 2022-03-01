@@ -150,9 +150,40 @@ router.get("/all", auth, async (req, res) => {
   res.status(200).send(roomsArray);
 });
 
+router.get("/delete_room/:id", async (req, res) => {
+  const roomId = req.params.id;
+
+  const roomData = await Room.find({ _id: roomId }).select("members");
+
+  if (roomData.length === 0) return res.status(404).send("Room not found");
+  const members = roomData[0].members;
+
+  Room.deleteOne({ _id: roomId }).exec();
+  AllMessages.deleteOne({ _id: roomId }).exec();
+
+  members.forEach((userId) => {
+    User.findByIdAndUpdate(
+      { _id: userId },
+      {
+        $pull: {
+          userRooms: roomId,
+        },
+      }
+    ).exec();
+  });
+
+  const roomIdObject = { _id: roomId };
+  ioUpdateToAllActiveUsers("controRoomRemoved", roomIdObject, true);
+  ioUpdateToByRoomId([roomId], "roomRemoved", roomIdObject);
+
+  //ilmoita pääkäyttäjille ja niille, jotka oli membereitä
+  //pääkäyttäjille ei ilmoiteta privatteja
+  res.status(200).send(roomId);
+});
+
 router.get("/:id", async (req, res) => {
   const result = await Room.find({ _id: req.params.id }); //.select("-messages");
-  if (!result) return res.status(404).send("Messages not found");
+  if (!result) return res.status(404).send("Room not found");
 
   // res.send(_.pick(result[0], ["_id"]));
   res.status(200).send(result[0]);
