@@ -28,6 +28,15 @@ router.get("/:id", async (req, res) => {
         archived: false,
       },
     },
+    {
+      $project: {
+        password: 0,
+        last_seen_messages: 0,
+        userRooms: 0,
+        contacts: 0,
+      },
+    },
+
     // {
     //   $set: {
     //     archived: {
@@ -40,14 +49,8 @@ router.get("/:id", async (req, res) => {
     //   },
     // },
   ]);
-  console.log(allUsers);
-  //   {
-  //     $match: {
-  //       archived: false,
-  //     },
-  //   },
-  //   "-password -last_seen_messages -userRooms -contacts"
-  // ).lean();
+  // console.log(allUsers);
+
   //hae tämä erikseen
   //hae tämä erikseen
 
