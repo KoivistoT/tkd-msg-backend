@@ -35,8 +35,8 @@ const userSchema = new mongoose.Schema(
     },
     pushNotificationToken: { type: String },
     accountType: { type: String },
-    is_active: { type: Boolean, dafault: false },
-    archived: { type: Boolean, dafault: false },
+    is_active: { type: Boolean, default: false },
+    status: { type: String, default: "active" },
   },
   {
     timestamps: true,
@@ -68,7 +68,7 @@ const schema = Joi.object({
   email: Joi.string().min(5).max(255).required().email(),
   password: Joi.string().min(5).max(255).required(),
   userName: Joi.string().min(1).max(50).required(),
-  archived: Joi.boolean(),
+  status: Joi.string(),
 });
 
 //   return userSchema.validate(user, schema);

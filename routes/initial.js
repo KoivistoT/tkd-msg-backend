@@ -25,7 +25,7 @@ router.get("/:id", async (req, res) => {
   const allUsers = await User.aggregate([
     {
       $match: {
-        archived: false,
+        status: "active",
       },
     },
     {

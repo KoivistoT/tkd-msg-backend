@@ -28,7 +28,7 @@ router.post("/create_user", async (req, res) => {
       "userName",
       "displayName",
       "accountType",
-      "archived",
+      "status",
     ])
   );
   const salt = await bcrypt.genSalt(10);
@@ -106,7 +106,7 @@ router.get("/archive_user/:id", async (req, res) => {
 
   await User.findOneAndUpdate(
     { _id: userId },
-    { archived: true },
+    { status: "archived" },
     { new: true }
   );
 
@@ -147,7 +147,7 @@ router.get("/activate_user/:id", async (req, res) => {
 
   const userData = await User.findOneAndUpdate(
     { _id: userId },
-    { archived: false },
+    { status: "active" },
     { new: true }
   );
 
