@@ -92,12 +92,15 @@ class WebSockets {
     // });
 
     client.on("identity", (userId, accountType) => {
+      const index = users.findIndex((user) => user.userId === userId);
+      if (index !== -1) return;
+
       users.push({
         socketId: client.id,
         userId: userId,
         accountType,
       });
-      // console.log(users);
+      // console.log(users, "tässä käyttäjät");
     });
     // subscribe person to chat & other user as well
     // client.on("login", ({ name, roomId }, callback) => {
@@ -135,7 +138,7 @@ class WebSockets {
 
       // const sockets = await client.in(roomId).fetchSockets();
 
-      console.log(roomId, "huone id, join");
+      // console.log(roomId, "huone id, join");
     });
 
     // mute a chat room
