@@ -64,11 +64,7 @@ router.post("/create_room", auth, async (req, res) => {
     members.forEach((userId) => {
       User.updateOne(
         { _id: userId },
-        {
-          $addToSet: {
-            userRooms: room._id.toString(),
-          },
-        },
+        { $addToSet: { userRooms: room._id.toString() } },
         async function (err, result) {
           if (err) console.log(err);
         }
@@ -95,22 +91,14 @@ router.post("/change_membership", auth, async (req, res) => {
   try {
     const updatedRoomData = await Room.findByIdAndUpdate(
       { _id: req.body.roomId },
-      {
-        [dbAction]: {
-          members: req.body.userId,
-        },
-      },
+      { [dbAction]: { members: req.body.userId } },
       { new: true }
     );
 
     //tämä voisi olla jossain muualla functioissa., kuten muutkin, jottaon puhtaat nämä jutut täällä
     User.updateOne(
       { _id: req.body.userId },
-      {
-        [dbAction]: {
-          userRooms: req.body.roomId,
-        },
-      },
+      { [dbAction]: { userRooms: req.body.roomId } },
       async function (err, result) {
         if (err) console.log(err);
       }
@@ -165,11 +153,7 @@ router.get("/delete_room/:id", async (req, res) => {
   members.forEach((userId) => {
     User.findByIdAndUpdate(
       { _id: userId },
-      {
-        $pull: {
-          userRooms: roomId,
-        },
-      }
+      { $pull: { userRooms: roomId } }
     ).exec();
   });
 
@@ -197,11 +181,7 @@ router.get("/archive_room/:id", async (req, res) => {
   roomData.members.forEach((userId) => {
     User.findByIdAndUpdate(
       { _id: userId },
-      {
-        $pull: {
-          userRooms: roomId,
-        },
-      }
+      { $pull: { userRooms: roomId } }
     ).exec();
   });
 
@@ -230,11 +210,7 @@ router.get("/activate_room/:id", async (req, res) => {
   roomData.members.forEach((userId) => {
     User.findByIdAndUpdate(
       { _id: userId },
-      {
-        $addToSet: {
-          userRooms: roomId,
-        },
-      }
+      { $addToSet: { userRooms: roomId } }
     ).exec();
   });
 

@@ -77,11 +77,7 @@ router.get("/delete_user/:id", async (req, res) => {
     targetRooms.forEach(async (room) => {
       const updatedRoomData = await Room.findByIdAndUpdate(
         { _id: room._id },
-        {
-          $pull: {
-            members: userId,
-          },
-        },
+        { $pull: { members: userId } },
         { new: true }
       ).exec();
       // tämä control muutokseen. Menee vain admineille
@@ -118,11 +114,7 @@ router.get("/archive_user/:id", async (req, res) => {
     targetRooms.forEach(async (room) => {
       const updatedRoomData = await Room.findByIdAndUpdate(
         { _id: room._id },
-        {
-          $pull: {
-            members: userId,
-          },
-        },
+        { $pull: { members: userId } },
         { new: true }
       ).exec();
       // tämä control muutokseen. Menee vain admineille
@@ -157,11 +149,7 @@ router.get("/activate_user/:id", async (req, res) => {
     userData.userRooms.forEach(async (room) => {
       const updatedRoomData = await Room.findByIdAndUpdate(
         { _id: room },
-        {
-          $addToSet: {
-            members: userId,
-          },
-        },
+        { $addToSet: { members: userId } },
         { new: true }
       ).exec();
       // tämä control muutokseen. Menee vain admineille

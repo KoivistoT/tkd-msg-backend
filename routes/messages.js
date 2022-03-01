@@ -194,11 +194,7 @@ router.get("/test2", auth, async (req, res) => {
 router.get("/room_images/:id", async (req, res) => {
   const roomId = req.params.id;
   const roomImageURLs = await AllMessages.aggregate([
-    {
-      $match: {
-        _id: new mongoose.Types.ObjectId(roomId),
-      },
-    },
+    { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
     {
       $set: {
         messages: {
@@ -212,12 +208,7 @@ router.get("/room_images/:id", async (req, res) => {
     },
     { $unwind: { path: "$messages" } },
     { $unwind: { path: "$messages.imageURLs" } },
-    {
-      $project: {
-        "messages.imageURLs": 1,
-        _id: 0,
-      },
-    },
+    { $project: { "messages.imageURLs": 1, _id: 0 } },
 
     // { $limit: 1 },
   ]);
@@ -251,10 +242,7 @@ router.get("/:id", async (req, res) => {
   if (!result) return res.status(404).send("Messages not found");
 
   const messagesObject = {
-    [roomId]: {
-      _id: result._id,
-      messages: addObjectIds(result.messages),
-    },
+    [roomId]: { _id: result._id, messages: addObjectIds(result.messages) },
   };
 
   // console.log(messagesObject);

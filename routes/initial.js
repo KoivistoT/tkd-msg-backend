@@ -23,11 +23,7 @@ router.get("/:id", async (req, res) => {
   //hae tämä erikseen
   //hae tämä erikseen
   const allUsers = await User.aggregate([
-    {
-      $match: {
-        status: "active",
-      },
-    },
+    { $match: { status: "active" } },
     {
       $project: {
         password: 0,
@@ -49,11 +45,7 @@ router.get("/:id", async (req, res) => {
         AllMessages.findById(roomId).lean(),
         // AllMessages.findById(roomId).slice("messages", 2).lean(),
         AllMessages.aggregate([
-          {
-            $match: {
-              _id: new mongoose.Types.ObjectId(roomId),
-            },
-          },
+          { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
           {
             $set: {
               messages: {
@@ -68,10 +60,7 @@ router.get("/:id", async (req, res) => {
           { $unwind: { path: "$messages" } },
           { $unwind: { path: "$messages.imageURLs" } },
           {
-            $project: {
-              "messages.imageURLs": 1,
-              _id: 0,
-            },
+            $project: { "messages.imageURLs": 1, _id: 0 },
           },
 
           // { $limit: 1 },
