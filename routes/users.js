@@ -28,10 +28,12 @@ router.post("/create_user", async (req, res) => {
       "userName",
       "displayName",
       "accountType",
+      "archived",
     ])
   );
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(user.password, salt);
+
   await user.save();
 
   const token = user.generateAuthToken();
@@ -93,6 +95,91 @@ router.get("/delete_user/:id", async (req, res) => {
   Promise.all([changeMembers]);
 
   ioUpdateToAllActiveUsers("userDeleted", { _id: userId });
+
+  res.send(userId);
+});
+
+router.get("/archive_user/:id", async (req, res) => {
+  const userId = req.params.id;
+
+  await User.findOneAndUpdate(
+    { _id: userId },
+    { archived: true },
+    { new: true }
+  );
+
+  const targetRooms = await Room.find({ members: { $all: [userId] } });
+
+  var changeMembers = new Promise((resolve) => {
+    let i = 0;
+
+    targetRooms.forEach(async (room) => {
+      const updatedRoomData = await Room.findByIdAndUpdate(
+        { _id: room._id },
+        {
+          $pull: {
+            members: userId,
+          },
+        },
+        { new: true }
+      ).exec();
+      // tämä control muutokseen. Menee vain admineille
+      ioUpdateToAllActiveUsers("controlMembersChanged", updatedRoomData, true);
+      // tämä yleiseen huoneiden muutokseen. Menee niille,
+      //joillle kuuluu, eli on kyseinen huone
+      ioUpdateToByRoomId([room._id], "membersChanged", updatedRoomData);
+
+      i++;
+      if (targetRooms.length === i) resolve();
+    });
+  });
+  Promise.all([changeMembers]);
+
+  ioUpdateToAllActiveUsers("userArchived", { _id: userId });
+
+  res.send(userId);
+});
+
+router.get("/activate_user/:id", async (req, res) => {
+  const userId = req.params.id;
+
+  const userData = await User.findOneAndUpdate(
+    { _id: userId },
+    { archived: false },
+    { new: true }
+  );
+
+  var changeMembers = new Promise((resolve) => {
+    let i = 0;
+
+    userData.userRooms.forEach(async (room) => {
+      const updatedRoomData = await Room.findByIdAndUpdate(
+        { _id: room },
+        {
+          $addToSet: {
+            members: userId,
+          },
+        },
+        { new: true }
+      ).exec();
+      // tämä control muutokseen. Menee vain admineille
+      ioUpdateToAllActiveUsers("controlMembersChanged", updatedRoomData, true);
+      // tämä yleiseen huoneiden muutokseen. Menee niille,
+      //joillle kuuluu, eli on kyseinen huone
+      ioUpdateToByRoomId([room._id], "membersChanged", updatedRoomData);
+
+      i++;
+      if (userData.userRooms.length === i) resolve();
+    });
+  });
+  Promise.all([changeMembers]);
+
+  const activatedUser = await User.findById(
+    userId,
+    "-password -last_seen_messages -contacts"
+  ).lean();
+
+  ioUpdateToAllActiveUsers("userActivated", activatedUser);
 
   res.send(userId);
 });

@@ -22,10 +22,32 @@ router.get("/:id", async (req, res) => {
 
   //hae tämä erikseen
   //hae tämä erikseen
-  const allUsers = await User.find(
-    {},
-    "-password -last_seen_messages -userRooms -contacts"
-  ).lean();
+  const allUsers = await User.aggregate([
+    {
+      $match: {
+        archived: false,
+      },
+    },
+    // {
+    //   $set: {
+    //     archived: {
+    //       $filter: {
+    //         input: "$archived",
+    //         as: "a",
+    //         cond: { $eq: ["$$a", false] },
+    //       },
+    //     },
+    //   },
+    // },
+  ]);
+  console.log(allUsers);
+  //   {
+  //     $match: {
+  //       archived: false,
+  //     },
+  //   },
+  //   "-password -last_seen_messages -userRooms -contacts"
+  // ).lean();
   //hae tämä erikseen
   //hae tämä erikseen
 
