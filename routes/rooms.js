@@ -19,28 +19,29 @@ router.post("/create_room", auth, async (req, res) => {
   const { error } = schema.validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
+  const roomName = req.body.roomName;
+  const roomType = req.body.type;
   let room;
 
-  if (req.body.type === "group") {
-    let roomCheck = await Room.findOne({ roomName: req.body.roomName });
+  if (roomType === "group") {
+    let roomCheck = await Room.findOne({ roomName });
     if (roomCheck)
       return res
         .status(400)
         .send("Room with the same name is already registered.");
 
     room = await Room.create({
-      roomName: req.body.roomName,
-      type: req.body.type,
+      roomName,
+      type: roomType,
     });
     room = await room.save();
 
     let messages = await AllMessages.create({ _id: room._id });
     messages = await messages.save();
   } else {
-    const sortedIdArray = await sortArray([
-      req.body.userId,
-      req.body.otherUserId,
-    ]);
+    const userId = req.body.userId;
+    const otherUserID = req.body.otherUserId;
+    const sortedIdArray = await sortArray([userId, otherUserID]);
 
     let roomCheck = await Room.findOne({
       roomName: sortedIdArray[0] + sortedIdArray[1],
@@ -50,13 +51,10 @@ router.post("/create_room", auth, async (req, res) => {
         .status(400)
         .send("Room with the same name is already registered.");
 
-    const members =
-      req.body.userId === req.body.otherUserId
-        ? [req.body.userId]
-        : [req.body.userId, req.body.otherUserId];
+    const members = userId === otherUserID ? [userId] : [userId, otherUserID];
     room = await Room.create({
       roomName: sortedIdArray[0] + sortedIdArray[1],
-      type: req.body.type,
+      type: roomType,
       members: members,
     });
     room = await room.save();
@@ -74,7 +72,7 @@ router.post("/create_room", auth, async (req, res) => {
     let messages = await AllMessages.create({ _id: room._id });
     messages = await messages.save();
 
-    ioUpdateById([req.body.userId, req.body.otherUserId], "roomAdded", room);
+    ioUpdateById([userId, otherUserID], "roomAdded", room);
   }
 
   res.status(200).send(room);

@@ -143,7 +143,6 @@ router.get("/activate_user/:id", async (req, res) => {
 
   var changeMembers = new Promise((resolve) => {
     let i = 0;
-
     userData.userRooms.forEach(async (room) => {
       const updatedRoomData = await Room.findByIdAndUpdate(
         { _id: room },
@@ -155,7 +154,6 @@ router.get("/activate_user/:id", async (req, res) => {
       // tämä yleiseen huoneiden muutokseen. Menee niille,
       //joillle kuuluu, eli on kyseinen huone
       ioUpdateToByRoomId([room._id], "membersChanged", updatedRoomData);
-
       i++;
       if (userData.userRooms.length === i) resolve();
     });
