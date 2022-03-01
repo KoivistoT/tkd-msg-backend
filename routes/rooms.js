@@ -153,10 +153,11 @@ router.get("/all", auth, async (req, res) => {
 router.get("/delete_room/:id", async (req, res) => {
   const roomId = req.params.id;
 
-  const roomData = await Room.find({ _id: roomId }).select("members");
+  const roomData = await Room.find({ _id: roomId }).select("members type");
 
   if (roomData.length === 0) return res.status(404).send("Room not found");
   const members = roomData[0].members;
+  const roomType = roomData[0].type;
 
   Room.deleteOne({ _id: roomId }).exec();
   AllMessages.deleteOne({ _id: roomId }).exec();
@@ -173,11 +174,13 @@ router.get("/delete_room/:id", async (req, res) => {
   });
 
   const roomIdObject = { _id: roomId };
-  ioUpdateToAllActiveUsers("controRoomRemoved", roomIdObject, true);
+
+  if (roomType === "group") {
+    ioUpdateToAllActiveUsers("controRoomRemoved", roomIdObject, true);
+  }
+
   ioUpdateToByRoomId([roomId], "roomRemoved", roomIdObject);
 
-  //ilmoita pääkäyttäjille ja niille, jotka oli membereitä
-  //pääkäyttäjille ei ilmoiteta privatteja
   res.status(200).send(roomId);
 });
 
