@@ -46,17 +46,21 @@ router.post("/create_room", auth, async (req, res) => {
     let roomCheck = await Room.findOne({
       roomName: sortedIdArray[0] + sortedIdArray[1],
     });
-    if (roomCheck)
+
+    if (roomCheck) {
       return res
         .status(400)
         .send("Room with the same name is already registered.");
+    }
 
     const members = userId === otherUserID ? [userId] : [userId, otherUserID];
+
     room = await Room.create({
       roomName: sortedIdArray[0] + sortedIdArray[1],
       type: roomType,
       members: members,
     });
+
     room = await room.save();
 
     members.forEach((userId) => {
@@ -125,9 +129,6 @@ router.post("/change_membership", auth, async (req, res) => {
 });
 
 router.get("/all", auth, async (req, res) => {
-  // const room = await Room.find({}).select("-messages");
-  // global.io.sockets.emit("chat message", "täältä");
-  // global.io.sockets.to("12345").emit("chat message", { msg: "123441243" });
   const room = await Room.find({});
   if (!room) return res.status(404).send("Rooms not found");
 
