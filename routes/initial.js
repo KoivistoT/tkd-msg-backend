@@ -12,7 +12,8 @@ const addObjectIds = require("../utils/addObjectIds");
 
 // router.get("/:id", auth, async (req, res) => {
 router.get("/:id", async (req, res) => {
-  const user = await User.findById(req.params.id);
+  const userId = req.params.id;
+  const user = await User.findById(userId);
 
   if (!user) return res.status(404).send("User not found");
 
@@ -41,7 +42,29 @@ router.get("/:id", async (req, res) => {
     user.userRooms.map(async (roomId) => {
       // var start = +new Date();
       const [room, allMessages, allImages] = await Promise.all([
-        Room.findById(roomId).lean(),
+        // Room.findById(roomId).lean(),
+        // Room.aggregate([
+        //   {
+        //     $match: {
+        //       $and: [
+        //         { _id: new mongoose.Types.ObjectId(roomId) },
+        //         { status: "active" },
+        //       ],
+        //     },
+        //   },
+        // ]),
+        Room.aggregate([
+          {
+            $match: {
+              _id: new mongoose.Types.ObjectId(roomId),
+
+              $or: [
+                { status: "active" },
+                { $and: [{ roomCreator: userId }, { status: "archived" }] },
+              ],
+            },
+          },
+        ]),
         AllMessages.findById(roomId).lean(),
         // AllMessages.findById(roomId).slice("messages", 2).lean(),
         AllMessages.aggregate([
@@ -92,9 +115,23 @@ router.get("/:id", async (req, res) => {
       // const AllMessagesTest2 = mongoose.model("AllMessages", allMessagesSchema);
       // katso jotain tuosta
 
-      if (room) {
-        userRoomsData.push(room);
+      if (room.length !== 0) {
+        const roomObject = {
+          _id: room[0]._id,
+          ...room[0],
+        };
+        // console.log(roomObject);
+        userRoomsData.push(roomObject);
       }
+
+      // if (usersArchivedRooms.length !== 0) {
+      //   const roomObject = {
+      //     _id: usersArchivedRooms[0]._id,
+      //     ...usersArchivedRooms[0],
+      //   };
+      //   // console.log(roomObject);
+      //   userRoomsData.push(roomObject);
+      // }
 
       if (allMessages) {
         const messagesObject = {
