@@ -170,6 +170,74 @@ router.post("/change_membership", auth, async (req, res) => {
   }
 });
 
+router.post("/change_members", auth, async (req, res) => {
+  // tähän validointi
+  const roomId = req.body.roomId;
+  const newMemberList = req.body.members;
+  // console.log("alussa:", newMemberList.length);
+  let result = await Room.findOne({ _id: roomId });
+  if (!result) return res.status(400).send("Can't find room"); // tämä ei ehkä tarpeen, jos alussa validointi. toki aina parempi mitä enemmän varmuutta
+
+  const membersBefore = result.members;
+
+  if (membersBefore === newMemberList)
+    return res.status(200).send("No changes needed");
+
+  const sameMembers = newMemberList.filter((x) => membersBefore.includes(x));
+  const addToSetMembers = newMemberList.filter(
+    (x) => !membersBefore.includes(x)
+  );
+  const pullMembers = membersBefore.filter((x) => !newMemberList.includes(x));
+
+  try {
+    await Promise.all(
+      addToSetMembers.map(async (userId) => {
+        await Room.findByIdAndUpdate(
+          { _id: roomId },
+          { $addToSet: { members: userId } }
+        );
+
+        await User.findByIdAndUpdate(
+          { _id: userId },
+          { $addToSet: { userRooms: roomId } }
+        );
+      })
+    );
+
+    await Promise.all(
+      pullMembers.map(async (userId) => {
+        await Room.findByIdAndUpdate(
+          { _id: roomId },
+          { $pull: { members: userId } }
+        );
+
+        await User.findByIdAndUpdate(
+          { _id: userId },
+          { $pull: { userRooms: roomId } }
+        );
+      })
+    );
+
+    const updatedRoomData = await Room.findById(roomId).lean();
+    console.log(
+      "lopussa:",
+      updatedRoomData.members.length,
+      "(" + newMemberList.length + ")"
+    );
+    ioUpdateById(addToSetMembers, "roomAdded", updatedRoomData);
+    ioUpdateById(pullMembers, "roomRemoved", updatedRoomData);
+    ioUpdateById(sameMembers, "membersChanged", updatedRoomData);
+
+    res.status(200).send(updatedRoomData);
+    //tämä voisi olla jossain muualla functioissa., kuten muutkin, jottaon puhtaat nämä jutut täällä
+
+    // const updatedRoomData = { _id: roomId, members: newMemberList };
+  } catch (error) {
+    console.log(error);
+    res.status(400).send("something faild");
+  }
+});
+
 router.get("/all", auth, async (req, res) => {
   const room = await Room.find({});
   if (!room) return res.status(404).send("Rooms not found");
