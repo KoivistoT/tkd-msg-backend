@@ -324,9 +324,12 @@ router.get("/archive_room/:id", async (req, res) => {
   res.status(200).send(roomId);
 });
 
-router.get("/activate_room/:id", async (req, res) => {
-  const roomId = req.params.id;
-  console.log("täällä activoi nyt");
+router.post("/activate_room", async (req, res) => {
+  const roomId = req.body.roomId;
+  const userId = req.body.userId;
+
+  const result = await Room.findById(roomId);
+  if (!result) return res.status(404).send("Room not found");
 
   const roomData = await Room.findOneAndUpdate(
     { _id: roomId },
@@ -334,21 +337,10 @@ router.get("/activate_room/:id", async (req, res) => {
     { new: true }
   );
 
-  roomData.members.forEach((userId) => {
-    User.findByIdAndUpdate(
-      { _id: userId },
-      { $addToSet: { userRooms: roomId } }
-    ).exec();
-  });
-
   const roomIdObject = { _id: roomId };
 
-  if (roomData.type === "group") {
-    ioUpdateToAllActiveUsers("controRoomActivated", roomIdObject, true);
-    ioUpdateToByRoomId([roomId], "roomAdded", roomData);
-  } else {
-    ioUpdateToByRoomId([roomId], "roomActivated", roomIdObject);
-  }
+  ioUpdateById([userId], "roomActivated", roomIdObject);
+  ioUpdateById(roomData.members, "roomAdded", roomData);
 
   res.status(200).send(roomId);
 });
