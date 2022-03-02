@@ -132,7 +132,7 @@ router.post("/create_channel", auth, async (req, res) => {
   const roomCreator = req.body.userId;
   const roomName = req.body.roomName;
 
-  let result = await Room.findOne({ roomName });
+  const result = await Room.findOne({ roomName });
   if (result)
     return res
       .status(400)
@@ -287,7 +287,6 @@ router.get("/delete_room/:id", async (req, res) => {
 
   if (roomData.length === 0) return res.status(404).send("Room not found");
   const members = roomData[0].members;
-  const roomType = roomData[0].type;
 
   Room.deleteOne({ _id: roomId }).exec();
   AllMessages.deleteOne({ _id: roomId }).exec();
@@ -301,40 +300,40 @@ router.get("/delete_room/:id", async (req, res) => {
 
   const roomIdObject = { _id: roomId };
 
-  if (roomType === "group") {
-    ioUpdateToAllActiveUsers("controRoomRemoved", roomIdObject, true);
-  }
-
   ioUpdateToByRoomId([roomId], "roomRemoved", roomIdObject);
 
   res.status(200).send(roomId);
 });
 
-router.get("/archive_room/:id", async (req, res) => {
-  const roomId = req.params.id;
-  console.log("täällä arkistoi nyt");
+router.post("/archive_room", async (req, res) => {
+  const roomId = req.body.roomId;
+  // const currenUserId = req.body.userId;
 
-  const roomData = await Room.findOneAndUpdate(
+  const roomDataBefore = await Room.find({ _id: roomId }).select(
+    "members type"
+  );
+  const roomMembers = roomDataBefore[0].members;
+
+  // const mebersBeforeExceptCurrentUser = membersBefore.filter(
+  //   (user) => user !== currenUserId
+  // );
+
+  // mebersBeforeExceptCurrentUser.forEach((userId) => {
+  //   User.findByIdAndUpdate(
+  //     { _id: userId },
+  //     { $pull: { userRooms: roomId } }
+  //   ).exec();
+  // });
+
+  await Room.findOneAndUpdate(
     { _id: roomId },
     { status: "archived" },
     { new: true }
   );
 
-  roomData.members.forEach((userId) => {
-    User.findByIdAndUpdate(
-      { _id: userId },
-      { $pull: { userRooms: roomId } }
-    ).exec();
-  });
-
   const roomIdObject = { _id: roomId };
 
-  if (roomData.type === "group") {
-    ioUpdateToAllActiveUsers("controRoomArchived", roomIdObject, true);
-    ioUpdateToByRoomId([roomId], "roomRemoved", roomIdObject);
-  } else {
-    ioUpdateToByRoomId([roomId], "roomArchived", roomIdObject);
-  }
+  ioUpdateById(roomMembers, "roomArchived", roomIdObject);
 
   res.status(200).send(roomId);
 });

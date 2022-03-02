@@ -10,7 +10,6 @@ const roomSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      unique: true,
     },
     roomCreator: { type: String },
     type: { type: String, required: true }, //private or group or...
