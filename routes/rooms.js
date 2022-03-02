@@ -305,27 +305,13 @@ router.get("/delete_room/:id", async (req, res) => {
   res.status(200).send(roomId);
 });
 
-router.post("/archive_room", async (req, res) => {
-  const roomId = req.body.roomId;
-  // const currenUserId = req.body.userId;
+router.get("/archive_room/:id", async (req, res) => {
+  const roomId = req.params.id;
 
-  const roomDataBefore = await Room.find({ _id: roomId }).select(
-    "members type"
-  );
-  const roomMembers = roomDataBefore[0].members;
+  const result = await Room.findById(roomId);
+  if (!result) return res.status(404).send("Room not found");
 
-  // const mebersBeforeExceptCurrentUser = membersBefore.filter(
-  //   (user) => user !== currenUserId
-  // );
-
-  // mebersBeforeExceptCurrentUser.forEach((userId) => {
-  //   User.findByIdAndUpdate(
-  //     { _id: userId },
-  //     { $pull: { userRooms: roomId } }
-  //   ).exec();
-  // });
-
-  await Room.findOneAndUpdate(
+  const roomData = await Room.findOneAndUpdate(
     { _id: roomId },
     { status: "archived" },
     { new: true }
@@ -333,7 +319,7 @@ router.post("/archive_room", async (req, res) => {
 
   const roomIdObject = { _id: roomId };
 
-  ioUpdateById(roomMembers, "roomArchived", roomIdObject);
+  ioUpdateById(roomData.members, "roomArchived", roomIdObject);
 
   res.status(200).send(roomId);
 });
