@@ -46,7 +46,7 @@ router.post("/create_private_room", auth, async (req, res) => {
     User.updateOne(
       { _id: userId },
       { $addToSet: { userRooms: room._id.toString() } }
-    );
+    ).exec();
   });
 
   await AllMessages.create({ _id: room._id });

@@ -41,6 +41,7 @@ router.get("/:id", async (req, res) => {
   await Promise.all(
     user.userRooms.map(async (roomId) => {
       // var start = +new Date();
+
       const [room, allMessages, allImages] = await Promise.all([
         // Room.findById(roomId).lean(),
         // Room.aggregate([
@@ -53,6 +54,7 @@ router.get("/:id", async (req, res) => {
         //     },
         //   },
         // ]),
+
         Room.aggregate([
           {
             $match: {
