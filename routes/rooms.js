@@ -270,6 +270,44 @@ router.post("/change_members", auth, async (req, res) => {
     res.status(400).send("something faild");
   }
 });
+router.post("/leave_room", auth, async (req, res) => {
+  // tähän validointi
+  const roomId = req.body.roomId;
+  const userId = req.body.userId;
+  // console.log("alussa:", newMemberList.length);
+  let result = await Room.findById(roomId);
+  if (!result) return res.status(400).send("Can't find room");
+
+  if (result.roomCreator === userId)
+    return res.status(400).send("Can't leave room which you have created");
+
+  const newMembersList = result.members.filter((user) => user !== userId);
+
+  try {
+    await Room.findByIdAndUpdate(
+      { _id: roomId },
+      { $pull: { members: userId } }
+    );
+    await User.findByIdAndUpdate(
+      { _id: userId },
+      { $pull: { userRooms: roomId } }
+    );
+
+    const updatedRoomData = await Room.findById(roomId).lean();
+    const roomIdObject = { _id: roomId };
+
+    ioUpdateById([userId], "roomRemoved", roomIdObject);
+    ioUpdateById(newMembersList, "membersChanged", updatedRoomData);
+
+    res.status(200).send(updatedRoomData);
+    //tämä voisi olla jossain muualla functioissa., kuten muutkin, jottaon puhtaat nämä jutut täällä
+
+    // const updatedRoomData = { _id: roomId, members: newMemberList };
+  } catch (error) {
+    console.log(error);
+    res.status(400).send("something faild");
+  }
+});
 
 router.get("/all", auth, async (req, res) => {
   const room = await Room.find({});
