@@ -40,6 +40,7 @@ router.post("/create_private_room", auth, async (req, res) => {
     roomName: sortedIdArray[0] + sortedIdArray[1],
     type: roomType,
     members: members,
+    roomCreator: userId,
   });
 
   members.forEach((userId) => {
