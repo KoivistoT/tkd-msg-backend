@@ -8,7 +8,7 @@ const roomSchema = new mongoose.Schema(
   {
     roomName: {
       type: String,
-      required: true,
+
       trim: true,
     },
     roomCreator: { type: String },
@@ -30,7 +30,7 @@ const Room = mongoose.model("Room", roomSchema);
 
 const schema = Joi.object({
   type: Joi.string(),
-  roomName: Joi.string().min(1).max(100).required(),
+  roomName: Joi.string(),
   userId: Joi.string(),
   otherUserId: Joi.string(),
   members: Joi.array(),

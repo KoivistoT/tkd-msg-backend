@@ -15,69 +15,43 @@ const {
 } = require("../utils/WebSockets");
 const sortArray = require("../utils/sortArray");
 
-router.post("/create_room", auth, async (req, res) => {
+router.post("/create_private_room", auth, async (req, res) => {
   const { error } = schema.validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
-  const roomName = req.body.roomName;
-  const roomType = req.body.type;
-  let room;
+  const roomType = "private";
+  const userId = req.body.userId;
+  const otherUserID = req.body.otherUserId;
+  const sortedIdArray = await sortArray([userId, otherUserID]);
 
-  if (roomType === "group") {
-    let roomCheck = await Room.findOne({ roomName });
-    if (roomCheck)
-      return res
-        .status(400)
-        .send("Room with the same name is already registered.");
+  let roomCheck = await Room.findOne({
+    roomName: sortedIdArray[0] + sortedIdArray[1],
+  });
 
-    room = await Room.create({
-      roomName,
-      type: roomType,
-    });
-    room = await room.save();
-
-    let messages = await AllMessages.create({ _id: room._id });
-    messages = await messages.save();
-  } else {
-    const userId = req.body.userId;
-    const otherUserID = req.body.otherUserId;
-    const sortedIdArray = await sortArray([userId, otherUserID]);
-
-    let roomCheck = await Room.findOne({
-      roomName: sortedIdArray[0] + sortedIdArray[1],
-    });
-
-    if (roomCheck) {
-      return res
-        .status(400)
-        .send("Room with the same name is already registered.");
-    }
-
-    const members = userId === otherUserID ? [userId] : [userId, otherUserID];
-
-    room = await Room.create({
-      roomName: sortedIdArray[0] + sortedIdArray[1],
-      type: roomType,
-      members: members,
-    });
-
-    room = await room.save();
-
-    members.forEach((userId) => {
-      User.updateOne(
-        { _id: userId },
-        { $addToSet: { userRooms: room._id.toString() } },
-        async function (err, result) {
-          if (err) console.log(err);
-        }
-      );
-    });
-
-    let messages = await AllMessages.create({ _id: room._id });
-    messages = await messages.save();
-
-    ioUpdateById([userId, otherUserID], "roomAdded", room);
+  if (roomCheck) {
+    return res
+      .status(400)
+      .send("Room with the same name is already registered.");
   }
+
+  const members = userId === otherUserID ? [userId] : [userId, otherUserID];
+
+  const room = await Room.create({
+    roomName: sortedIdArray[0] + sortedIdArray[1],
+    type: roomType,
+    members: members,
+  });
+
+  members.forEach((userId) => {
+    User.updateOne(
+      { _id: userId },
+      { $addToSet: { userRooms: room._id.toString() } }
+    );
+  });
+
+  await AllMessages.create({ _id: room._id });
+
+  ioUpdateById([userId, otherUserID], "roomAdded", room);
 
   res.status(200).send(room);
 });
