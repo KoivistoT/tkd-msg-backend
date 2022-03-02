@@ -124,6 +124,39 @@ router.post("/create_direct_room", auth, async (req, res) => {
   res.status(200).send(room);
 });
 
+router.post("/create_channel", auth, async (req, res) => {
+  const { error } = schema.validate(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  const roomType = "channel";
+  const roomCreator = req.body.userId;
+  const roomName = req.body.roomName;
+
+  let result = await Room.findOne({ roomName });
+  if (result)
+    return res
+      .status(400)
+      .send("Channel with the same name is already registered.");
+
+  const room = await Room.create({
+    roomName,
+    type: roomType,
+    roomCreator,
+    members: [roomCreator],
+  });
+
+  await AllMessages.create({ _id: room._id });
+
+  await User.findOneAndUpdate(
+    { _id: roomCreator },
+    { $addToSet: { userRooms: room._id.toString() } }
+  );
+
+  ioUpdateById([roomCreator], "roomAdded", room);
+
+  res.status(200).send(room);
+});
+
 router.post("/change_membership", auth, async (req, res) => {
   // tähän validointi
 
@@ -219,11 +252,11 @@ router.post("/change_members", auth, async (req, res) => {
     );
 
     const updatedRoomData = await Room.findById(roomId).lean();
-    console.log(
-      "lopussa:",
-      updatedRoomData.members.length,
-      "(" + newMemberList.length + ")"
-    );
+    // console.log(
+    //   "lopussa:",
+    //   updatedRoomData.members.length,
+    //   "(" + newMemberList.length + ")"
+    // );
     ioUpdateById(addToSetMembers, "roomAdded", updatedRoomData);
     ioUpdateById(pullMembers, "roomRemoved", updatedRoomData);
     ioUpdateById(sameMembers, "membersChanged", updatedRoomData);
