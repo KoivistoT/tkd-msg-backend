@@ -254,6 +254,20 @@ router.post("/leave_room", auth, async (req, res) => {
   }
 });
 
+router.get("/all_channels", async (req, res) => {
+  const roomData = await Room.aggregate([
+    {
+      $match: { type: "channel" },
+    },
+  ]);
+
+  if (roomData.length === 0) return res.status(404).send("Room not found");
+
+  const dataWithIds = addObjectIds(roomData);
+
+  res.status(200).send(dataWithIds);
+});
+
 router.get("/delete_room/:id", async (req, res) => {
   const roomId = req.params.id;
 
