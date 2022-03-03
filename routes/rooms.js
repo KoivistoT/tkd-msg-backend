@@ -226,7 +226,15 @@ router.post("/leave_room", auth, async (req, res) => {
 
     const updatedRoomData = await Room.findById(roomId).lean();
 
-    if (updatedRoomData.members.length === 0) {
+    const allUsers = await User.find({}).lean();
+    const usersWithId = addObjectIds(allUsers);
+    let sum = 0;
+    updatedRoomData.members.forEach((userId) => {
+      usersWithId[userId].status === "active" ? (sum += 1) : (sum = sum);
+    });
+    console.log(sum, "jäljellä aktiivisia");
+
+    if (sum === 0) {
       //jos ei ketään jäljellä, deletoi huoneen
       Room.deleteOne({ _id: roomId }).exec();
       AllMessages.deleteOne({ _id: roomId }).exec();
