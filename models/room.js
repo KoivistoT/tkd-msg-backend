@@ -38,7 +38,7 @@ const schema = Joi.object({
   status: Joi.string(),
   roomCreator: Joi.string(),
   otherUsers: Joi.array(),
-  description: Joi.string(),
+  description: Joi.string().allow("").allow(null),
   topic: Joi.string(),
 });
 
