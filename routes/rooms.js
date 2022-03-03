@@ -106,6 +106,7 @@ router.post("/create_channel", auth, async (req, res) => {
   const roomType = "channel";
   const roomCreator = req.body.userId;
   const roomName = req.body.roomName;
+  const description = req.body.description;
 
   const result = await Room.findOne({ roomName });
   if (result)
@@ -118,6 +119,7 @@ router.post("/create_channel", auth, async (req, res) => {
     type: roomType,
     roomCreator,
     members: [roomCreator],
+    description,
   });
 
   await AllMessages.create({ _id: room._id });
