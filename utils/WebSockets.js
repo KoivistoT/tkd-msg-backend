@@ -180,9 +180,13 @@ function ioUpdateById(targetUsers, action, data) {
 
     if (!userSocketId) return; // user is not connected
 
-    io.to(userSocketId).emit("updates", action, {
-      [data._id]: data,
-    });
+    try {
+      io.to(userSocketId).emit("updates", action, {
+        [data._id]: data,
+      });
+    } catch (error) {
+      console.log(error, "code ikjif92");
+    }
   });
 }
 
@@ -202,17 +206,25 @@ function ioUpdateToAllActiveUsers(
     if (user.userId === byPass) return;
     if (onlyForAdmins === true && user.accountType !== "admin") return;
 
-    io.to(user.socketId).emit("updates", action, {
-      [data._id]: data,
-    });
+    try {
+      io.to(user.socketId).emit("updates", action, {
+        [data._id]: data,
+      });
+    } catch (error) {
+      console.log(error, "code 9fiffe");
+    }
   });
 }
 
 function ioUpdateToByRoomId(rooms, action, data) {
   rooms.forEach((roomId) => {
-    io.to(roomId).emit("updates", action, {
-      [data._id]: data,
-    });
+    try {
+      io.to(roomId).emit("updates", action, {
+        [data._id]: data,
+      });
+    } catch (error) {
+      console.log(error, "code 9fiiie");
+    }
   });
 }
 
