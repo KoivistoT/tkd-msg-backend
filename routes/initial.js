@@ -23,17 +23,18 @@ router.get("/:id", async (req, res) => {
 
   //hae tämä erikseen
   //hae tämä erikseen
-  const allUsers = await User.aggregate([
-    { $match: { status: "active" } },
-    {
-      $project: {
-        password: 0,
-        last_seen_messages: 0,
-        userRooms: 0,
-        contacts: 0,
-      },
-    },
-  ]);
+  const allUsers = await User.find({}).lean();
+  //  await User.aggregate([
+  //   { $match: { status: "active" } },
+  //   {
+  //     $project: {
+  //       password: 0,
+  //       last_seen_messages: 0,
+  //       userRooms: 0,
+  //       contacts: 0,
+  //     },
+  //   },
+  // ]);
 
   //hae tämä erikseen
   //hae tämä erikseen

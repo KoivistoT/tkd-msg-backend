@@ -95,14 +95,11 @@ router.get("/delete_user/:id", async (req, res) => {
   res.send(userId);
 });
 
-router.get("/archive_user/:id", async (req, res) => {
-  const userId = req.params.id;
+router.post("/archive_or_delete_user", async (req, res) => {
+  const userId = req.body.userId;
+  const status = req.body.status;
 
-  await User.findOneAndUpdate(
-    { _id: userId },
-    { status: "archived" },
-    { new: true }
-  );
+  await User.findOneAndUpdate({ _id: userId }, { status }, { new: true });
 
   const targetRooms = await Room.find({ members: { $all: [userId] } });
 
@@ -110,11 +107,14 @@ router.get("/archive_user/:id", async (req, res) => {
     let i = 0;
 
     targetRooms.forEach(async (room) => {
+      if (room.type === "private") return;
+
       const updatedRoomData = await Room.findByIdAndUpdate(
         { _id: room._id },
         { $pull: { members: userId } },
         { new: true }
       ).exec();
+
       // tämä control muutokseen. Menee vain admineille
       ioUpdateToAllActiveUsers("controlMembersChanged", updatedRoomData, true);
       // tämä yleiseen huoneiden muutokseen. Menee niille,
@@ -127,8 +127,11 @@ router.get("/archive_user/:id", async (req, res) => {
   });
   Promise.all([changeMembers]);
 
-  ioUpdateToAllActiveUsers("userArchived", { _id: userId });
-
+  if (status === "archived") {
+    ioUpdateToAllActiveUsers("userArchived", { _id: userId });
+  } else {
+    ioUpdateToAllActiveUsers("userTemporaryDeleted", { _id: userId });
+  }
   res.send(userId);
 });
 

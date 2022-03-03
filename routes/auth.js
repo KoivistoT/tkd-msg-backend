@@ -13,6 +13,9 @@ router.post("/", async (req, res) => {
 
   let user = await User.findOne({ email: req.body.email });
 
+  if (user.status === "archived")
+    return res.status(400).send("Your account is arhived.");
+
   if (!user) return res.status(400).send("Invalid email or password.");
 
   const validPassword = await bcrypt.compare(req.body.password, user.password);
