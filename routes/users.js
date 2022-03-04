@@ -114,7 +114,11 @@ router.post("/archive_or_delete_user", async (req, res) => {
         { new: true }
       ).exec();
 
-      ioUpdateToByRoomId([room._id], "membersChanged", updatedRoomData);
+      ioUpdateToByRoomId(
+        [room._id.toString()],
+        "membersChanged",
+        updatedRoomData
+      );
 
       i++;
       if (targetRooms.length === i) resolve();
@@ -141,6 +145,7 @@ router.get("/activate_user/:id", async (req, res) => {
 
   var changeMembers = new Promise((resolve) => {
     let i = 0;
+
     userData.userRooms.forEach(async (room) => {
       const updatedRoomData = await Room.findByIdAndUpdate(
         { _id: room },
@@ -148,7 +153,7 @@ router.get("/activate_user/:id", async (req, res) => {
         { new: true }
       ).exec();
 
-      ioUpdateToByRoomId([room._id], "membersChanged", updatedRoomData);
+      ioUpdateToByRoomId([room.toString()], "membersChanged", updatedRoomData);
       i++;
       if (userData.userRooms.length === i) resolve();
     });
