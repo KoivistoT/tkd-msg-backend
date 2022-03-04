@@ -113,14 +113,14 @@ router.post("/edit_user_data", auth, async (req, res) => {
   );
 
   const newUserObject = { _id: userId, newUserData };
+
   ioUpdateToAllActiveUsers("userDataEdited", newUserObject);
 
   res.status(200).send(newUserData);
 });
 
 router.post("/archive_or_delete_user", auth, async (req, res) => {
-  const userId = req.body.userId;
-  const status = req.body.status;
+  const { userId, status } = req.body;
 
   await User.findOneAndUpdate({ _id: userId }, { status }, { new: true });
 
