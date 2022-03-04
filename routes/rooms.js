@@ -57,6 +57,22 @@ router.post("/create_private_room", auth, async (req, res) => {
   res.status(200).send(room);
 });
 
+router.post("/change_room_name", auth, async (req, res) => {
+  const roomId = req.body.roomId;
+  const newRoomName = req.body.newRoomName;
+
+  const newRoomData = await Room.findOneAndUpdate(
+    { _id: roomId },
+
+    { roomName: newRoomName }
+  );
+
+  const newRoomObject = { _id: roomId, newRoomName };
+  ioUpdateToByRoomId([roomId], "roomNameChanged", newRoomObject);
+
+  res.status(200).send(newRoomData);
+});
+
 router.post("/create_direct_room", auth, async (req, res) => {
   console.log(req.res.req.user.id, "täällä on valmiiksi aina");
   const { error } = schema.validate(req.body);
