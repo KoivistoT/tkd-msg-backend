@@ -11,7 +11,13 @@ const { User } = require("../models/user");
 const router = express.Router();
 
 router.post("/send_message", auth, async (req, res) => {
-  //post_message on parempi nimi
+  const {
+    messageBody,
+    roomId,
+    userId: postedByUser,
+    messageType: type,
+    imageURLs,
+  } = req.body;
 
   if (!req.body.roomId)
     return res
@@ -26,18 +32,18 @@ router.post("/send_message", auth, async (req, res) => {
   // });
 
   const message = new Message({
-    messageBody: req.body.messageBody,
-    roomId: req.body.roomId,
-    postedByUser: req.body.userId,
-    type: req.body.messageType,
-    imageURLs: req.body.imageURLs || null,
+    messageBody,
+    roomId,
+    postedByUser,
+    type,
+    imageURLs: imageURLs || null,
   });
 
   const messageWithId = { [message._id]: message };
 
   io.to(req.body.roomId).emit("new message", {
     message: messageWithId,
-    roomId: req.body.roomId,
+    roomId,
   });
 
   // console.log(
@@ -52,9 +58,8 @@ router.post("/send_message", auth, async (req, res) => {
   //   const room = await Room.find({ _id: req.body.roomId });
   AllMessages.updateOne(
     { _id: req.body.roomId },
-    { $addToSet: { messages: message } },
-    function (err, result) {}
-  );
+    { $addToSet: { messages: message } }
+  ).exec();
 
   //   message = await message.save();
   // console.log(message);
