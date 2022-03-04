@@ -26,7 +26,7 @@ router.post("/create_user", auth, async (req, res) => {
       "password",
       "firstName",
       "lastName",
-
+      "phone",
       "displayName",
       "accountType",
       "status",
@@ -96,12 +96,19 @@ router.get("/delete_user/:id", auth, async (req, res) => {
 });
 
 router.post("/edit_user_data", auth, async (req, res) => {
-  const { accountType, firstName, lastName, displayName, email, userId } =
-    req.body;
+  const {
+    accountType,
+    firstName,
+    lastName,
+    displayName,
+    email,
+    phone,
+    userId,
+  } = req.body;
 
   const newUserData = await User.findOneAndUpdate(
     { _id: userId },
-    { accountType, firstName, lastName, displayName, email },
+    { accountType, firstName, lastName, displayName, email, phone },
     { new: true }
   );
 

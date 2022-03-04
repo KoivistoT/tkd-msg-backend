@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema(
     last_seen_messages: { type: Array, default: [] },
     userRooms: { type: Array, default: [] },
     contacts: { type: Array, default: [] },
+    phone: { type: String, default: "" },
     password: {
       type: String,
       required: true,
@@ -66,6 +67,7 @@ const schema = Joi.object({
   displayName: Joi.string().min(1).max(50).required(),
   accountType: Joi.string().min(1).max(50).required(),
   email: Joi.string().min(5).max(255).required().email(),
+  phone: Joi.string(),
   password: Joi.string().min(5).max(255).required(),
   status: Joi.string(),
 });
