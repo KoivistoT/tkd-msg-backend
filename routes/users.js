@@ -1,4 +1,3 @@
-const mongoose = require("mongoose");
 const express = require("express");
 const { User, validate, schema } = require("../models/user");
 const bcrypt = require("bcrypt");
@@ -6,11 +5,10 @@ const router = express.Router();
 const _ = require("lodash");
 const addObjectIds = require("../utils/addObjectIds");
 const {
-  ioUpdateById,
   ioUpdateToAllActiveUsers,
   ioUpdateToByRoomId,
 } = require("../utils/WebSockets");
-const { roomSchema, Room } = require("../models/room");
+const { Room } = require("../models/room");
 const auth = require("../middleware/auth");
 
 router.post("/create_user", auth, async (req, res) => {
