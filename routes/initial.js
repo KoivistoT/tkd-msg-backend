@@ -10,9 +10,10 @@ const { AllMessages, allMessagesSchema } = require("../models/allMessages");
 const router = express.Router();
 const addObjectIds = require("../utils/addObjectIds");
 
-// router.get("/:id", auth, async (req, res) => {
-router.get("/:id", async (req, res) => {
-  const userId = req.params.id;
+router.get("/", auth, async (req, res) => {
+  // router.get("/:id", async (req, res) => {
+
+  const userId = req.res.req.user._id;
   const user = await User.findById(userId);
 
   if (!user) return res.status(404).send("User not found");

@@ -58,6 +58,7 @@ router.post("/create_private_room", auth, async (req, res) => {
 });
 
 router.post("/create_direct_room", auth, async (req, res) => {
+  console.log(req.res.req.user.id, "täällä on valmiiksi aina");
   const { error } = schema.validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
