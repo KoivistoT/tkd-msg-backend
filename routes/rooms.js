@@ -1,18 +1,12 @@
-const mongoose = require("mongoose");
 const express = require("express");
 const { Room, schema } = require("../models/room");
 const _ = require("lodash");
 const auth = require("../middleware/auth");
 const router = express.Router();
-const { message } = require("../models/message");
-const { AllMessagesSchema, AllMessages } = require("../models/allMessages");
+const { AllMessages } = require("../models/allMessages");
 const addObjectIds = require("../utils/addObjectIds");
 const { User } = require("../models/user");
-const {
-  ioUpdateToAllActiveUsers,
-  ioUpdateToByRoomId,
-  ioUpdateById,
-} = require("../utils/WebSockets");
+const { ioUpdateToByRoomId, ioUpdateById } = require("../utils/WebSockets");
 const sortArray = require("../utils/sortArray");
 
 router.post("/create_private_room", auth, async (req, res) => {
@@ -20,21 +14,20 @@ router.post("/create_private_room", auth, async (req, res) => {
   if (error) return res.status(400).send(error.details[0].message);
 
   const roomType = "private";
-  const userId = req.body.userId;
-  const otherUserID = req.body.otherUserId;
-  const sortedIdArray = await sortArray([userId, otherUserID]);
+  const { userId, otherUserId } = req.body;
+  const sortedIdArray = await sortArray([userId, otherUserId]);
 
-  let roomCheck = await Room.findOne({
+  let result = await Room.findOne({
     roomName: sortedIdArray[0] + sortedIdArray[1],
   });
 
-  if (roomCheck) {
+  if (result) {
     return res
       .status(400)
       .send("Room with the same name is already registered.");
   }
 
-  const members = userId === otherUserID ? [userId] : [userId, otherUserID];
+  const members = userId === otherUserId ? [userId] : [userId, otherUserId];
 
   const room = await Room.create({
     roomName: sortedIdArray[0] + sortedIdArray[1],
@@ -52,43 +45,39 @@ router.post("/create_private_room", auth, async (req, res) => {
 
   await AllMessages.create({ _id: room._id });
 
-  ioUpdateById([userId, otherUserID], "roomAdded", room);
+  ioUpdateById([userId, otherUserId], "roomAdded", room);
 
   res.status(200).send(room);
 });
 
 router.post("/change_room_name", auth, async (req, res) => {
-  const roomId = req.body.roomId;
-  const newRoomName = req.body.newRoomName;
+  const { roomId, newRoomName } = req.body;
 
   const newRoomData = await Room.findOneAndUpdate(
     { _id: roomId },
-
     { roomName: newRoomName }
   );
 
   const newRoomObject = { _id: roomId, newRoomName };
+
   ioUpdateToByRoomId([roomId], "roomNameChanged", newRoomObject);
 
   res.status(200).send(newRoomData);
 });
 
 router.post("/create_direct_room", auth, async (req, res) => {
-  console.log(req.res.req.user.id, "täällä on valmiiksi aina");
   const { error } = schema.validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   const roomType = "direct";
-  const roomCreator = req.body.userId;
-  const otherUsers = req.body.otherUsers;
+  const { userId: roomCreator, otherUsers } = req.body;
   const roomName = roomCreator + "-" + Date.now();
 
   let roomUsers;
-  if (otherUsers.includes(roomCreator)) {
-    roomUsers = otherUsers;
-  } else {
-    roomUsers = [...otherUsers, roomCreator];
-  }
+
+  otherUsers.includes(roomCreator)
+    ? (roomUsers = otherUsers)
+    : (roomUsers = [...otherUsers, roomCreator]);
 
   const room = await Room.create({
     roomName,
@@ -96,19 +85,14 @@ router.post("/create_direct_room", auth, async (req, res) => {
     roomCreator,
     members: roomUsers,
   });
-  // room = await room.save();
 
   await AllMessages.create({ _id: room._id });
-  // messages = await messages.save();
 
   roomUsers.forEach((userId) => {
     User.updateOne(
       { _id: userId },
-      { $addToSet: { userRooms: room._id.toString() } },
-      async function (err, result) {
-        if (err) console.log(err);
-      }
-    );
+      { $addToSet: { userRooms: room._id.toString() } }
+    ).exec();
   });
 
   ioUpdateById(roomUsers, "roomAdded", room);
@@ -121,9 +105,7 @@ router.post("/create_channel", auth, async (req, res) => {
   if (error) return res.status(400).send(error.details[0].message);
 
   const roomType = "channel";
-  const roomCreator = req.body.userId;
-  const roomName = req.body.roomName;
-  const description = req.body.description;
+  const { userId: roomCreator, roomName, description } = req.body;
 
   const result = await Room.findOne({ roomName });
   if (result)
@@ -153,11 +135,10 @@ router.post("/create_channel", auth, async (req, res) => {
 
 router.post("/change_members", auth, async (req, res) => {
   // tähän validointi
-  const roomId = req.body.roomId;
-  const newMemberList = req.body.members;
-  // console.log("alussa:", newMemberList.length);
+  const { roomId, members: newMemberList } = req.body;
+
   let result = await Room.findOne({ _id: roomId });
-  if (!result) return res.status(400).send("Can't find room"); // tämä ei ehkä tarpeen, jos alussa validointi. toki aina parempi mitä enemmän varmuutta
+  if (!result) return res.status(400).send("Can't find room");
 
   const membersBefore = result.members;
 
@@ -200,19 +181,12 @@ router.post("/change_members", auth, async (req, res) => {
     );
 
     const updatedRoomData = await Room.findById(roomId).lean();
-    // console.log(
-    //   "lopussa:",
-    //   updatedRoomData.members.length,
-    //   "(" + newMemberList.length + ")"
-    // );
+
     ioUpdateById(addToSetMembers, "roomAdded", updatedRoomData);
     ioUpdateById(pullMembers, "roomRemoved", updatedRoomData);
     ioUpdateById(sameMembers, "membersChanged", updatedRoomData);
 
     res.status(200).send(updatedRoomData);
-    //tämä voisi olla jossain muualla functioissa., kuten muutkin, jottaon puhtaat nämä jutut täällä
-
-    // const updatedRoomData = { _id: roomId, members: newMemberList };
   } catch (error) {
     console.log(error);
     res.status(400).send("something faild");
@@ -220,14 +194,10 @@ router.post("/change_members", auth, async (req, res) => {
 });
 router.post("/leave_room", auth, async (req, res) => {
   // tähän validointi
-  const roomId = req.body.roomId;
-  const userId = req.body.userId;
-  // console.log("alussa:", newMemberList.length);
+  const { roomId, userId } = req.body;
+
   let result = await Room.findById(roomId);
   if (!result) return res.status(400).send("Can't find room");
-
-  // if (result.roomCreator === userId)
-  //   return res.status(400).send("Can't leave room which you have created");
 
   const newMembersList = result.members.filter((user) => user !== userId);
 
@@ -245,14 +215,13 @@ router.post("/leave_room", auth, async (req, res) => {
 
     const allUsers = await User.find({}).lean();
     const usersWithId = addObjectIds(allUsers);
+
     let sum = 0;
     updatedRoomData.members.forEach((userId) => {
       usersWithId[userId].status === "active" ? (sum += 1) : (sum = sum);
     });
-    console.log(sum, "jäljellä aktiivisia");
 
     if (sum === 0) {
-      //jos ei ketään jäljellä, deletoi huoneen
       Room.deleteOne({ _id: roomId }).exec();
       AllMessages.deleteOne({ _id: roomId }).exec();
     }
@@ -261,10 +230,8 @@ router.post("/leave_room", auth, async (req, res) => {
 
     ioUpdateById([userId], "roomRemoved", roomIdObject);
     ioUpdateById(newMembersList, "membersChanged", updatedRoomData);
-    res.status(200).send(updatedRoomData);
-    //tämä voisi olla jossain muualla functioissa., kuten muutkin, jottaon puhtaat nämä jutut täällä
 
-    // const updatedRoomData = { _id: roomId, members: newMemberList };
+    res.status(200).send(updatedRoomData);
   } catch (error) {
     console.log(error);
     res.status(400).send("something faild");
@@ -272,11 +239,7 @@ router.post("/leave_room", auth, async (req, res) => {
 });
 
 router.get("/all_channels", async (req, res) => {
-  const roomData = await Room.aggregate([
-    {
-      $match: { type: "channel" },
-    },
-  ]);
+  const roomData = await Room.aggregate([{ $match: { type: "channel" } }]);
 
   if (roomData.length === 0) return res.status(404).send("Room not found");
 
@@ -330,8 +293,7 @@ router.get("/archive_room/:id", async (req, res) => {
 });
 
 router.post("/activate_room", async (req, res) => {
-  const roomId = req.body.roomId;
-  const userId = req.body.userId;
+  const { roomId, userId } = req.body;
 
   const result = await Room.findById(roomId);
   if (!result) return res.status(404).send("Room not found");
@@ -354,7 +316,6 @@ router.get("/:id", async (req, res) => {
   const result = await Room.find({ _id: req.params.id }); //.select("-messages");
   if (!result) return res.status(404).send("Room not found");
 
-  // res.send(_.pick(result[0], ["_id"]));
   res.status(200).send(result[0]);
 });
 
