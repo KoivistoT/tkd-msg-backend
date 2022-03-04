@@ -78,8 +78,7 @@ router.get("/delete_user/:id", async (req, res) => {
         { $pull: { members: userId } },
         { new: true }
       ).exec();
-      // tämä control muutokseen. Menee vain admineille
-      ioUpdateToAllActiveUsers("controlMembersChanged", updatedRoomData, true);
+
       // tämä yleiseen huoneiden muutokseen. Menee niille,
       //joillle kuuluu, eli on kyseinen huone
       ioUpdateToByRoomId([room._id], "membersChanged", updatedRoomData);
@@ -115,10 +114,6 @@ router.post("/archive_or_delete_user", async (req, res) => {
         { new: true }
       ).exec();
 
-      // tämä control muutokseen. Menee vain admineille
-      ioUpdateToAllActiveUsers("controlMembersChanged", updatedRoomData, true);
-      // tämä yleiseen huoneiden muutokseen. Menee niille,
-      //joillle kuuluu, eli on kyseinen huone
       ioUpdateToByRoomId([room._id], "membersChanged", updatedRoomData);
 
       i++;
@@ -152,10 +147,7 @@ router.get("/activate_user/:id", async (req, res) => {
         { $addToSet: { members: userId } },
         { new: true }
       ).exec();
-      // tämä control muutokseen. Menee vain admineille
-      ioUpdateToAllActiveUsers("controlMembersChanged", updatedRoomData, true);
-      // tämä yleiseen huoneiden muutokseen. Menee niille,
-      //joillle kuuluu, eli on kyseinen huone
+
       ioUpdateToByRoomId([room._id], "membersChanged", updatedRoomData);
       i++;
       if (userData.userRooms.length === i) resolve();
