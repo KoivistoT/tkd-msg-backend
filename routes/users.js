@@ -11,8 +11,9 @@ const {
   ioUpdateToByRoomId,
 } = require("../utils/WebSockets");
 const { roomSchema, Room } = require("../models/room");
+const auth = require("../middleware/auth");
 
-router.post("/create_user", async (req, res) => {
+router.post("/create_user", auth, async (req, res) => {
   const { error } = schema.validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -25,7 +26,7 @@ router.post("/create_user", async (req, res) => {
       "password",
       "firstName",
       "lastName",
-      "userName",
+
       "displayName",
       "accountType",
       "status",
@@ -52,7 +53,7 @@ router.post("/create_user", async (req, res) => {
     .send(_.pick(user, ["_id", "name", "email"]));
 });
 
-router.get("/all", async (req, res) => {
+router.get("/all", auth, async (req, res) => {
   const users = await User.find({});
   if (!users) return res.status(404).send("Users not found");
 
@@ -60,7 +61,7 @@ router.get("/all", async (req, res) => {
   res.send(usersObjects);
 });
 
-router.get("/delete_user/:id", async (req, res) => {
+router.get("/delete_user/:id", auth, async (req, res) => {
   const userId = req.params.id;
   const userData = await User.find({ _id: userId });
 
@@ -94,7 +95,23 @@ router.get("/delete_user/:id", async (req, res) => {
   res.send(userId);
 });
 
-router.post("/archive_or_delete_user", async (req, res) => {
+router.post("/edit_user_data", auth, async (req, res) => {
+  const { accountType, firstName, lastName, displayName, email, userId } =
+    req.body;
+
+  const newUserData = await User.findOneAndUpdate(
+    { _id: userId },
+    { accountType, firstName, lastName, displayName, email },
+    { new: true }
+  );
+
+  const newUserObject = { _id: userId, newUserData };
+  ioUpdateToAllActiveUsers("userDataEdited", newUserObject);
+
+  res.status(200).send(newUserData);
+});
+
+router.post("/archive_or_delete_user", auth, async (req, res) => {
   const userId = req.body.userId;
   const status = req.body.status;
 
@@ -134,7 +151,7 @@ router.post("/archive_or_delete_user", async (req, res) => {
   res.send(userId);
 });
 
-router.get("/activate_user/:id", async (req, res) => {
+router.get("/activate_user/:id", auth, async (req, res) => {
   const userId = req.params.id;
 
   const userData = await User.findOneAndUpdate(
@@ -170,7 +187,7 @@ router.get("/activate_user/:id", async (req, res) => {
   res.send(userId);
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", auth, async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) return res.status(404).send("User not found");
 
