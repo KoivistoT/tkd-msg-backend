@@ -1,4 +1,5 @@
 users = [];
+liveUsers = [];
 class WebSockets {
   connection(client) {
     console.log(`[${client.id}] socket connected`);
@@ -68,11 +69,20 @@ class WebSockets {
       });
     });
     // // add identity of user mapped to the socket id
-    client.on("getUsers", () => {
-      console.log("tässä on nyt");
-      io.emit("users live", {
-        users,
-      });
+    client.on("onLive", (userId) => {
+      const index = liveUsers.findIndex((user) => user === userId);
+      // console.log(index);
+      if (index === -1) {
+        liveUsers.push(userId);
+      }
+
+      // console.log(liveUsers);
+      io.emit("onLive", liveUsers);
+    });
+    client.on("offLive", (userId) => {
+      const usersNowLive = liveUsers.filter((user) => user !== userId);
+      // console.log(usersNowLive, "nyt livenä");
+      io.emit("onLive", usersNowLive);
     });
     // client.on("id connect", (data) => {
     //   console.log("täällä on nyt");
