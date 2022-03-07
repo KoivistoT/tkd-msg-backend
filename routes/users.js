@@ -65,8 +65,8 @@ router.get("/delete_user/:id", auth, async (req, res) => {
 
   if (userData.length === 0) return res.status(404).send("User not found");
 
-  await User.deleteOne({ _id: userId });
-  const targetRooms = await Room.find({ members: { $all: [userId] } });
+  await User.deleteOne({ _id: userId }).lean();
+  const targetRooms = await Room.find({ members: { $all: [userId] } }).lean();
 
   var changeMembers = new Promise((resolve) => {
     let i = 0;
@@ -108,7 +108,7 @@ router.post("/edit_user_data", auth, async (req, res) => {
     { _id: userId },
     { accountType, firstName, lastName, displayName, email, phone },
     { new: true }
-  );
+  ).lean();
 
   const newUserObject = { _id: userId, newUserData };
 
@@ -120,7 +120,11 @@ router.post("/edit_user_data", auth, async (req, res) => {
 router.post("/archive_or_delete_user", auth, async (req, res) => {
   const { userId, status } = req.body;
 
-  await User.findOneAndUpdate({ _id: userId }, { status }, { new: true });
+  await User.findOneAndUpdate(
+    { _id: userId },
+    { status },
+    { new: true }
+  ).lean();
 
   const targetRooms = await Room.find({ members: { $all: [userId] } });
 
@@ -134,7 +138,9 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
         { _id: room._id },
         { $pull: { members: userId } },
         { new: true }
-      ).exec();
+      )
+        .lean()
+        .exec();
 
       ioUpdateToByRoomId(
         [room._id.toString()],
@@ -163,7 +169,7 @@ router.get("/activate_user/:id", auth, async (req, res) => {
     { _id: userId },
     { status: "active" },
     { new: true }
-  );
+  ).lean();
 
   var changeMembers = new Promise((resolve) => {
     let i = 0;
@@ -173,7 +179,9 @@ router.get("/activate_user/:id", auth, async (req, res) => {
         { _id: room },
         { $addToSet: { members: userId } },
         { new: true }
-      ).exec();
+      )
+        .lean()
+        .exec();
 
       ioUpdateToByRoomId([room.toString()], "membersChanged", updatedRoomData);
       i++;
@@ -193,7 +201,7 @@ router.get("/activate_user/:id", auth, async (req, res) => {
 });
 
 router.get("/:id", auth, async (req, res) => {
-  const user = await User.findById(req.params.id);
+  const user = await User.findById(req.params.id).lean();
   if (!user) return res.status(404).send("User not found");
 
   res.send(user);

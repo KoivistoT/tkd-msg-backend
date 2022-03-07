@@ -19,7 +19,7 @@ router.post("/create_private_room", auth, async (req, res) => {
 
   let result = await Room.findOne({
     roomName: sortedIdArray[0] + sortedIdArray[1],
-  });
+  }).lean();
 
   if (result) {
     return res
@@ -40,7 +40,9 @@ router.post("/create_private_room", auth, async (req, res) => {
     User.updateOne(
       { _id: userId },
       { $addToSet: { userRooms: room._id.toString() } }
-    ).exec();
+    )
+      .lean()
+      .exec();
   });
 
   await AllMessages.create({ _id: room._id });
@@ -56,7 +58,7 @@ router.post("/change_room_name", auth, async (req, res) => {
   const newRoomData = await Room.findOneAndUpdate(
     { _id: roomId },
     { roomName: newRoomName }
-  );
+  ).lean();
 
   const newRoomObject = { _id: roomId, newRoomName };
 
@@ -107,7 +109,7 @@ router.post("/create_channel", auth, async (req, res) => {
   const roomType = "channel";
   const { userId: roomCreator, roomName, description } = req.body;
 
-  const result = await Room.findOne({ roomName });
+  const result = await Room.findOne({ roomName }).lean();
   if (result)
     return res
       .status(400)
@@ -126,7 +128,7 @@ router.post("/create_channel", auth, async (req, res) => {
   await User.findOneAndUpdate(
     { _id: roomCreator },
     { $addToSet: { userRooms: room._id.toString() } }
-  );
+  ).lean();
 
   ioUpdateById([roomCreator], "roomAdded", room);
 
@@ -137,7 +139,7 @@ router.post("/change_members", auth, async (req, res) => {
   // tähän validointi
   const { roomId, members: newMemberList } = req.body;
 
-  let result = await Room.findOne({ _id: roomId });
+  let result = await Room.findOne({ _id: roomId }).lean();
   if (!result) return res.status(400).send("Can't find room");
 
   const membersBefore = result.members;
@@ -157,12 +159,12 @@ router.post("/change_members", auth, async (req, res) => {
         await Room.findByIdAndUpdate(
           { _id: roomId },
           { $addToSet: { members: userId } }
-        );
+        ).lean();
 
         await User.findByIdAndUpdate(
           { _id: userId },
           { $addToSet: { userRooms: roomId } }
-        );
+        ).lean();
       })
     );
 
@@ -171,12 +173,12 @@ router.post("/change_members", auth, async (req, res) => {
         await Room.findByIdAndUpdate(
           { _id: roomId },
           { $pull: { members: userId } }
-        );
+        ).lean();
 
         await User.findByIdAndUpdate(
           { _id: userId },
           { $pull: { userRooms: roomId } }
-        );
+        ).lean();
       })
     );
 
@@ -205,11 +207,11 @@ router.post("/leave_room", auth, async (req, res) => {
     await Room.findByIdAndUpdate(
       { _id: roomId },
       { $pull: { members: userId } }
-    );
+    ).lean();
     await User.findByIdAndUpdate(
       { _id: userId },
       { $pull: { userRooms: roomId } }
-    );
+    ).lean();
 
     const updatedRoomData = await Room.findById(roomId).lean();
 
@@ -223,7 +225,7 @@ router.post("/leave_room", auth, async (req, res) => {
 
     if (sum === 0) {
       Room.deleteOne({ _id: roomId }).exec();
-      AllMessages.deleteOne({ _id: roomId }).exec();
+      AllMessages.deleteOne({ _id: roomId }).lean().exec();
     }
 
     const roomIdObject = { _id: roomId };
@@ -251,19 +253,20 @@ router.get("/all_channels", async (req, res) => {
 router.get("/delete_room/:id", async (req, res) => {
   const roomId = req.params.id;
 
-  const roomData = await Room.find({ _id: roomId }).select("members type");
+  const roomData = await Room.find({ _id: roomId })
+    .select("members type")
+    .lean();
 
   if (roomData.length === 0) return res.status(404).send("Room not found");
   const members = roomData[0].members;
 
-  Room.deleteOne({ _id: roomId }).exec();
-  AllMessages.deleteOne({ _id: roomId }).exec();
+  Room.deleteOne({ _id: roomId }).lean().exec();
+  AllMessages.deleteOne({ _id: roomId }).lean().exec();
 
   members.forEach((userId) => {
-    User.findByIdAndUpdate(
-      { _id: userId },
-      { $pull: { userRooms: roomId } }
-    ).exec();
+    User.findByIdAndUpdate({ _id: userId }, { $pull: { userRooms: roomId } })
+      .lean()
+      .exec();
   });
 
   const roomIdObject = { _id: roomId };
@@ -276,14 +279,14 @@ router.get("/delete_room/:id", async (req, res) => {
 router.get("/archive_room/:id", async (req, res) => {
   const roomId = req.params.id;
 
-  const result = await Room.findById(roomId);
+  const result = await Room.findById(roomId).lean();
   if (!result) return res.status(404).send("Room not found");
 
   const roomData = await Room.findOneAndUpdate(
     { _id: roomId },
     { status: "archived" },
     { new: true }
-  );
+  ).lean();
 
   const roomIdObject = { _id: roomId };
 
@@ -295,14 +298,14 @@ router.get("/archive_room/:id", async (req, res) => {
 router.post("/activate_room", async (req, res) => {
   const { roomId, userId } = req.body;
 
-  const result = await Room.findById(roomId);
+  const result = await Room.findById(roomId).lean();
   if (!result) return res.status(404).send("Room not found");
 
   const roomData = await Room.findOneAndUpdate(
     { _id: roomId },
     { status: "active" },
     { new: true }
-  );
+  ).lean();
 
   const roomIdObject = { _id: roomId };
 
