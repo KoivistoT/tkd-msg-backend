@@ -80,9 +80,10 @@ class WebSockets {
       io.emit("userOnline", liveUsers);
     });
     client.on("userOffline", (userId) => {
-      const usersNowLive = liveUsers.filter((user) => user !== userId);
-      // console.log(usersNowLive, "nyt livenä");
-      io.emit("userOnline", usersNowLive);
+      liveUsers = liveUsers.filter((user) => user !== userId);
+
+      // console.log(liveUsers, "nyt livenä");
+      io.emit("userOnline", liveUsers);
     });
     // client.on("id connect", (data) => {
     //   console.log("täällä on nyt");
