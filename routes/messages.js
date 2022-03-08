@@ -17,6 +17,7 @@ router.post("/send_message", auth, async (req, res) => {
     userId: postedByUser,
     messageType: type,
     imageURLs,
+    replyMessageId,
   } = req.body;
 
   if (!req.body.roomId)
@@ -35,6 +36,7 @@ router.post("/send_message", auth, async (req, res) => {
     messageBody,
     roomId,
     postedByUser,
+    replyMessageId,
     type,
     imageURLs: imageURLs || null,
   });
