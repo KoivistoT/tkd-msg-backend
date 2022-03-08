@@ -69,7 +69,7 @@ class WebSockets {
       });
     });
     // // add identity of user mapped to the socket id
-    client.on("onLive", (userId) => {
+    client.on("userOnline", (userId) => {
       const index = liveUsers.findIndex((user) => user === userId);
       // console.log(index);
       if (index === -1) {
@@ -77,12 +77,12 @@ class WebSockets {
       }
 
       // console.log(liveUsers);
-      io.emit("onLive", liveUsers);
+      io.emit("userOnline", liveUsers);
     });
-    client.on("offLive", (userId) => {
+    client.on("userOffline", (userId) => {
       const usersNowLive = liveUsers.filter((user) => user !== userId);
       // console.log(usersNowLive, "nyt livenä");
-      io.emit("onLive", usersNowLive);
+      io.emit("userOnline", usersNowLive);
     });
     // client.on("id connect", (data) => {
     //   console.log("täällä on nyt");
