@@ -15,7 +15,7 @@ router.post("/", async (req, res) => {
 
   if (!user) return res.status(400).send("Invalid email or password.");
 
-  if (user.status === "archived" || user.status === "deleted")
+  if (user.status !== "active")
     return res.status(400).send("Your account is archived.");
   const validPassword = await bcrypt.compare(req.body.password, user.password);
 
