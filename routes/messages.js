@@ -32,7 +32,7 @@ router.post("/send_message", auth, async (req, res) => {
   //   roomId: req.body.roomId,
   // });
 
-  const message = new Message({
+  const message = await Message.create({
     messageBody,
     roomId,
     postedByUser,

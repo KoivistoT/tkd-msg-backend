@@ -183,7 +183,6 @@ router.post("/change_members", auth, async (req, res) => {
     );
 
     const updatedRoomData = await Room.findById(roomId).lean();
-
     ioUpdateById(addToSetMembers, "roomAdded", updatedRoomData);
     ioUpdateById(pullMembers, "roomRemoved", updatedRoomData);
     ioUpdateById(sameMembers, "membersChanged", updatedRoomData);
