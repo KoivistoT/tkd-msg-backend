@@ -7,6 +7,7 @@ const { AllMessages, validate } = require("../models/allMessages");
 const auth = require("../middleware/auth");
 const addObjectIds = require("../utils/addObjectIds");
 const { User } = require("../models/user");
+const { ioUpdateById, ioUpdateToByRoomId } = require("../utils/WebSockets");
 
 const router = express.Router();
 
@@ -238,9 +239,50 @@ router.post("/edit2", async (req, res) => {
   res.send(doc);
 });
 
+router.post("/delete/", async (req, res) => {
+  //post_message on parempi nimi
+  console.log("tähän kaikki turva hommat, että jos ei löydy jne");
+  const { messageId, roomId } = req.body;
+  console.log(messageId, roomId);
+
+  const newMessageData = await AllMessages.updateOne(
+    {
+      _id: roomId,
+      "messages._id": messageId,
+    },
+    //päivitä teksti
+    { $set: { "messages.$.is_deleted": true } }
+
+    //lisää arrayhin objecti
+    // { $addToSet: { "messages.$.readByRecipients": { readByUserId: "1234" } } },
+
+    // (err, result) => {
+    //   if (err) {
+    //     console.log(err);
+    //   } else {
+    //     ioUpdateToByRoomId([roomId], "messageDeleted", result);
+    //   }
+    // }
+  ).exec();
+
+  const messagesObject = {
+    _id: roomId,
+    messageId: messageId,
+  };
+  ioUpdateToByRoomId([roomId], "messageDeleted", messagesObject);
+  //
+  // const doc = await AllMessages.findById("61c07ea580c52533ef671f53");
+  // console.log(doc);
+  // console.log("pitää hakea sub documentin id:llä");
+  // //   message = await message.save();
+
+  res.send("newMessageData");
+});
+
 router.get("/:id", async (req, res) => {
   // console.log(req.params.id);
   const roomId = req.params.id;
+
   const result = await AllMessages.findById(roomId).lean();
 
   // console.log(
