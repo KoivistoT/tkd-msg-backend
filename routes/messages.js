@@ -111,7 +111,9 @@ router.post("/send_message", auth, async (req, res) => {
     { _id: roomId },
     {
       latestMessage,
+      $inc: { messageSum: 1 },
     },
+
     { new: true }
   )
     .lean()
