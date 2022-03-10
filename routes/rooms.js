@@ -47,7 +47,7 @@ router.post("/create_private_room", auth, async (req, res) => {
 
   await AllMessages.create({ _id: room._id });
 
-  ioUpdateById([userId, otherUserId], "roomAdded", room);
+  ioUpdateById(members, "roomAdded", room);
 
   res.status(200).send(room);
 });
