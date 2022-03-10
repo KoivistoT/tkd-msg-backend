@@ -15,6 +15,7 @@ const roomSchema = new mongoose.Schema(
     type: { type: String, required: true }, //private or group or...
     status: { type: String, default: "active" },
     topic: { type: String },
+    latestMessage: { type: Object },
     description: { type: String },
     // members: [userSchema],
     members: { type: Array, default: [] },
@@ -37,6 +38,7 @@ const schema = Joi.object({
   members: Joi.array(),
   status: Joi.string(),
   roomCreator: Joi.string(),
+  lastMessage: Joi.object(),
   otherUsers: Joi.array(),
   description: Joi.string().allow("").allow(null),
   topic: Joi.string(),

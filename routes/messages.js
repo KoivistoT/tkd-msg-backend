@@ -90,6 +90,22 @@ router.post("/send_message", auth, async (req, res) => {
   // ioUpdateToByRoomId
   // const messageObject = { _id: message._id.toString(), message };
   ioUpdateToByRoomId([roomId], "new message", message);
+
+  const latestMessage = {
+    createdAt: message.createdAt,
+    messageBody: message.messageBody,
+    postedByUser: message.postedByUser,
+  };
+  const latestMessageWithId = { _id: roomId, latestMessage };
+  ioUpdateToByRoomId([roomId], "roomLatestMessageChanged", latestMessageWithId); //tähänkin varmistus, eli tuon updaten alle
+  Room.findOneAndUpdate(
+    { _id: roomId },
+    {
+      latestMessage,
+    },
+    { new: true }
+  ).lean();
+
   // io.to(roomId).emit("new message", {
   //   message: messageWithId,
   //   roomId,
