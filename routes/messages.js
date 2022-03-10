@@ -51,38 +51,46 @@ router.post("/send_message", auth, async (req, res) => {
   //   },
   //   { returnDocument: "after" }
   // ).exec();
-
+  //******* */
+  //******* */
+  //******* */
+  //******* */
   //TÄMÄ VOI TOIMIA NOPEAMMIN ,JOS TEKEE TIMESAMPIN ITSE, SE VOI TEHDÄ TÄSSÄ SEN JA SITTEN LÄHETTÄÄ JA SIT VASTA LISÄÄ VIESTEIHIN UPDATELLA
-  const newMessage = await AllMessages.findOneAndUpdate(
-    { _id: roomId },
+  // const newMessage = await AllMessages.findOneAndUpdate(
+  //   { _id: roomId },
 
-    {
-      $addToSet: {
-        messages: {
-          messageBody, //: Math.random(),
-          roomId,
-          postedByUser,
-          replyMessageId,
-          type,
-          imageURLs: imageURLs || null,
-        },
-      },
-    },
-    { returnDocument: "after" }
-  )
-    .lean()
-    .exec();
+  //   {
+  //     $addToSet: {
+  //       messages: {
+  //         messageBody, //: Math.random(),
+  //         roomId,
+  //         postedByUser,
+  //         replyMessageId,
+  //         type,
+  //         imageURLs: imageURLs || null,
+  //       },
+  //     },
+  //   },
+  //   { returnDocument: "after" }
+  // )
+  //   .lean()
+  //   .exec();
 
-  const message = newMessage.messages[newMessage.messages.length - 1];
+  // const message = newMessage.messages[newMessage.messages.length - 1];
+  //******* */
+  //******* */
+  //******* */
+  //******* */
+
   // return;
-  // const message = await Message.create({
-  //   messageBody,
-  //   roomId,
-  //   postedByUser,
-  //   replyMessageId,
-  //   type,
-  //   imageURLs: imageURLs || null,
-  // });
+  const message = await Message.create({
+    messageBody,
+    roomId,
+    postedByUser,
+    replyMessageId,
+    type,
+    imageURLs: imageURLs || null,
+  });
 
   // const messageWithId = { [message._id]: message };
   // console.log("täällä menee joo", roomId);
@@ -90,6 +98,7 @@ router.post("/send_message", auth, async (req, res) => {
   // ioUpdateToByRoomId
   // const messageObject = { _id: message._id.toString(), message };
   ioUpdateToByRoomId([roomId], "new message", message);
+  // ioUpdateToByRoomId([roomId], "new message", message);
 
   const latestMessage = {
     createdAt: message.createdAt,
@@ -121,10 +130,10 @@ router.post("/send_message", auth, async (req, res) => {
   //   "katso: https://www.codegrepper.com/code-examples/javascript/how+to+add+items+into+a+document+array+mongoose"
   // );
   //   const room = await Room.find({ _id: req.body.roomId });
-  // AllMessages.updateOne(
-  //   { _id: req.body.roomId },
-  //   { $addToSet: { messages: message } }
-  // ).exec();
+  AllMessages.updateOne(
+    { _id: req.body.roomId },
+    { $addToSet: { messages: message } }
+  ).exec();
 
   //   message = await message.save();
   // console.log(message);
