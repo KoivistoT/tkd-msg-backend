@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema(
     },
     pushNotificationToken: { type: String },
     accountType: { type: String },
-    is_active: { type: Boolean, default: false },
+    is_active: { type: Boolean, default: true },
     status: { type: String, default: "active" },
   },
   {

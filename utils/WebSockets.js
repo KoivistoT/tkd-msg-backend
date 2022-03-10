@@ -230,7 +230,7 @@ function ioUpdateToAllActiveUsers(
 function ioUpdateToByRoomId(rooms, action, data) {
   rooms.forEach((roomId) => {
     try {
-      // console.log(users, "tässä käyttäjät", data, action);
+      console.log(users, "tässä käyttäjät", data, action);
       io.to(roomId).emit("updates", action, {
         [data._id]: data,
       });
