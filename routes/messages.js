@@ -33,14 +33,53 @@ router.post("/send_message", auth, async (req, res) => {
   //   roomId: req.body.roomId,
   // });
 
-  const message = await Message.create({
-    messageBody,
-    roomId,
-    postedByUser,
-    replyMessageId,
-    type,
-    imageURLs: imageURLs || null,
-  });
+  // const message = await AllMessages.findOneAndUpdate(
+  //   {
+  //     roomId,
+  //   },
+  //   {
+  // $addToSet: {
+  //   messages: {
+  //     messageBody,
+  //     roomId,
+  //     postedByUser,
+  //     replyMessageId,
+  //     type,
+  //     imageURLs: imageURLs || null,
+  //   },
+  // },
+  //   },
+  //   { returnDocument: "after" }
+  // ).exec();
+
+  const newMessage = await AllMessages.findOneAndUpdate(
+    { _id: roomId },
+
+    {
+      $addToSet: {
+        messages: {
+          messageBody,
+          roomId,
+          postedByUser,
+          replyMessageId,
+          type,
+          imageURLs: imageURLs || null,
+        },
+      },
+    },
+    { returnDocument: "after" }
+  ).exec();
+
+  const message = newMessage.messages[newMessage.messages.length - 1];
+  // return;
+  // const message = await Message.create({
+  //   messageBody,
+  //   roomId,
+  //   postedByUser,
+  //   replyMessageId,
+  //   type,
+  //   imageURLs: imageURLs || null,
+  // });
 
   const messageWithId = { [message._id]: message };
 
@@ -59,10 +98,10 @@ router.post("/send_message", auth, async (req, res) => {
   //   "katso: https://www.codegrepper.com/code-examples/javascript/how+to+add+items+into+a+document+array+mongoose"
   // );
   //   const room = await Room.find({ _id: req.body.roomId });
-  AllMessages.updateOne(
-    { _id: req.body.roomId },
-    { $addToSet: { messages: message } }
-  ).exec();
+  // AllMessages.updateOne(
+  //   { _id: req.body.roomId },
+  //   { $addToSet: { messages: message } }
+  // ).exec();
 
   //   message = await message.save();
   // console.log(message);
