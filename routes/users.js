@@ -121,14 +121,25 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
   const { currentUserId, roomId, lastSeenMessageSum } = req.body;
 
   // const a = await User.f({}{ "last_seen_message.roomId": roomId }).exec();
-  const a = await User.aggregate([
-    { $match: { _id: new mongoose.Types.ObjectId(currentUserId) } },
-  ]);
 
+  const a = await User.aggregate([
+    {
+      $match: {
+        $and: [
+          { _id: new mongoose.Types.ObjectId(currentUserId) },
+          { "last_seen_messages.roomId": roomId },
+        ],
+      },
+    },
+  ]);
   console.log(
-    a[0].last_seen_messages,
+    a,
     "täältä joku onko id jos on updatee sen jos ei niin sitten lisää addtoset, muista päivittää erikseen current useriin "
   );
+  // console.log(
+  //   a[0].last_seen_messages,
+  //   "täältä joku onko id jos on updatee sen jos ei niin sitten lisää addtoset, muista päivittää erikseen current useriin "
+  // );
 
   // const newUserData = await User.findOneAndUpdate(
   //   { _id: currentUserId },
