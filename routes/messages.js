@@ -113,7 +113,9 @@ router.post("/send_message", auth, async (req, res) => {
       latestMessage,
     },
     { new: true }
-  ).lean();
+  )
+    .lean()
+    .exec();
 
   // io.to(roomId).emit("new message", {
   //   message: messageWithId,
