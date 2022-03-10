@@ -52,13 +52,14 @@ router.post("/send_message", auth, async (req, res) => {
   //   { returnDocument: "after" }
   // ).exec();
 
+  //TÄMÄ VOI TOIMIA NOPEAMMIN ,JOS TEKEE TIMESAMPIN ITSE, SE VOI TEHDÄ TÄSSÄ SEN JA SITTEN LÄHETTÄÄ JA SIT VASTA LISÄÄ VIESTEIHIN UPDATELLA
   const newMessage = await AllMessages.findOneAndUpdate(
     { _id: roomId },
 
     {
       $addToSet: {
         messages: {
-          messageBody,
+          messageBody, //: Math.random(),
           roomId,
           postedByUser,
           replyMessageId,
@@ -68,7 +69,9 @@ router.post("/send_message", auth, async (req, res) => {
       },
     },
     { returnDocument: "after" }
-  ).exec();
+  )
+    .lean()
+    .exec();
 
   const message = newMessage.messages[newMessage.messages.length - 1];
   // return;
@@ -81,12 +84,16 @@ router.post("/send_message", auth, async (req, res) => {
   //   imageURLs: imageURLs || null,
   // });
 
-  const messageWithId = { [message._id]: message };
+  // const messageWithId = { [message._id]: message };
+  // console.log("täällä menee joo", roomId);
 
-  io.to(req.body.roomId).emit("new message", {
-    message: messageWithId,
-    roomId,
-  });
+  // ioUpdateToByRoomId
+  // const messageObject = { _id: message._id.toString(), message };
+  ioUpdateToByRoomId([roomId], "new message", message);
+  // io.to(roomId).emit("new message", {
+  //   message: messageWithId,
+  //   roomId,
+  // });
 
   // console.log(
   //   "katso: https://www.codegrepper.com/code-examples/javascript/how+to+add+items+into+a+document+array+mongoose"
@@ -109,8 +116,7 @@ router.post("/send_message", auth, async (req, res) => {
   //   message,
   // });
 
-  // console.log(taalla);
-  res.status(200).json({ success: true, message: messageWithId }); //send(message);
+  res.status(200).json({ success: true, message: message }); //send(message);
 });
 
 router.get("/test2", auth, async (req, res) => {
