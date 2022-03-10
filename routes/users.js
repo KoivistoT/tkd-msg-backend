@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const router = express.Router();
 const _ = require("lodash");
 const addObjectIds = require("../utils/addObjectIds");
+const mongoose = require("mongoose");
 const {
   ioUpdateToAllActiveUsers,
   ioUpdateToByRoomId,
@@ -115,6 +116,32 @@ router.post("/edit_user_data", auth, async (req, res) => {
   ioUpdateToAllActiveUsers("userDataEdited", newUserObject);
 
   res.status(200).send(newUserData);
+});
+router.post("/save_last_seen_message_sum", auth, async (req, res) => {
+  const { currentUserId, roomId, lastSeenMessageSum } = req.body;
+
+  // const a = await User.f({}{ "last_seen_message.roomId": roomId }).exec();
+  const a = await User.aggregate([
+    { $match: { _id: new mongoose.Types.ObjectId(currentUserId) } },
+  ]);
+
+  console.log(
+    a[0].last_seen_messages,
+    "täältä joku onko id jos on updatee sen jos ei niin sitten lisää addtoset, muista päivittää erikseen current useriin "
+  );
+
+  // const newUserData = await User.findOneAndUpdate(
+  //   { _id: currentUserId },
+  //   {
+  //     $addToSet: {
+  //       last_seen_messages: { roomId, lastSeenMessageSum: lastSeenMessageSum },
+  //     },
+  //   },
+  //   { new: true }
+  // ).lean();
+
+  res.status(200).send("newUserData");
+  // res.status(200).send(newUserData);
 });
 
 router.post("/archive_or_delete_user", auth, async (req, res) => {
