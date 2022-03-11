@@ -36,11 +36,22 @@ router.post("/create_private_room", auth, async (req, res) => {
     roomCreator: userId,
   });
 
+  //tämä toistuu kolmesti tee static method
+  const roomId = room._id.toString();
   members.forEach((userId) => {
     User.updateOne(
       { _id: userId },
-      { $addToSet: { userRooms: room._id.toString() } }
+      {
+        $addToSet: {
+          userRooms: roomId,
+          last_seen_messages: {
+            roomId,
+            lastSeenMessageSum: 0,
+          },
+        },
+      }
     )
+
       .lean()
       .exec();
   });
@@ -90,10 +101,19 @@ router.post("/create_direct_room", auth, async (req, res) => {
 
   await AllMessages.create({ _id: room._id });
 
+  const roomId = room._id.toString();
   roomUsers.forEach((userId) => {
     User.updateOne(
       { _id: userId },
-      { $addToSet: { userRooms: room._id.toString() } }
+      {
+        $addToSet: {
+          userRooms: roomId,
+          last_seen_messages: {
+            roomId,
+            lastSeenMessageSum: 0,
+          },
+        },
+      }
     ).exec();
   });
 
@@ -125,9 +145,18 @@ router.post("/create_channel", auth, async (req, res) => {
 
   await AllMessages.create({ _id: room._id });
 
+  const roomId = room._id.toString();
   await User.findOneAndUpdate(
     { _id: roomCreator },
-    { $addToSet: { userRooms: room._id.toString() } }
+    {
+      $addToSet: {
+        userRooms: roomId,
+        last_seen_messages: {
+          roomId,
+          lastSeenMessageSum: 0,
+        },
+      },
+    }
   ).lean();
 
   ioUpdateById([roomCreator], "roomAdded", room);
@@ -209,7 +238,7 @@ router.post("/leave_room", auth, async (req, res) => {
     ).lean();
     await User.findByIdAndUpdate(
       { _id: userId },
-      { $pull: { userRooms: roomId } }
+      { $pull: { userRooms: roomId, last_seen_messages: { roomId: roomId } } }
     ).lean();
 
     const updatedRoomData = await Room.findById(roomId).lean();
@@ -263,7 +292,23 @@ router.get("/delete_room/:id", async (req, res) => {
   AllMessages.deleteOne({ _id: roomId }).lean().exec();
 
   members.forEach((userId) => {
-    User.findByIdAndUpdate({ _id: userId }, { $pull: { userRooms: roomId } })
+    User.findOneAndUpdate(
+      { _id: userId },
+      {
+        $pull: { userRooms: roomId, last_seen_messages: { roomId: roomId } },
+      },
+      { safe: true, multi: false }
+    )
+      // User.findByIdAndUpdate(
+      //   // { _id: userId, "last_seen_messages.roomId": roomId },
+      //   // { $pull: { userRooms: roomId } },
+      //   // { $pull: { "last_seen_messages.roomId": roomId } }
+      //   { _id: userId, "last_seen_messages.roomId": roomId },
+      //   {
+      //     $pull: { "last_seen_messages.$.roomId": roomId },
+
+      //   }
+      // )
       .lean()
       .exec();
   });

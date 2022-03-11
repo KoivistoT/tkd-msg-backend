@@ -122,6 +122,7 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
 
   // const a = await User.f({}{ "last_seen_message.roomId": roomId }).exec();
 
+  //pitäisi olla aina, onko hyvä silti varmistaa?
   const isAlreadyAdded = await User.aggregate([
     {
       $match: {
@@ -167,7 +168,7 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
 
   await User.findOneAndUpdate(
     { _id: userId },
-    { status },
+    { status, last_seen_messages: [] },
     { new: true }
   ).lean();
 
@@ -208,13 +209,41 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
 });
 
 router.get("/activate_user/:id", auth, async (req, res) => {
-  const userId = req.params.id;
+  const currentUserId = req.params.id;
 
   const userData = await User.findOneAndUpdate(
-    { _id: userId },
+    { _id: currentUserId },
     { status: "active" },
     { new: true }
   ).lean();
+
+  //nämä functiot on myös roomsissa, voisiko olla static method
+  userData.userRooms.forEach(async (roomId) => {
+    const roomData = await Room.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
+      { $unwind: { path: "$_id" } },
+      {
+        $project: {
+          messageSum: 1,
+        },
+      },
+    ]);
+
+    await User.findOneAndUpdate(
+      { _id: currentUserId },
+      {
+        $addToSet: {
+          last_seen_messages: {
+            roomId,
+            lastSeenMessageSum: roomData[0].messageSum,
+          },
+        },
+      },
+      { new: true }
+    )
+      .lean()
+      .exec();
+  });
 
   var changeMembers = new Promise((resolve) => {
     let i = 0;
@@ -222,7 +251,7 @@ router.get("/activate_user/:id", auth, async (req, res) => {
     userData.userRooms.forEach(async (room) => {
       const updatedRoomData = await Room.findByIdAndUpdate(
         { _id: room },
-        { $addToSet: { members: userId } },
+        { $addToSet: { members: currentUserId } },
         { new: true }
       )
         .lean()
@@ -236,13 +265,13 @@ router.get("/activate_user/:id", auth, async (req, res) => {
   Promise.all([changeMembers]);
 
   const activatedUser = await User.findById(
-    userId,
+    currentUserId,
     "-password -last_seen_messages -contacts"
   ).lean();
 
   ioUpdateToAllActiveUsers("userActivated", activatedUser);
 
-  res.send(userId);
+  res.send(currentUserId);
 });
 
 router.get("/:id", auth, async (req, res) => {
