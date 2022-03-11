@@ -122,7 +122,7 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
 
   // const a = await User.f({}{ "last_seen_message.roomId": roomId }).exec();
 
-  const a = await User.aggregate([
+  const isAlreadyAdded = await User.aggregate([
     {
       $match: {
         $and: [
@@ -132,27 +132,34 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
       },
     },
   ]);
-  console.log(
-    a,
-    "täältä joku onko id jos on updatee sen jos ei niin sitten lisää addtoset, muista päivittää erikseen current useriin "
-  );
-  // console.log(
-  //   a[0].last_seen_messages,
-  //   "täältä joku onko id jos on updatee sen jos ei niin sitten lisää addtoset, muista päivittää erikseen current useriin "
-  // );
 
-  // const newUserData = await User.findOneAndUpdate(
-  //   { _id: currentUserId },
-  //   {
-  //     $addToSet: {
-  //       last_seen_messages: { roomId, lastSeenMessageSum: lastSeenMessageSum },
-  //     },
-  //   },
-  //   { new: true }
-  // ).lean();
+  let newUserData;
 
-  res.status(200).send("newUserData");
-  // res.status(200).send(newUserData);
+  if (isAlreadyAdded.length > 0) {
+    newUserData = await User.updateOne(
+      { _id: currentUserId, "last_seen_messages.roomId": roomId },
+      {
+        $set: { "last_seen_messages.$.lastSeenMessageSum": lastSeenMessageSum },
+      },
+      { new: true }
+    )
+      .lean()
+      .exec();
+  } else {
+    newUserData = await User.findOneAndUpdate(
+      { _id: currentUserId },
+      {
+        $addToSet: {
+          last_seen_messages: { roomId, lastSeenMessageSum },
+        },
+      },
+      { new: true }
+    )
+      .lean()
+      .exec();
+  }
+
+  res.status(200).send(newUserData);
 });
 
 router.post("/archive_or_delete_user", auth, async (req, res) => {
