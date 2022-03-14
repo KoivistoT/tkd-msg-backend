@@ -34,6 +34,7 @@ router.post("/create_private_room", auth, async (req, res) => {
     type: roomType,
     members: members,
     roomCreator: userId,
+    status: "draft",
   });
 
   //tämä toistuu kolmesti tee static method
@@ -355,6 +356,25 @@ router.post("/activate_room", async (req, res) => {
 
   ioUpdateById([userId], "roomActivated", roomIdObject);
   ioUpdateById(roomData.members, "roomAdded", roomData);
+
+  res.status(200).send(roomId);
+});
+
+router.post("/activate_draft_room", async (req, res) => {
+  const { roomId, userId } = req.body;
+
+  const result = await Room.findById(roomId).lean();
+  if (!result) return res.status(404).send("Room not found");
+
+  const roomData = await Room.findOneAndUpdate(
+    { _id: roomId },
+    { status: "active" },
+    { new: true }
+  ).lean();
+
+  const roomIdObject = { _id: roomId };
+
+  ioUpdateById(roomData.members, "roomActivated", roomIdObject);
 
   res.status(200).send(roomId);
 });

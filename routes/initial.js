@@ -63,7 +63,7 @@ router.get("/", auth, async (req, res) => {
               _id: new mongoose.Types.ObjectId(roomId),
 
               $or: [
-                { status: "active" },
+                { $or: [{ status: "active" }, { status: "draft" }] },
                 { $and: [{ roomCreator: userId }, { status: "archived" }] },
               ],
             },
