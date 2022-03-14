@@ -187,7 +187,7 @@ router.get("/test2", auth, async (req, res) => {
   //   { $skip: 2 },
   //   { $limit: 2 },
   // ]);
-  console.log(a);
+  // console.log(a);
   // console.log("tämä riittää, koska hakee vain yhden viestin");
   // AllMessages.findOne(
   //   { _id: "62123aa5890a7f6b6d1233e3" },
@@ -297,9 +297,9 @@ router.get("/room_images/:id", async (req, res) => {
     // { $limit: 1 },
   ]);
 
-  const imageURLs = roomImageURLs.map(
-    (message) => Object.values(message)[0].imageURLs
-  );
+  const imageURLs = roomImageURLs
+    .reverse()
+    .map((message) => Object.values(message)[0].imageURLs);
 
   res.send({ imageURLs, roomId });
 });
@@ -308,7 +308,7 @@ router.post("/edit2", async (req, res) => {
   //post_message on parempi nimi
 
   const doc = await AllMessages.findById("61c07ea580c52533ef671f53");
-  console.log(doc);
+  // console.log(doc);
   console.log("pitää hakea sub documentin id:llä");
   //   message = await message.save();
 
@@ -319,7 +319,7 @@ router.post("/delete/", async (req, res) => {
   //post_message on parempi nimi
   console.log("tähän kaikki turva hommat, että jos ei löydy jne");
   const { messageId, roomId } = req.body;
-  console.log(messageId, roomId);
+  // console.log(messageId, roomId);
 
   const newMessageData = await AllMessages.updateOne(
     {
@@ -368,7 +368,7 @@ router.get("/:id", async (req, res) => {
 
   const messagesObject = {
     _id: result._id,
-    messages: addObjectIds(result.messages),
+    messages: addObjectIds(result.messages.reverse()),
   };
 
   // console.log(messagesObject);

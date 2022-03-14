@@ -190,7 +190,7 @@ function ioUpdateById(targetUsers, action, data) {
     const userSocketId = getUserSocketIdByUserId(userId);
 
     if (!userSocketId) return; // user is not connected
-    console.log("tässä muodossa", targetUsers, action, data);
+    // console.log("tässä muodossa", targetUsers, action, data);
     try {
       io.to(userSocketId).emit("updates", action, data);
     } catch (error) {

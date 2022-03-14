@@ -140,15 +140,15 @@ router.get("/", auth, async (req, res) => {
       if (allMessages) {
         const messagesObject = {
           _id: allMessages._id,
-          messages: addObjectIds(allMessages.messages),
+          messages: addObjectIds(allMessages.messages.reverse()),
         };
         userAllMessages.push(messagesObject);
       }
       if (allImages) {
         Object.assign(userAllImages, {
-          [roomId]: allImages.map(
-            (message) => Object.values(message)[0].imageURLs
-          ),
+          [roomId]: allImages
+            .reverse()
+            .map((message) => Object.values(message)[0].imageURLs),
         });
       }
     })
