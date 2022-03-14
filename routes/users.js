@@ -163,6 +163,7 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
   let allReadByData;
   await Promise.all(
     readByMessagesIds.map(async (messageId) => {
+      console.log("tähän on hyvä saada varmistus, tee myöhemmin");
       // console.log(messageId);
       // const isAlreadyMarked = await AllMessages.aggregate([
       //   {
@@ -207,6 +208,9 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
         postedByUser: allReadByData.messages[index].postedByUser,
       });
     });
+    console.log(
+      "toki jos readBy ja postedby on sama, niin ei kuulu lähettää!! "
+    );
     const sendToUsers = finalData.map((item) => item.postedByUser);
     ioUpdateById(sendToUsers, "readByRecepientsResived", finalData);
   }
