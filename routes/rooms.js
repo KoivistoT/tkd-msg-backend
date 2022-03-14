@@ -72,7 +72,7 @@ router.post("/change_room_name", auth, async (req, res) => {
     { roomName: newRoomName }
   ).lean();
 
-  const newRoomObject = { _id: roomId, newRoomName };
+  const newRoomObject = { roomId, newRoomName };
 
   ioUpdateToByRoomId([roomId], "roomNameChanged", newRoomObject);
 
@@ -214,7 +214,7 @@ router.post("/change_members", auth, async (req, res) => {
 
     const updatedRoomData = await Room.findById(roomId).lean();
     ioUpdateById(addToSetMembers, "roomAdded", updatedRoomData);
-    ioUpdateById(pullMembers, "roomRemoved", updatedRoomData);
+    ioUpdateById(pullMembers, "roomRemoved", updatedRoomData._id);
     ioUpdateById(sameMembers, "membersChanged", updatedRoomData);
 
     res.status(200).send(updatedRoomData);
@@ -257,9 +257,7 @@ router.post("/leave_room", auth, async (req, res) => {
       AllMessages.deleteOne({ _id: roomId }).lean().exec();
     }
 
-    const roomIdObject = { _id: roomId };
-
-    ioUpdateById([userId], "roomRemoved", roomIdObject);
+    ioUpdateById([userId], "roomRemoved", updatedRoomData._id);
     ioUpdateById(newMembersList, "membersChanged", updatedRoomData);
 
     res.status(200).send(updatedRoomData);
@@ -314,9 +312,7 @@ router.get("/delete_room/:id", async (req, res) => {
       .exec();
   });
 
-  const roomIdObject = { _id: roomId };
-
-  ioUpdateToByRoomId([roomId], "roomRemoved", roomIdObject);
+  ioUpdateToByRoomId([roomId], "roomRemoved", roomId);
 
   res.status(200).send(roomId);
 });
@@ -333,9 +329,7 @@ router.get("/archive_room/:id", async (req, res) => {
     { new: true }
   ).lean();
 
-  const roomIdObject = { _id: roomId };
-
-  ioUpdateById(roomData.members, "roomArchived", roomIdObject);
+  ioUpdateById(roomData.members, "roomArchived", roomId);
 
   res.status(200).send(roomId);
 });
@@ -352,9 +346,7 @@ router.post("/activate_room", async (req, res) => {
     { new: true }
   ).lean();
 
-  const roomIdObject = { _id: roomId };
-
-  ioUpdateById([userId], "roomActivated", roomIdObject);
+  ioUpdateById([userId], "roomActivated", roomId);
   ioUpdateById(roomData.members, "roomAdded", roomData);
 
   res.status(200).send(roomId);
@@ -372,9 +364,7 @@ router.post("/activate_draft_room", async (req, res) => {
     { new: true }
   ).lean();
 
-  const roomIdObject = { _id: roomId };
-
-  ioUpdateById(roomData.members, "roomActivated", roomIdObject);
+  ioUpdateById(roomData.members, "roomActivated", roomId);
 
   res.status(200).send(roomId);
 });

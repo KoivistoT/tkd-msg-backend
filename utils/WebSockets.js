@@ -190,11 +190,9 @@ function ioUpdateById(targetUsers, action, data) {
     const userSocketId = getUserSocketIdByUserId(userId);
 
     if (!userSocketId) return; // user is not connected
-
+    console.log("tässä muodossa", targetUsers, action, data);
     try {
-      io.to(userSocketId).emit("updates", action, {
-        [data._id]: data,
-      });
+      io.to(userSocketId).emit("updates", action, data);
     } catch (error) {
       console.log(error, "code ikjif92");
     }
@@ -218,9 +216,7 @@ function ioUpdateToAllActiveUsers(
     if (onlyForAdmins === true && user.accountType !== "admin") return;
 
     try {
-      io.to(user.socketId).emit("updates", action, {
-        [data._id]: data,
-      });
+      io.to(user.socketId).emit("updates", action, data);
     } catch (error) {
       console.log(error, "code 9fiffe");
     }
@@ -231,9 +227,7 @@ function ioUpdateToByRoomId(rooms, action, data) {
   rooms.forEach((roomId) => {
     try {
       // console.log(users, "tässä käyttäjät");
-      io.to(roomId).emit("updates", action, {
-        [data._id]: data,
-      });
+      io.to(roomId).emit("updates", action, data);
     } catch (error) {
       console.log(error, "code 9fiiie");
     }

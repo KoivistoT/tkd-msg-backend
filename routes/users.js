@@ -43,8 +43,7 @@ router.post("/create_user", auth, async (req, res) => {
     "-password -last_seen_messages -contacts"
   ).lean();
 
-  const action = "newUser";
-  ioUpdateToAllActiveUsers(action, newUser);
+  ioUpdateToAllActiveUsers("newUser", newUser);
 
   res
     .header("x-auth-token", token)
@@ -89,7 +88,7 @@ router.get("/delete_user/:id", auth, async (req, res) => {
   });
   Promise.all([changeMembers]);
 
-  ioUpdateToAllActiveUsers("userDeleted", { _id: userId });
+  ioUpdateToAllActiveUsers("userDeleted", userId);
 
   res.send(userId);
 });
@@ -111,9 +110,7 @@ router.post("/edit_user_data", auth, async (req, res) => {
     { new: true }
   ).lean();
 
-  const newUserObject = { _id: userId, newUserData };
-
-  ioUpdateToAllActiveUsers("userDataEdited", newUserObject);
+  ioUpdateToAllActiveUsers("userDataEdited", newUserData);
 
   res.status(200).send(newUserData);
 });
@@ -201,9 +198,9 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
   Promise.all([changeMembers]);
 
   if (status === "archived") {
-    ioUpdateToAllActiveUsers("userArchived", { _id: userId });
+    ioUpdateToAllActiveUsers("userArchived", userId);
   } else {
-    ioUpdateToAllActiveUsers("userTemporaryDeleted", { _id: userId });
+    ioUpdateToAllActiveUsers("userTemporaryDeleted", userId);
   }
   res.send(userId);
 });
@@ -264,12 +261,12 @@ router.get("/activate_user/:id", auth, async (req, res) => {
   });
   Promise.all([changeMembers]);
 
-  const activatedUser = await User.findById(
+  await User.findById(
     currentUserId,
     "-password -last_seen_messages -contacts"
   ).lean();
 
-  ioUpdateToAllActiveUsers("userActivated", activatedUser);
+  ioUpdateToAllActiveUsers("userActivated", currentUserId);
 
   res.send(currentUserId);
 });

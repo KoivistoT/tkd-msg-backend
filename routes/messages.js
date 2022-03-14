@@ -104,9 +104,11 @@ router.post("/send_message", auth, async (req, res) => {
     createdAt: message.createdAt,
     messageBody: message.messageBody,
     postedByUser: message.postedByUser,
+    roomId,
   };
-  const latestMessageWithId = { _id: roomId, latestMessage };
-  ioUpdateToByRoomId([roomId], "roomLatestMessageChanged", latestMessageWithId); //tähänkin varmistus, eli tuon updaten alle
+
+  ioUpdateToByRoomId([roomId], "roomLatestMessageChanged", latestMessage); //tähänkin varmistus, eli tuon updaten alle
+
   Room.findOneAndUpdate(
     { _id: roomId },
     {
@@ -340,8 +342,8 @@ router.post("/delete/", async (req, res) => {
   ).exec();
 
   const messagesObject = {
-    _id: roomId,
-    messageId: messageId,
+    roomId,
+    messageId,
   };
   ioUpdateToByRoomId([roomId], "messageDeleted", messagesObject);
   //
@@ -365,7 +367,8 @@ router.get("/:id", async (req, res) => {
   if (!result) return res.status(404).send("Messages not found");
 
   const messagesObject = {
-    [roomId]: { _id: result._id, messages: addObjectIds(result.messages) },
+    _id: result._id,
+    messages: addObjectIds(result.messages),
   };
 
   // console.log(messagesObject);
