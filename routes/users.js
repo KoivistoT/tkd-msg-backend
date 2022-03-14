@@ -8,9 +8,11 @@ const mongoose = require("mongoose");
 const {
   ioUpdateToAllActiveUsers,
   ioUpdateToByRoomId,
+  ioUpdateById,
 } = require("../utils/WebSockets");
 const { Room } = require("../models/room");
 const auth = require("../middleware/auth");
+const { AllMessages } = require("../models/allMessages");
 
 router.post("/create_user", auth, async (req, res) => {
   const { error } = schema.validate(req.body);
@@ -115,7 +117,8 @@ router.post("/edit_user_data", auth, async (req, res) => {
   res.status(200).send(newUserData);
 });
 router.post("/save_last_seen_message_sum", auth, async (req, res) => {
-  const { currentUserId, roomId, lastSeenMessageSum } = req.body;
+  const { currentUserId, roomId, lastSeenMessageSum, readByMessagesIds } =
+    req.body;
 
   // const a = await User.f({}{ "last_seen_message.roomId": roomId }).exec();
 
@@ -157,6 +160,130 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
       .exec();
   }
 
+  let allReadByData;
+  await Promise.all(
+    readByMessagesIds.map(async (messageId) => {
+      // console.log(messageId);
+      // const isAlreadyMarked = await AllMessages.aggregate([
+      //   {
+      //     $match: {
+      //       _id: new mongoose.Types.ObjectId(roomId),
+      //       $and: [
+      //         { "messages._id": new mongoose.Types.ObjectId(messageId) },
+      //         { "messages.readByRecipients.readByUserId": currentUserId },
+      //       ],
+      //     },
+      //   },
+      // ]);
+      // console.log(isAlreadyMarked.length, "onko merkattu");
+      // if (isAlreadyMarked.length === 0) {
+      allReadByData = await AllMessages.findOneAndUpdate(
+        {
+          _id: roomId,
+          "messages._id": messageId,
+        },
+        {
+          $addToSet: {
+            "messages.$.readByRecipients": { readByUserId: currentUserId },
+          },
+        },
+        { new: true }
+      ).exec();
+      // }
+    })
+  );
+
+  if (allReadByData) {
+    const finalData = [];
+    readByMessagesIds.forEach((messageId) => {
+      const index = allReadByData.messages.findIndex(
+        (item) => item._id.toString() === messageId
+      );
+      if (index === -1) return;
+      finalData.push({
+        messageId: allReadByData.messages[index]._id,
+        readByRecipients: allReadByData.messages[index].readByRecipients,
+        roomId: allReadByData.messages[index].roomId,
+        postedByUser: allReadByData.messages[index].postedByUser,
+      });
+    });
+    const sendToUsers = finalData.map((item) => item.postedByUser);
+    ioUpdateById(sendToUsers, "readByRecepientsResived", finalData);
+  }
+
+  // console.log(finalData[0]);
+  // const isAlreadyMarked = await Room.aggregate([
+  //   {
+  //     $match: {
+  //       $and: [
+  //         { _id: new mongoose.Types.ObjectId(roomId) },
+  //         { "readByRecipients.readByUserId": currentUserId },
+  //       ],
+  //     },
+  //   },
+  // ]);
+
+  // const a = await AllMessages.aggregate([
+  //   {
+  //     $match: {
+  //       $and: [
+  //         { _id: new mongoose.Types.ObjectId(roomId) },
+  //         { "messages.readByRecipients.readByUserId": { $ne: currentUserId } },
+  //       ],
+  //     },
+  //   },
+  //   {
+  //     $unwind: "$messages",
+  //   },
+  //   {
+  //     $project: { "messages.readByRecipients": 1, "messages._id": 1 },
+  //   },
+  // ]);
+
+  // console.log("täällä sähläytstä");
+  // const a = await AllMessages.updateMany(
+  //   {
+  //     _id: roomId,
+  //     "messages.$.readByRecipients.readByUserId": { $ne: currentUserId },
+  //   },
+  //   {
+  //     $addToSet: {
+  //       "messages.$.readByRecipients": { readByUserId: currentUserId },
+  //     },
+  //   },
+  //   { multi: true }
+  // );
+  // const a = await AllMessages.updateMany(
+  //   {
+  //     _id: roomId,
+  //     // "messages._id": "622f38dbf9c07b22b40ff0d7",
+  //     // "messages.readByRecipients.readByUserId": { $ne: currentUserId },
+  //     "messages.readByRecipients": { $size: 0 },
+
+  //     // { $elemMatch: { readByUserId: { $ne: currentUserId } } },
+  //     // { $size: 0 },
+
+  //     //   $elemMatch: {
+  //     //     $or: [{ readByUserId: { $ne: currentUserId }, $size: 0 }],
+  //     //   },
+  //   },
+  //   //  "messages.readByRecipients": { $size: 0 },
+
+  //   //päivitä teksti
+  //   // { $set: { "messages.$.messageBody": "lfffffjlkj" } },
+  //   //lisää arrayhin objecti
+  //   {
+  //     $addToSet: {
+  //       "messages.$.readByRecipients": { readByUserId: currentUserId },
+  //     },
+  //   },
+  //   {
+  //     arrayFilters: [{ "messages.readByRecipients": { $size: 0 } }],
+  //     multi: true,
+  //   }
+  // );
+  // console.log(a);
+  // console.log(isAlreadyMarked);
   res.status(200).send(newUserData);
 });
 
