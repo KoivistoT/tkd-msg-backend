@@ -5,7 +5,7 @@ users = [];
 liveUsers = [];
 class WebSockets {
   connection(client) {
-    console.log(`[${client.id}] socket connected`);
+    // console.log(`[${client.id}] socket connected`);
 
     // client.join("1111");
     // io.to("1111").emit("some event");
@@ -66,7 +66,7 @@ class WebSockets {
     // event fired when the chat room is disconnected
     client.on("disconnect", () => {
       users = users.filter((user) => user.socketId !== client.id);
-      console.log("lähti pois", client.id);
+      // console.log("lähti pois", client.id);
       io.emit("users live", {
         users,
       });
@@ -83,7 +83,7 @@ class WebSockets {
       io.emit("userOnline", liveUsers);
     });
     client.on("userOffline", (userId) => {
-      console.log(userId, "offlineen meni");
+      // console.log(userId, "offlineen meni");
       liveUsers = liveUsers.filter((user) => user !== userId);
 
       io.emit("userOnline", liveUsers);
@@ -230,9 +230,9 @@ async function ioUpdateToByRoomId(rooms, action, data) {
   await Promise.all(
     rooms.map(async (roomId) => {
       const { members } = await Room.findById(roomId).lean().exec();
-      console.log(
-        "tämän saa varmaankin niin, että on ainoastaan yksi io update functio"
-      );
+      // console.log(
+      //   "tämän saa varmaankin niin, että on ainoastaan yksi io update functio"
+      // );
       //pitäisikö alla alempana, if lauseess, ettei viivettä, jos tilanne muuttuukin. Teen joo niin
       io.to(roomId).emit("updates", action, data);
 
@@ -240,11 +240,11 @@ async function ioUpdateToByRoomId(rooms, action, data) {
         // if (users.includes(userId)) console.log("ei ole livenä", userId);
 
         if (!liveUsers.includes(currentUserId)) {
-          console.log("ei ole livenä", currentUserId);
-
+          // console.log("ei ole livenä", currentUserId);
+          // console.log(action, data)
           ChangeBucket.updateOne(
             { _id: currentUserId },
-            { $addToSet: { changes: { action, data } } }
+            { $addToSet: { changes: { type: action, data } } }
           ).exec();
         }
       });

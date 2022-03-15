@@ -15,6 +15,8 @@ const router = express.Router();
 router.get("/get_change_bucket/:id", async (req, res) => {
   const currentUserId = req.params.id;
 
+  if (currentUserId === null) return res.status(404).send("no userID");
+
   const result = await ChangeBucket.findById(currentUserId).lean();
   ChangeBucket.findOneAndUpdate(
     { _id: currentUserId },
@@ -29,6 +31,8 @@ router.get("/get_change_bucket/:id", async (req, res) => {
 
 router.get("/clear_bucket/:id", async (req, res) => {
   const currentUserId = req.params.id;
+
+  if (currentUserId === null) return res.status(404).send("no userID");
 
   await ChangeBucket.findOneAndUpdate(
     { _id: currentUserId },
