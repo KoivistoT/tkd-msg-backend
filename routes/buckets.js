@@ -14,10 +14,31 @@ const router = express.Router();
 
 router.get("/get_change_bucket/:id", async (req, res) => {
   const currentUserId = req.params.id;
-  console.log(currentUserId);
+
   const result = await ChangeBucket.findById(currentUserId).lean();
+  ChangeBucket.findOneAndUpdate(
+    { _id: currentUserId },
+    { changes: [] },
+    { new: true }
+  )
+    .lean()
+    .exec();
 
   res.status(200).send(result);
+});
+
+router.get("/clear_bucket/:id", async (req, res) => {
+  const currentUserId = req.params.id;
+
+  await ChangeBucket.findOneAndUpdate(
+    { _id: currentUserId },
+    { changes: [] },
+    { new: true }
+  )
+    .lean()
+    .exec();
+
+  res.status(200).send("success");
 });
 
 module.exports = router;

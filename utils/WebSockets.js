@@ -83,9 +83,9 @@ class WebSockets {
       io.emit("userOnline", liveUsers);
     });
     client.on("userOffline", (userId) => {
+      console.log(userId, "offlineen meni");
       liveUsers = liveUsers.filter((user) => user !== userId);
 
-      // console.log(liveUsers, "nyt livenä");
       io.emit("userOnline", liveUsers);
     });
     // client.on("id connect", (data) => {
@@ -230,14 +230,17 @@ async function ioUpdateToByRoomId(rooms, action, data) {
   await Promise.all(
     rooms.map(async (roomId) => {
       const { members } = await Room.findById(roomId).lean().exec();
-
+      console.log(
+        "tämän saa varmaankin niin, että on ainoastaan yksi io update functio"
+      );
+      //pitäisikö alla alempana, if lauseess, ettei viivettä, jos tilanne muuttuukin. Teen joo niin
       io.to(roomId).emit("updates", action, data);
 
       members.map((currentUserId) => {
         // if (users.includes(userId)) console.log("ei ole livenä", userId);
 
         if (!liveUsers.includes(currentUserId)) {
-          // console.log("ei ole livenä", currentUserId);
+          console.log("ei ole livenä", currentUserId);
 
           ChangeBucket.updateOne(
             { _id: currentUserId },

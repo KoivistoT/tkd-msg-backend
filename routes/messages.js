@@ -13,7 +13,6 @@ const { ChangeBucket } = require("../models/changeBucket");
 const router = express.Router();
 
 router.post("/send_message", auth, async (req, res) => {
-  console.log("täällä kerran");
   const {
     messageBody,
     roomId,
@@ -96,7 +95,7 @@ router.post("/send_message", auth, async (req, res) => {
 
   // const messageWithId = { [message._id]: message };
   // console.log("täällä menee joo", roomId);
-  // await ChangeBucket.create({ _id: "6229c4a085aaca98e525f169" });
+  // await ChangeBucket.create({ _id: "62209c1de54171139ed3dd20" });
   // ioUpdateToByRoomId
   // const messageObject = { _id: message._id.toString(), message };
   ioUpdateToByRoomId([roomId], "new message", message);
