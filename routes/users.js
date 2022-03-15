@@ -160,72 +160,72 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
       .exec();
   }
 
-  let allReadByData;
-  await Promise.all(
-    readByMessagesIds.map(async (messageId) => {
-      //***
-      //***
-      //***
-      //mitä jos toisi tänne viimeisen viestin id:n,
-      // sitten katsoo montako käyttäjä luki
-      //ottaa id:n ja siitä edelliset tarvittavat viestit, jotka luki
-      //laittaa ne luetuksi
-      // console.log("tähän on hyvä saada varmistus, tee myöhemmin");
-      // console.log("omia viestejä ei tarvitse merkata luetuksi.")
-      //***
-      //***
-      //***
+  // let allReadByData;
+  // await Promise.all(
+  //   readByMessagesIds.map(async (messageId) => {
+  //***
+  //***
+  //***
+  //mitä jos toisi tänne viimeisen viestin id:n,
+  // sitten katsoo montako käyttäjä luki
+  //ottaa id:n ja siitä edelliset tarvittavat viestit, jotka luki
+  //laittaa ne luetuksi
+  // console.log("tähän on hyvä saada varmistus, tee myöhemmin");
+  // console.log("omia viestejä ei tarvitse merkata luetuksi.")
+  //***
+  //***
+  //***
 
-      // console.log(messageId);
-      // const isAlreadyMarked = await AllMessages.aggregate([
-      //   {
-      //     $match: {
-      //       _id: new mongoose.Types.ObjectId(roomId),
-      //       $and: [
-      //         { "messages._id": new mongoose.Types.ObjectId(messageId) },
-      //         { "messages.readByRecipients.readByUserId": currentUserId },
-      //       ],
-      //     },
-      //   },
-      // ]);
-      // console.log(isAlreadyMarked.length, "onko merkattu");
-      // if (isAlreadyMarked.length === 0) {
-      allReadByData = await AllMessages.findOneAndUpdate(
-        {
-          _id: roomId,
-          "messages._id": messageId,
-        },
-        {
-          $addToSet: {
-            "messages.$.readByRecipients": { readByUserId: currentUserId },
-          },
-        },
-        { new: true }
-      ).exec();
-      // }
-    })
-  );
+  // console.log(messageId);
+  // const isAlreadyMarked = await AllMessages.aggregate([
+  //   {
+  //     $match: {
+  //       _id: new mongoose.Types.ObjectId(roomId),
+  //       $and: [
+  //         { "messages._id": new mongoose.Types.ObjectId(messageId) },
+  //         { "messages.readByRecipients.readByUserId": currentUserId },
+  //       ],
+  //     },
+  //   },
+  // ]);
+  // console.log(isAlreadyMarked.length, "onko merkattu");
+  // if (isAlreadyMarked.length === 0) {
+  //     allReadByData = await AllMessages.findOneAndUpdate(
+  //       {
+  //         _id: roomId,
+  //         "messages._id": messageId,
+  //       },
+  //       {
+  //         $addToSet: {
+  //           "messages.$.readByRecipients": { readByUserId: currentUserId },
+  //         },
+  //       },
+  //       { new: true }
+  //     ).exec();
+  //     // }
+  //   })
+  // );
 
-  if (allReadByData) {
-    const finalData = [];
-    readByMessagesIds.forEach((messageId) => {
-      const index = allReadByData.messages.findIndex(
-        (item) => item._id.toString() === messageId
-      );
-      if (index === -1) return;
-      finalData.push({
-        messageId: allReadByData.messages[index]._id,
-        readByRecipients: allReadByData.messages[index].readByRecipients,
-        roomId: allReadByData.messages[index].roomId,
-        postedByUser: allReadByData.messages[index].postedByUser,
-      });
-    });
-    console.log(
-      "toki jos readBy ja postedby on sama, niin ei kuulu lähettää!! "
-    );
-    const sendToUsers = finalData.map((item) => item.postedByUser);
-    ioUpdateById(sendToUsers, "readByRecepientsResived", finalData);
-  }
+  // if (allReadByData) {
+  //   const finalData = [];
+  //   readByMessagesIds.forEach((messageId) => {
+  //     const index = allReadByData.messages.findIndex(
+  //       (item) => item._id.toString() === messageId
+  //     );
+  //     if (index === -1) return;
+  //     finalData.push({
+  //       messageId: allReadByData.messages[index]._id,
+  //       readByRecipients: allReadByData.messages[index].readByRecipients,
+  //       roomId: allReadByData.messages[index].roomId,
+  //       postedByUser: allReadByData.messages[index].postedByUser,
+  //     });
+  //   });
+  //   console.log(
+  //     "toki jos readBy ja postedby on sama, niin ei kuulu lähettää!! "
+  //   );
+  //   const sendToUsers = finalData.map((item) => item.postedByUser);
+  //   ioUpdateById(sendToUsers, "readByRecepientsResived", finalData);
+  // }
 
   // console.log(finalData[0]);
   // const isAlreadyMarked = await Room.aggregate([
