@@ -1,3 +1,6 @@
+const { ChangeBucket } = require("../models/changeBucket");
+const { Room } = require("../models/room");
+
 users = [];
 liveUsers = [];
 class WebSockets {
@@ -223,15 +226,37 @@ function ioUpdateToAllActiveUsers(
   });
 }
 
-function ioUpdateToByRoomId(rooms, action, data) {
-  rooms.forEach((roomId) => {
-    try {
-      // console.log(users, "tässä käyttäjät");
+async function ioUpdateToByRoomId(rooms, action, data) {
+  await Promise.all(
+    rooms.map(async (roomId) => {
+      const { members } = await Room.findById(roomId).lean().exec();
+
       io.to(roomId).emit("updates", action, data);
-    } catch (error) {
-      console.log(error, "code 9fiiie");
-    }
-  });
+
+      members.map((currentUserId) => {
+        // if (users.includes(userId)) console.log("ei ole livenä", userId);
+
+        if (!liveUsers.includes(currentUserId)) {
+          // console.log("ei ole livenä", currentUserId);
+
+          ChangeBucket.updateOne(
+            { _id: currentUserId },
+            { $addToSet: { changes: { action, data } } }
+          ).exec();
+        }
+      });
+    })
+  );
+
+  // rooms.forEach((roomId) => {
+  //   try {
+  //     // console.log(users, "tässä käyttäjät");
+
+  //     io.to(roomId).emit("updates", action, data);
+  //   } catch (error) {
+  //     console.log(error, "code 9fiiie");
+  //   }
+  // });
 }
 
 function getUserSocketIdByUserId(userId) {
