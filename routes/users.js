@@ -163,7 +163,19 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
   let allReadByData;
   await Promise.all(
     readByMessagesIds.map(async (messageId) => {
-      console.log("tähän on hyvä saada varmistus, tee myöhemmin");
+      //***
+      //***
+      //***
+      //mitä jos toisi tänne viimeisen viestin id:n,
+      // sitten katsoo montako käyttäjä luki
+      //ottaa id:n ja siitä edelliset tarvittavat viestit, jotka luki
+      //laittaa ne luetuksi
+      // console.log("tähän on hyvä saada varmistus, tee myöhemmin");
+      // console.log("omia viestejä ei tarvitse merkata luetuksi.")
+      //***
+      //***
+      //***
+
       // console.log(messageId);
       // const isAlreadyMarked = await AllMessages.aggregate([
       //   {
