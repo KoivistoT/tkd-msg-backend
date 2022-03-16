@@ -185,84 +185,50 @@ const subscribeOtherUser = (roomId, otherUserId) => {
   });
 };
 
-function ioUpdateById(targetUsers, action, data) {
-  //tee niin, että ne, jotka vain pääkäyttäjille, menee vain nille, eli on tunniste, jonka avulla lähettää nille, ja muuttuja, johon voi määrittää, sendOnlyProUsers
-  //tee niin, että ne, jotka vain pääkäyttäjille, menee vain nille, eli on tunniste, jonka avulla lähettää nille, ja muuttuja, johon voi määrittää, sendOnlyProUsers
-  //tee niin, että ne, jotka vain pääkäyttäjille, menee vain nille, eli on tunniste, jonka avulla lähettää nille, ja muuttuja, johon voi määrittää, sendOnlyProUsers
-
-  targetUsers.forEach((userId) => {
-    const userSocketId = getUserSocketIdByUserId(userId);
-
-    if (!userSocketId) return; // user is not connected
-    // console.log("tässä muodossa", targetUsers, action, data);
-    try {
-      io.to(userSocketId).emit("updates", action, data);
-    } catch (error) {
-      console.log(error, "code ikjif92");
-    }
+function ioUpdateByUserId(targetUsers, action, data) {
+  targetUsers.forEach((currentUserId) => {
+    const socketId = getUserSocketIdByUserId(currentUserId);
+    sendDataToUser(currentUserId, socketId, action, data);
   });
 }
 
 async function ioUpdateToAllUsers(action, data) {
-  //tee niin, että ne, jotka vain pääkäyttäjille, menee vain nille, eli on tunniste, jonka avulla lähettää nille, ja muuttuja, johon voi määrittää, sendOnlyProUsers
-  //tee niin, että ne, jotka vain pääkäyttäjille, menee vain nille, eli on tunniste, jonka avulla lähettää nille, ja muuttuja, johon voi määrittää, sendOnlyProUsers
-  //tee niin, että ne, jotka vain pääkäyttäjille, menee vain nille, eli on tunniste, jonka avulla lähettää nille, ja muuttuja, johon voi määrittää, sendOnlyProUsers
-  // console.log(users, "tässä idt");
   const activeUsers = await User.aggregate([
     { $match: { status: "active" } },
     { $project: { _id: 1 } },
   ]);
 
-  await Promise.all(
-    activeUsers.map((activeUser) => {
-      const currentUserId = activeUser._id.toString();
-      const socketId = getUserSocketIdByUserId(currentUserId);
-
-      try {
-        if (socketId) {
-          io.to(socketId).emit("updates", action, data);
-        } else {
-          ChangeBucket.updateOne(
-            { _id: currentUserId },
-            { $addToSet: { changes: { type: action, data } } }
-          ).exec();
-        }
-      } catch (error) {
-        console.log(error, "code 9fi3r3ffe");
-      }
-    })
-  );
+  activeUsers.map((activeUser) => {
+    const currentUserId = activeUser._id.toString();
+    const socketId = getUserSocketIdByUserId(currentUserId);
+    sendDataToUser(currentUserId, socketId, action, data);
+  });
 }
 
 async function ioUpdateToByRoomId(rooms, action, data) {
-  await Promise.all(
-    rooms.map(async (roomId) => {
-      const { members } = await Room.findById(roomId).lean().exec();
+  rooms.map(async (roomId) => {
+    const { members } = await Room.findById(roomId).lean().exec();
 
-      members.map((currentUserId) => {
-        const socketId = getUserSocketIdByUserId(currentUserId);
+    members.map((currentUserId) => {
+      const socketId = getUserSocketIdByUserId(currentUserId);
+      sendDataToUser(currentUserId, socketId, action, data);
+    });
+  });
+}
 
-        if (socketId) {
-          io.to(socketId).emit("updates", action, data);
-        } else {
-          ChangeBucket.updateOne(
-            { _id: currentUserId },
-            { $addToSet: { changes: { type: action, data } } }
-          ).exec();
-        }
-      });
-    })
-  );
-
-  // rooms.forEach((roomId) => {
-  //   try {
-  //     // console.log(users, "tässä käyttäjät");
-
-  //     io.to(roomId).emit("updates", action, data);
-  //   } catch (error) {
-  //     console.log(error, "code 9fiiie");
-  //   }
-  // });
+function sendDataToUser(currentUserId, socketId, action, data) {
+  try {
+    if (socketId) {
+      io.to(socketId).emit("updates", action, data);
+    } else {
+      ChangeBucket.updateOne(
+        { _id: currentUserId },
+        { $addToSet: { changes: { type: action, data } } }
+      ).exec();
+    }
+  } catch (error) {
+    console.log(error, "code 9fi3r3ffe");
+  }
 }
 
 function getUserSocketIdByUserId(userId) {
@@ -271,6 +237,6 @@ function getUserSocketIdByUserId(userId) {
 }
 
 module.exports.WebSockets = new WebSockets();
-module.exports.ioUpdateById = ioUpdateById;
+module.exports.ioUpdateByUserId = ioUpdateByUserId;
 module.exports.ioUpdateToAllUsers = ioUpdateToAllUsers;
 module.exports.ioUpdateToByRoomId = ioUpdateToByRoomId;

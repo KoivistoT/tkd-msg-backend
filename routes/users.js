@@ -8,7 +8,6 @@ const mongoose = require("mongoose");
 const {
   ioUpdateToAllUsers,
   ioUpdateToByRoomId,
-  ioUpdateById,
 } = require("../utils/WebSockets");
 const { Room } = require("../models/room");
 const auth = require("../middleware/auth");
@@ -234,7 +233,7 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
   //     "toki jos readBy ja postedby on sama, niin ei kuulu lähettää!! "
   //   );
   //   const sendToUsers = finalData.map((item) => item.postedByUser);
-  //   ioUpdateById(sendToUsers, "readByRecepientsResived", finalData);
+
   // }
 
   // console.log(finalData[0]);
