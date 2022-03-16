@@ -142,86 +142,86 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
     },
   ]);
 
-  let obj = isAlreadyAdded[0]?.last_seen_messages.find(
-    (obj) => obj.roomId === roomId
-  );
+  // let obj = isAlreadyAdded[0]?.last_seen_messages.find(
+  //   (obj) => obj.roomId === roomId
+  // );
 
-  //jos obj, on nähnyt jotain ennen, jos ei, ei ole nähnyt mitään ennen
-  const difference = obj
-    ? lastSeenMessageSum - obj.lastSeenMessageSum
-    : lastSeenMessageSum;
-  // console.log(difference);
+  // //jos obj, on nähnyt jotain ennen, jos ei, ei ole nähnyt mitään ennen
+  // const difference = obj
+  //   ? lastSeenMessageSum - obj.lastSeenMessageSum
+  //   : lastSeenMessageSum;
+  // // console.log(difference);
 
-  if (difference <= 0) return;
+  // if (difference <= 0) return;
 
-  const messageIds = await AllMessages.aggregate([
-    { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
-    {
-      $project: {
-        messages: {
-          $slice: ["$messages", -difference],
-        },
-      },
-    },
-    {
-      $project: { "messages.postedByUser": 1, "messages._id": 1, _id: 0 },
-    },
-    // { $unwind: { path: "$message" } },
-  ]);
+  // const messageIds = await AllMessages.aggregate([
+  //   { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
+  //   {
+  //     $project: {
+  //       messages: {
+  //         $slice: ["$messages", -difference],
+  //       },
+  //     },
+  //   },
+  //   {
+  //     $project: { "messages.postedByUser": 1, "messages._id": 1, _id: 0 },
+  //   },
+  //   // { $unwind: { path: "$message" } },
+  // ]);
 
-  let updatedMessagesSum = 0;
-  var addReadByRecipients = new Promise((resolve) => {
-    let i = 0;
-    messageIds[0].messages.map(async (obj) => {
-      if (obj.postedByUser === currentUserId) {
-        i++;
-        // console.log("oli oma viesti");
-        if (messageIds.length === i) resolve();
-        return;
-      }
-      // console.log("ei oma");
-      const messageId = obj._id.toString();
-      await AllMessages.findOneAndUpdate(
-        {
-          _id: roomId,
-          "messages._id": messageId,
-        },
-        {
-          $addToSet: {
-            "messages.$.readByRecipients": { readByUserId: currentUserId },
-          },
-        },
-        { new: true }
-      ).exec();
-      updatedMessagesSum++;
-      i++;
-      if (messageIds.length === i) resolve();
-    });
-  });
-  await Promise.all([addReadByRecipients]);
+  // let updatedMessagesSum = 0;
+  // var addReadByRecipients = new Promise((resolve) => {
+  //   let i = 0;
+  //   messageIds[0].messages.map(async (obj) => {
+  //     if (obj.postedByUser === currentUserId) {
+  //       i++;
+  //       // console.log("oli oma viesti");
+  //       if (messageIds.length === i) resolve();
+  //       return;
+  //     }
+  //     // console.log("ei oma");
+  //     const messageId = obj._id.toString();
+  //     await AllMessages.findOneAndUpdate(
+  //       {
+  //         _id: roomId,
+  //         "messages._id": messageId,
+  //       },
+  //       {
+  //         $addToSet: {
+  //           "messages.$.readByRecipients": { readByUserId: currentUserId },
+  //         },
+  //       },
+  //       { new: true }
+  //     ).exec();
+  //     updatedMessagesSum++;
+  //     i++;
+  //     if (messageIds.length === i) resolve();
+  //   });
+  // });
+  // await Promise.all([addReadByRecipients]);
 
-  if (updatedMessagesSum > 0) {
-    // console.log("käy täällä");
-    const updatedMessagesData = await AllMessages.aggregate([
-      { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
-      {
-        $project: {
-          messages: {
-            $slice: ["$messages", -difference],
-          },
-        },
-      },
-      {
-        $project: { messages: 1, _id: 0 },
-      },
-    ]);
+  // if (updatedMessagesSum > 0) {
+  //   // console.log("käy täällä");
+  //   const updatedMessagesData = await AllMessages.aggregate([
+  //     { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
+  //     {
+  //       $project: {
+  //         messages: {
+  //           $slice: ["$messages", -difference],
+  //         },
+  //       },
+  //     },
+  //     {
+  //       $project: { messages: 1, _id: 0 },
+  //     },
+  //   ]);
 
-    ioUpdateToByRoomId(
-      [roomId],
-      "readByRecepientsAdded",
-      updatedMessagesData[0].messages
-    );
-  }
+  //   ioUpdateToByRoomId(
+  //     [roomId],
+  //     "readByRecepientsAdded",
+  //     updatedMessagesData[0].messages
+  //   );
+  // }
 
   // console.log("jatkuu kyllä");
   //täsä alkaa eri osio, jossa laitetaan lastseenmessagesum

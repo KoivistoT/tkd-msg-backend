@@ -39,7 +39,7 @@ router.get("/clear_bucket/:id", async (req, res) => {
 
 router.post("/remove_bucket_item", async (req, res) => {
   const { currentUserId, bucketId } = req.body;
-  console.log(currentUserId, bucketId, "tämä on joo");
+  // console.log(currentUserId, bucketId, "tämä on joo");
   // const currentUserId = req.params.id;
 
   // if (currentUserId === null) return res.status(404).send("no userID");

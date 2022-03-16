@@ -6,7 +6,7 @@ connectedUsers = [];
 liveUsers = [];
 class WebSockets {
   connection(client) {
-    console.log(`[${client.id}] socket connected`);
+    // console.log(`[${client.id}] socket connected`);
     // console.log(users);
     // client.join("1111");
     // io.to("1111").emit("some event");
@@ -172,7 +172,7 @@ class WebSockets {
     // mute a chat room
     client.on("unsubscribe", (roomId) => {
       client.leave(roomId);
-      console.log("lähti", roomId);
+      // console.log("lähti", roomId);
     });
   }
 }
