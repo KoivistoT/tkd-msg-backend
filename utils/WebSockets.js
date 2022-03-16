@@ -2,7 +2,7 @@ const { ChangeBucket } = require("../models/changeBucket");
 const { Room } = require("../models/room");
 const { User } = require("../models/user");
 
-users = [];
+connectedUsers = [];
 liveUsers = [];
 class WebSockets {
   connection(client) {
@@ -66,10 +66,14 @@ class WebSockets {
 
     // event fired when the chat room is disconnected
     client.on("disconnect", () => {
-      users = users.filter((user) => user.socketId !== client.id);
-      // console.log("lähti pois", client.id);
+      connectedUsers = connectedUsers.filter(
+        (user) => user.socketId !== client.id
+      );
+
+      // console.log(connectedUsers);
+      // console.log("disconnected", client.id);
       io.emit("users live", {
-        users,
+        connectedUsers,
       });
     });
     // // add identity of user mapped to the socket id
@@ -107,14 +111,23 @@ class WebSockets {
     // });
 
     client.on("identity", (userId, accountType) => {
-      const index = users.findIndex((user) => user.userId === userId);
-      if (index !== -1) return;
+      // console.log(connectedUsers);
+      const index = connectedUsers.findIndex((user) => user.userId === userId);
 
-      users.push({
-        socketId: client.id,
-        userId: userId,
-        accountType,
-      });
+      if (index === -1) {
+        connectedUsers.push({
+          socketId: client.id,
+          userId: userId,
+          accountType,
+        });
+      } else {
+        // console.log(client.id, "tämä on uusi");
+
+        connectedUsers[index].socketId = client.id;
+        // console.log(connectedUsers[index].socketId, "pitäisi löytyä täältä");
+        // console.log(connectedUsers, "Tässä kaikki käyttäjät");
+      }
+
       // console.log(users, "tässä käyttäjät");
     });
     // subscribe person to chat & other user as well
@@ -175,8 +188,10 @@ function listSocketsProperty(myProperty) {
 }
 
 const subscribeOtherUser = (roomId, otherUserId) => {
-  const userSockets = users.filter((user) => user.userId === otherUserId);
-  console.log(userSockets);
+  const userSockets = connectedUsers.filter(
+    (user) => user.userId === otherUserId
+  );
+  // console.log(userSockets);
   userSockets.map((userInfo) => {
     const socketConn = global.io.sockets.connected(userInfo.socketId);
     if (socketConn) {
@@ -218,9 +233,12 @@ async function ioUpdateToByRoomId(rooms, action, data) {
 
 function sendDataToUser(currentUserId, socketId, action, data) {
   try {
+    // console.log(socketId);
     if (socketId) {
       io.to(socketId).emit("updates", action, data);
+      console.log("ei tee ", action, currentUserId);
     } else {
+      console.log("tekee buckettiin", action, currentUserId);
       ChangeBucket.updateOne(
         { _id: currentUserId },
         { $addToSet: { changes: { type: action, data } } }
@@ -232,8 +250,8 @@ function sendDataToUser(currentUserId, socketId, action, data) {
 }
 
 function getUserSocketIdByUserId(userId) {
-  const index = users.findIndex((user) => user.userId === userId);
-  return index === -1 ? false : users[index].socketId;
+  const index = connectedUsers.findIndex((user) => user.userId === userId);
+  return index === -1 ? false : connectedUsers[index].socketId;
 }
 
 module.exports.WebSockets = new WebSockets();

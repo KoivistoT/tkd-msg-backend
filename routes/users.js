@@ -175,11 +175,11 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
     messageIds[0].messages.map(async (obj) => {
       if (obj.postedByUser === currentUserId) {
         i++;
-        console.log("oli oma viesti");
+        // console.log("oli oma viesti");
         if (messageIds.length === i) resolve();
         return;
       }
-      console.log("ei oma");
+      // console.log("ei oma");
       const messageId = obj._id.toString();
       await AllMessages.findOneAndUpdate(
         {
@@ -201,7 +201,7 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
   await Promise.all([addReadByRecipients]);
 
   if (updatedMessagesSum > 0) {
-    console.log("käy täällä");
+    // console.log("käy täällä");
     const updatedMessagesData = await AllMessages.aggregate([
       { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
       {
@@ -223,7 +223,7 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
     );
   }
 
-  console.log("jatkuu kyllä");
+  // console.log("jatkuu kyllä");
   //täsä alkaa eri osio, jossa laitetaan lastseenmessagesum
   let newUserData;
 
