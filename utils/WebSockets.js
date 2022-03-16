@@ -5,8 +5,8 @@ users = [];
 liveUsers = [];
 class WebSockets {
   connection(client) {
-    // console.log(`[${client.id}] socket connected`);
-
+    console.log(`[${client.id}] socket connected`);
+    // console.log(users);
     // client.join("1111");
     // io.to("1111").emit("some event");
 
@@ -234,14 +234,26 @@ async function ioUpdateToByRoomId(rooms, action, data) {
       //   "tämän saa varmaankin niin, että on ainoastaan yksi io update functio"
       // );
       //pitäisikö alla alempana, if lauseess, ettei viivettä, jos tilanne muuttuukin. Teen joo niin
-      io.to(roomId).emit("updates", action, data);
 
       members.map((currentUserId) => {
         // if (users.includes(userId)) console.log("ei ole livenä", userId);
+        // console.log(currentUserId, Object.values(users[0]).some(currentUserId));
 
-        if (!liveUsers.includes(currentUserId)) {
+        // console.log(
+        //   currentUserId,
+        //   users.some((value) => value.userId === currentUserId)
+        // );
+        const socketId = getUserSocketIdByUserId(currentUserId);
+        // console.log(socketId);
+        if (
+          // users[0].length !== 0 &&
+          // !users.some((value) => value.userId === currentUserId)
+          socketId
+        ) {
           // console.log("ei ole livenä", currentUserId);
           // console.log(action, data)
+          io.to(socketId).emit("updates", action, data);
+        } else {
           ChangeBucket.updateOne(
             { _id: currentUserId },
             { $addToSet: { changes: { type: action, data } } }
