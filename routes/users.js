@@ -6,13 +6,14 @@ const _ = require("lodash");
 const addObjectIds = require("../utils/addObjectIds");
 const mongoose = require("mongoose");
 const {
-  ioUpdateToAllActiveUsers,
+  ioUpdateToAllUsers,
   ioUpdateToByRoomId,
   ioUpdateById,
 } = require("../utils/WebSockets");
 const { Room } = require("../models/room");
 const auth = require("../middleware/auth");
 const { AllMessages } = require("../models/allMessages");
+const { ChangeBucket } = require("../models/changeBucket");
 
 router.post("/create_user", auth, async (req, res) => {
   const { error } = schema.validate(req.body);
@@ -45,8 +46,8 @@ router.post("/create_user", auth, async (req, res) => {
     "-password -last_seen_messages -contacts"
   ).lean();
 
-  ioUpdateToAllActiveUsers("newUser", newUser);
-
+  await ChangeBucket.create({ _id: newUser._id });
+  ioUpdateToAllUsers("newUser", newUser);
   res
     .header("x-auth-token", token)
     .header("access-control-expose-headers", "x-auth-token")
@@ -62,13 +63,22 @@ router.get("/all", auth, async (req, res) => {
 });
 
 router.get("/delete_user/:id", auth, async (req, res) => {
-  const userId = req.params.id;
-  const userData = await User.find({ _id: userId });
+  const currentUserId = req.params.id;
+  const userData = await User.find({ _id: currentUserId });
 
   if (userData.length === 0) return res.status(404).send("User not found");
 
-  await User.deleteOne({ _id: userId }).lean();
-  const targetRooms = await Room.find({ members: { $all: [userId] } }).lean();
+  await User.deleteOne({ _id: currentUserId }).lean();
+  await ChangeBucket.findOneAndUpdate(
+    { _id: currentUserId },
+    { changes: [] },
+    { new: true }
+  )
+    .lean()
+    .exec();
+  const targetRooms = await Room.find({
+    members: { $all: [currentUserId] },
+  }).lean();
 
   var changeMembers = new Promise((resolve) => {
     let i = 0;
@@ -76,7 +86,7 @@ router.get("/delete_user/:id", auth, async (req, res) => {
     targetRooms.forEach(async (room) => {
       const updatedRoomData = await Room.findByIdAndUpdate(
         { _id: room._id },
-        { $pull: { members: userId } },
+        { $pull: { members: currentUserId } },
         { new: true }
       ).exec();
 
@@ -90,9 +100,9 @@ router.get("/delete_user/:id", auth, async (req, res) => {
   });
   Promise.all([changeMembers]);
 
-  ioUpdateToAllActiveUsers("userDeleted", userId);
+  ioUpdateToAllUsers("userDeleted", currentUserId);
 
-  res.send(userId);
+  res.send(currentUserId);
 });
 
 router.post("/edit_user_data", auth, async (req, res) => {
@@ -112,7 +122,7 @@ router.post("/edit_user_data", auth, async (req, res) => {
     { new: true }
   ).lean();
 
-  ioUpdateToAllActiveUsers("userDataEdited", newUserData);
+  ioUpdateToAllUsers("userDataEdited", newUserData);
 
   res.status(200).send(newUserData);
 });
@@ -313,6 +323,13 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
   ).lean();
 
   const targetRooms = await Room.find({ members: { $all: [userId] } });
+  await ChangeBucket.findOneAndUpdate(
+    { _id: userId },
+    { changes: [] },
+    { new: true }
+  )
+    .lean()
+    .exec();
 
   var changeMembers = new Promise((resolve) => {
     let i = 0;
@@ -341,9 +358,9 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
   Promise.all([changeMembers]);
 
   if (status === "archived") {
-    ioUpdateToAllActiveUsers("userArchived", userId);
+    ioUpdateToAllUsers("userArchived", userId);
   } else {
-    ioUpdateToAllActiveUsers("userTemporaryDeleted", userId);
+    ioUpdateToAllUsers("userTemporaryDeleted", userId);
   }
   res.send(userId);
 });
@@ -409,7 +426,7 @@ router.get("/activate_user/:id", auth, async (req, res) => {
     "-password -last_seen_messages -contacts"
   ).lean();
 
-  ioUpdateToAllActiveUsers("userActivated", currentUserId);
+  ioUpdateToAllUsers("userActivated", currentUserId);
 
   res.send(currentUserId);
 });

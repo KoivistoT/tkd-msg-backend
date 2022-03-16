@@ -95,12 +95,12 @@ router.post("/send_message", auth, async (req, res) => {
 
   // const messageWithId = { [message._id]: message };
   // console.log("täällä menee joo", roomId);
-  // await ChangeBucket.create({ _id: "6229c4a085aaca98e525f169" });
+
   // ioUpdateToByRoomId
   // const messageObject = { _id: message._id.toString(), message };
   ioUpdateToByRoomId([roomId], "new message", message);
   // ioUpdateToByRoomId([roomId], "new message", message);
-
+  // await ChangeBucket.create({ _id: "62220b9c45db893bf33e9e93" });
   const latestMessage = {
     createdAt: message.createdAt,
     messageBody: message.messageBody,

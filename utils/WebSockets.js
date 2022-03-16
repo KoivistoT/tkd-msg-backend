@@ -1,5 +1,6 @@
 const { ChangeBucket } = require("../models/changeBucket");
 const { Room } = require("../models/room");
+const { User } = require("../models/user");
 
 users = [];
 liveUsers = [];
@@ -202,56 +203,46 @@ function ioUpdateById(targetUsers, action, data) {
   });
 }
 
-function ioUpdateToAllActiveUsers(
-  action,
-  data,
-  onlyForAdmins = false,
-  byPass = false
-) {
+async function ioUpdateToAllUsers(action, data) {
   //tee niin, että ne, jotka vain pääkäyttäjille, menee vain nille, eli on tunniste, jonka avulla lähettää nille, ja muuttuja, johon voi määrittää, sendOnlyProUsers
   //tee niin, että ne, jotka vain pääkäyttäjille, menee vain nille, eli on tunniste, jonka avulla lähettää nille, ja muuttuja, johon voi määrittää, sendOnlyProUsers
   //tee niin, että ne, jotka vain pääkäyttäjille, menee vain nille, eli on tunniste, jonka avulla lähettää nille, ja muuttuja, johon voi määrittää, sendOnlyProUsers
   // console.log(users, "tässä idt");
-  users.forEach((user) => {
-    // console.log(user.socketId, "tässä yksi id");
-    if (!user.socketId) return; // user is not connected
-    if (user.userId === byPass) return;
-    if (onlyForAdmins === true && user.accountType !== "admin") return;
+  const activeUsers = await User.aggregate([
+    { $match: { status: "active" } },
+    { $project: { _id: 1 } },
+  ]);
 
-    try {
-      io.to(user.socketId).emit("updates", action, data);
-    } catch (error) {
-      console.log(error, "code 9fiffe");
-    }
-  });
+  await Promise.all(
+    activeUsers.map((activeUser) => {
+      const currentUserId = activeUser._id.toString();
+      const socketId = getUserSocketIdByUserId(currentUserId);
+
+      try {
+        if (socketId) {
+          io.to(socketId).emit("updates", action, data);
+        } else {
+          ChangeBucket.updateOne(
+            { _id: currentUserId },
+            { $addToSet: { changes: { type: action, data } } }
+          ).exec();
+        }
+      } catch (error) {
+        console.log(error, "code 9fi3r3ffe");
+      }
+    })
+  );
 }
 
 async function ioUpdateToByRoomId(rooms, action, data) {
   await Promise.all(
     rooms.map(async (roomId) => {
       const { members } = await Room.findById(roomId).lean().exec();
-      // console.log(
-      //   "tämän saa varmaankin niin, että on ainoastaan yksi io update functio"
-      // );
-      //pitäisikö alla alempana, if lauseess, ettei viivettä, jos tilanne muuttuukin. Teen joo niin
 
       members.map((currentUserId) => {
-        // if (users.includes(userId)) console.log("ei ole livenä", userId);
-        // console.log(currentUserId, Object.values(users[0]).some(currentUserId));
-
-        // console.log(
-        //   currentUserId,
-        //   users.some((value) => value.userId === currentUserId)
-        // );
         const socketId = getUserSocketIdByUserId(currentUserId);
-        // console.log(socketId);
-        if (
-          // users[0].length !== 0 &&
-          // !users.some((value) => value.userId === currentUserId)
-          socketId
-        ) {
-          // console.log("ei ole livenä", currentUserId);
-          // console.log(action, data)
+
+        if (socketId) {
           io.to(socketId).emit("updates", action, data);
         } else {
           ChangeBucket.updateOne(
@@ -281,5 +272,5 @@ function getUserSocketIdByUserId(userId) {
 
 module.exports.WebSockets = new WebSockets();
 module.exports.ioUpdateById = ioUpdateById;
-module.exports.ioUpdateToAllActiveUsers = ioUpdateToAllActiveUsers;
+module.exports.ioUpdateToAllUsers = ioUpdateToAllUsers;
 module.exports.ioUpdateToByRoomId = ioUpdateToByRoomId;
