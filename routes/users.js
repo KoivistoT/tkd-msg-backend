@@ -126,8 +126,7 @@ router.post("/edit_user_data", auth, async (req, res) => {
   res.status(200).send(newUserData);
 });
 router.post("/save_last_seen_message_sum", auth, async (req, res) => {
-  const { currentUserId, roomId, lastSeenMessageSum, readByMessagesIds } =
-    req.body;
+  const { currentUserId, roomId, lastSeenMessageSum } = req.body;
 
   // const a = await User.f({}{ "last_seen_message.roomId": roomId }).exec();
 
@@ -146,47 +145,63 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
   let obj = isAlreadyAdded[0]?.last_seen_messages.find(
     (obj) => obj.roomId === roomId
   );
-  if (obj) {
-    const difference = lastSeenMessageSum - obj.lastSeenMessageSum;
-    // console.log(difference);
-    if (difference <= 0) return;
 
-    const messageIds = await AllMessages.aggregate([
-      { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
-      {
-        $project: {
-          message: {
-            $slice: ["$messages", -difference],
-          },
+  //jos obj, on nähnyt jotain ennen, jos ei, ei ole nähnyt mitään ennen
+  const difference = obj
+    ? lastSeenMessageSum - obj.lastSeenMessageSum
+    : lastSeenMessageSum;
+  // console.log(difference);
+
+  if (difference <= 0) return;
+
+  const messageIds = await AllMessages.aggregate([
+    { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
+    {
+      $project: {
+        messages: {
+          $slice: ["$messages", -difference],
         },
       },
-      {
-        $project: { "message._id": 1, _id: 0 },
-      },
-      { $unwind: { path: "$message" } },
-    ]);
+    },
+    {
+      $project: { "messages.postedByUser": 1, "messages._id": 1, _id: 0 },
+    },
+    // { $unwind: { path: "$message" } },
+  ]);
 
-    var addReadByRecipients = new Promise((resolve) => {
-      let i = 0;
-      messageIds.map(async (obj) => {
-        const messageId = obj.message._id.toString();
-        await AllMessages.findOneAndUpdate(
-          {
-            _id: roomId,
-            "messages._id": messageId,
-          },
-          {
-            $addToSet: {
-              "messages.$.readByRecipients": { readByUserId: currentUserId },
-            },
-          },
-          { new: true }
-        ).exec();
+  let updatedMessagesSum = 0;
+  var addReadByRecipients = new Promise((resolve) => {
+    let i = 0;
+    messageIds[0].messages.map(async (obj) => {
+      if (obj.postedByUser === currentUserId) {
         i++;
+        console.log("oli oma viesti");
         if (messageIds.length === i) resolve();
-      });
+        return;
+      }
+      console.log("ei oma");
+      const messageId = obj._id.toString();
+      await AllMessages.findOneAndUpdate(
+        {
+          _id: roomId,
+          "messages._id": messageId,
+        },
+        {
+          $addToSet: {
+            "messages.$.readByRecipients": { readByUserId: currentUserId },
+          },
+        },
+        { new: true }
+      ).exec();
+      updatedMessagesSum++;
+      i++;
+      if (messageIds.length === i) resolve();
     });
-    await Promise.all([addReadByRecipients]);
+  });
+  await Promise.all([addReadByRecipients]);
+
+  if (updatedMessagesSum > 0) {
+    console.log("käy täällä");
     const updatedMessagesData = await AllMessages.aggregate([
       { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
       {
@@ -206,11 +221,10 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
       "readByRecepientsAdded",
       updatedMessagesData[0].messages
     );
-  } else {
-    console.log("merkkaa kaikki");
   }
-  console.log("merkkaa kaikki");
 
+  console.log("jatkuu kyllä");
+  //täsä alkaa eri osio, jossa laitetaan lastseenmessagesum
   let newUserData;
 
   if (isAlreadyAdded.length > 0) {
