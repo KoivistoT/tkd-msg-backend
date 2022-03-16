@@ -231,19 +231,25 @@ async function ioUpdateToByRoomId(rooms, action, data) {
   });
 }
 
-function sendDataToUser(currentUserId, socketId, action, data) {
+async function sendDataToUser(currentUserId, socketId, action, data) {
   try {
     // console.log(socketId);
+    const bucketId = Date.now().toString();
     if (socketId) {
-      io.to(socketId).emit("updates", action, data);
-      console.log("ei tee ", action, currentUserId);
-    } else {
-      console.log("tekee buckettiin", action, currentUserId);
-      ChangeBucket.updateOne(
-        { _id: currentUserId },
-        { $addToSet: { changes: { type: action, data } } }
-      ).exec();
+      io.to(socketId).emit("updates", action, data, bucketId);
+      // console.log("ei tee ", action, currentUserId);
     }
+    // else {
+    //   console.log("tekee buckettiin", action, currentUserId, bucketId);
+    //   ChangeBucket.updateOne(
+    //     { _id: currentUserId },
+    //     { $addToSet: { changes: { type: action, data } } }
+    //   ).exec();
+    // }
+    await ChangeBucket.updateOne(
+      { _id: currentUserId },
+      { $addToSet: { changes: { type: action, data, bucketId } } }
+    ).exec();
   } catch (error) {
     console.log(error, "code 9fi3r3ffe");
   }
