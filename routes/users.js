@@ -143,6 +143,74 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
     },
   ]);
 
+  let obj = isAlreadyAdded[0]?.last_seen_messages.find(
+    (obj) => obj.roomId === roomId
+  );
+  if (obj) {
+    const difference = lastSeenMessageSum - obj.lastSeenMessageSum;
+    // console.log(difference);
+    if (difference <= 0) return;
+
+    const messageIds = await AllMessages.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
+      {
+        $project: {
+          message: {
+            $slice: ["$messages", -difference],
+          },
+        },
+      },
+      {
+        $project: { "message._id": 1, _id: 0 },
+      },
+      { $unwind: { path: "$message" } },
+    ]);
+
+    var addReadByRecipients = new Promise((resolve) => {
+      let i = 0;
+      messageIds.map(async (obj) => {
+        const messageId = obj.message._id.toString();
+        await AllMessages.findOneAndUpdate(
+          {
+            _id: roomId,
+            "messages._id": messageId,
+          },
+          {
+            $addToSet: {
+              "messages.$.readByRecipients": { readByUserId: currentUserId },
+            },
+          },
+          { new: true }
+        ).exec();
+        i++;
+        if (messageIds.length === i) resolve();
+      });
+    });
+    await Promise.all([addReadByRecipients]);
+    const updatedMessagesData = await AllMessages.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
+      {
+        $project: {
+          messages: {
+            $slice: ["$messages", -difference],
+          },
+        },
+      },
+      {
+        $project: { messages: 1, _id: 0 },
+      },
+    ]);
+
+    ioUpdateToByRoomId(
+      [roomId],
+      "readByRecepientsAdded",
+      updatedMessagesData[0].messages
+    );
+  } else {
+    console.log("merkkaa kaikki");
+  }
+  console.log("merkkaa kaikki");
+
   let newUserData;
 
   if (isAlreadyAdded.length > 0) {
