@@ -6,7 +6,7 @@ connectedUsers = [];
 liveUsers = [];
 class WebSockets {
   connection(client) {
-    // console.log(`[${client.id}] socket connected`);
+    console.log(`[${client.id}] socket connected`);
     // console.log(users);
     // client.join("1111");
     // io.to("1111").emit("some event");
@@ -112,6 +112,7 @@ class WebSockets {
 
     client.on("identity", (userId, accountType) => {
       // console.log(connectedUsers);
+      console.log("identity tuli");
       const index = connectedUsers.findIndex((user) => user.userId === userId);
 
       if (index === -1) {
@@ -203,6 +204,14 @@ const subscribeOtherUser = (roomId, otherUserId) => {
 
 async function checkUserTasks(currentUserId) {
   const data = await AllTasks.findById(currentUserId);
+  //voiko jo poistaa ???
+  AllTasks.findOneAndUpdate(
+    { _id: currentUserId },
+    { tasks: [] },
+    { new: true }
+  )
+    .lean()
+    .exec();
   if (data.tasks.length > 0) {
     const socketId = getUserSocketIdByUserId(currentUserId);
 
