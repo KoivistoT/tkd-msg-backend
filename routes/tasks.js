@@ -1,18 +1,18 @@
 const express = require("express");
 
-const { ChangeBucket } = require("../models/changeBucket");
+const { AllTasks } = require("../models/allTasks");
 
 const router = express.Router();
 
-router.get("/get_change_bucket/:id", async (req, res) => {
+router.get("/get_tasks/:id", async (req, res) => {
   const currentUserId = req.params.id;
 
   if (currentUserId === null) return res.status(404).send("no userID");
 
-  const result = await ChangeBucket.findById(currentUserId).lean();
-  ChangeBucket.findOneAndUpdate(
+  const result = await AllTasks.findById(currentUserId).lean();
+  AllTasks.findOneAndUpdate(
     { _id: currentUserId },
-    { changes: [] },
+    { tasks: [] },
     { new: true }
   )
     .lean()
@@ -21,14 +21,14 @@ router.get("/get_change_bucket/:id", async (req, res) => {
   res.status(200).send(result);
 });
 
-router.get("/clear_bucket/:id", async (req, res) => {
+router.get("/clear_tasks/:id", async (req, res) => {
   const currentUserId = req.params.id;
 
   if (currentUserId === null) return res.status(404).send("no userID");
 
-  await ChangeBucket.findOneAndUpdate(
+  await AllTasks.findOneAndUpdate(
     { _id: currentUserId },
-    { changes: [] },
+    { tasks: [] },
     { new: true }
   )
     .lean()
@@ -37,17 +37,17 @@ router.get("/clear_bucket/:id", async (req, res) => {
   res.status(200).send("success");
 });
 
-router.post("/remove_bucket_item", async (req, res) => {
-  const { currentUserId, bucketId } = req.body;
-  // console.log(currentUserId, bucketId, "tämä on joo");
+router.post("/remove_task_item", async (req, res) => {
+  const { currentUserId, taskId } = req.body;
+  // console.log(currentUserId, taskId, "tämä on joo");
   // const currentUserId = req.params.id;
 
   // if (currentUserId === null) return res.status(404).send("no userID");
 
-  await ChangeBucket.findOneAndUpdate(
+  await AllTasks.findOneAndUpdate(
     { _id: currentUserId },
 
-    { $pull: { changes: { bucketId: bucketId } } },
+    { $pull: { tasks: { taskId: taskId } } },
     { new: true }
   )
     .lean()

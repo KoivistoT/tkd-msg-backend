@@ -12,7 +12,7 @@ const {
 const { Room } = require("../models/room");
 const auth = require("../middleware/auth");
 const { AllMessages } = require("../models/allMessages");
-const { ChangeBucket } = require("../models/changeBucket");
+const { AllTasks } = require("../models/allTasks");
 
 router.post("/create_user", auth, async (req, res) => {
   const { error } = schema.validate(req.body);
@@ -45,7 +45,7 @@ router.post("/create_user", auth, async (req, res) => {
     "-password -last_seen_messages -contacts"
   ).lean();
 
-  await ChangeBucket.create({ _id: newUser._id });
+  await AllTasks.create({ _id: newUser._id });
   ioUpdateToAllUsers("newUser", newUser);
   res
     .header("x-auth-token", token)
@@ -68,7 +68,7 @@ router.get("/delete_user/:id", auth, async (req, res) => {
   if (userData.length === 0) return res.status(404).send("User not found");
 
   await User.deleteOne({ _id: currentUserId }).lean();
-  await ChangeBucket.findOneAndUpdate(
+  await AllTasks.findOneAndUpdate(
     { _id: currentUserId },
     { changes: [] },
     { new: true }
@@ -404,7 +404,7 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
   ).lean();
 
   const targetRooms = await Room.find({ members: { $all: [userId] } });
-  await ChangeBucket.findOneAndUpdate(
+  await AllTasks.findOneAndUpdate(
     { _id: userId },
     { changes: [] },
     { new: true }

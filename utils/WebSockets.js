@@ -1,4 +1,4 @@
-const { ChangeBucket } = require("../models/changeBucket");
+const { AllTasks } = require("../models/allTasks");
 const { Room } = require("../models/room");
 const { User } = require("../models/user");
 
@@ -234,9 +234,9 @@ async function ioUpdateToByRoomId(rooms, action, data) {
 async function sendDataToUser(currentUserId, socketId, action, data) {
   try {
     // console.log(socketId);
-    const bucketId = Date.now().toString();
+    const taskId = Date.now().toString();
     if (socketId) {
-      io.to(socketId).emit("updates", action, data, bucketId);
+      io.to(socketId).emit("updates", [{ type: action, data, taskId }]);
       // console.log("ei tee ", action, currentUserId);
     }
     // else {
@@ -246,9 +246,9 @@ async function sendDataToUser(currentUserId, socketId, action, data) {
     //     { $addToSet: { changes: { type: action, data } } }
     //   ).exec();
     // }
-    await ChangeBucket.updateOne(
+    await AllTasks.updateOne(
       { _id: currentUserId },
-      { $addToSet: { changes: { type: action, data, bucketId } } }
+      { $addToSet: { tasks: { type: action, data, taskId } } }
     ).exec();
   } catch (error) {
     console.log(error, "code 9fi3r3ffe");

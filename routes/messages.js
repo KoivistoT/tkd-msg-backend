@@ -8,7 +8,7 @@ const auth = require("../middleware/auth");
 const addObjectIds = require("../utils/addObjectIds");
 const { User } = require("../models/user");
 const { ioUpdateToByRoomId } = require("../utils/WebSockets");
-const { ChangeBucket } = require("../models/changeBucket");
+const { AllTasks } = require("../models/allTasks");
 
 const router = express.Router();
 
@@ -100,7 +100,7 @@ router.post("/send_message", auth, async (req, res) => {
   // const messageObject = { _id: message._id.toString(), message };
   ioUpdateToByRoomId([roomId], "new message", message);
   // ioUpdateToByRoomId([roomId], "new message", message);
-  // await ChangeBucket.create({ _id: "62220b9c45db893bf33e9e93" });
+  // await AllTasks.create({ _id: "62220b9c45db893bf33e9e93" });
   const latestMessage = {
     createdAt: message.createdAt,
     messageBody: message.messageBody,
