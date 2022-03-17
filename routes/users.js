@@ -142,6 +142,21 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
     },
   ]);
 
+  // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
+  // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
+  // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
+  // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
+  // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
+  // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
+  // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
+  // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
+  // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
+  // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
+  // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
+  // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
+  // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
+  // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
+
   // let obj = isAlreadyAdded[0]?.last_seen_messages.find(
   //   (obj) => obj.roomId === roomId
   // );

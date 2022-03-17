@@ -128,6 +128,7 @@ class WebSockets {
         // console.log(connectedUsers, "Tässä kaikki käyttäjät");
       }
 
+      checkUserTasks(userId);
       // console.log(users, "tässä käyttäjät");
     });
     // subscribe person to chat & other user as well
@@ -200,6 +201,14 @@ const subscribeOtherUser = (roomId, otherUserId) => {
   });
 };
 
+async function checkUserTasks(currentUserId) {
+  const data = await AllTasks.findById(currentUserId);
+  if (data.tasks.length > 0) {
+    const socketId = getUserSocketIdByUserId(currentUserId);
+
+    io.to(socketId).emit("updates", data.tasks);
+  }
+}
 function ioUpdateByUserId(targetUsers, action, data) {
   targetUsers.forEach((currentUserId) => {
     const socketId = getUserSocketIdByUserId(currentUserId);
