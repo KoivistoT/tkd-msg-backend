@@ -234,7 +234,7 @@ async function ioUpdateToByRoomId(rooms, action, data) {
 async function sendDataToUser(currentUserId, socketId, action, data) {
   try {
     // console.log(socketId);
-    const taskId = Date.now().toString();
+    const taskId = Date.now();
     if (socketId) {
       io.to(socketId).emit("updates", [{ type: action, data, taskId }]);
       // console.log("ei tee ", action, currentUserId);

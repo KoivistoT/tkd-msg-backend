@@ -55,5 +55,23 @@ router.post("/remove_task_item", async (req, res) => {
 
   res.status(200).send("success");
 });
+router.post("/remove_older_tasks_items", async (req, res) => {
+  const { currentUserId, taskId } = req.body;
+
+  AllTasks.updateMany(
+    { _id: currentUserId },
+
+    {
+      $pull: {
+        tasks: { taskId: { $lt: taskId + 1 } },
+      },
+    },
+    { new: true }
+  )
+    .lean()
+    .exec();
+
+  res.status(200).send("success");
+});
 
 module.exports = router;
