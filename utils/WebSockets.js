@@ -214,7 +214,7 @@ async function checkUserTasks(currentUserId) {
     .exec();
   if (data.tasks.length > 0) {
     const socketId = getUserSocketIdByUserId(currentUserId);
-
+    console.log("lähettää taskit");
     io.to(socketId).emit("updates", data.tasks);
   }
 }

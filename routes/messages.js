@@ -108,7 +108,7 @@ router.post("/send_message", auth, async (req, res) => {
     roomId,
   };
 
-  ioUpdateToByRoomId([roomId], "roomLatestMessageChanged", latestMessage); //tähänkin varmistus, eli tuon updaten alle
+  // ioUpdateToByRoomId([roomId], "roomLatestMessageChanged", latestMessage); //tähänkin varmistus, eli tuon updaten alle
 
   Room.findOneAndUpdate(
     { _id: roomId },

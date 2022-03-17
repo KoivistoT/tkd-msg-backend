@@ -1,4 +1,4 @@
 {
   "jwtPrivateKey": "1234",
-  "db": "mongodb://localhost:27017/chat-app"
+  "db": "mongodb+srv://vidlyuser:1234@vidly.nyswf.gcp.mongodb.net/Vidly?retryWrites=true&w=majority"
 }
