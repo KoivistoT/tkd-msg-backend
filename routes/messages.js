@@ -13,143 +13,148 @@ const { AllTasks } = require("../models/allTasks");
 const router = express.Router();
 
 router.post("/send_message", auth, async (req, res) => {
-  const {
-    messageBody,
-    roomId,
-    userId: postedByUser,
-    messageType: type,
-    imageURLs,
-    replyMessageId,
-  } = req.body;
+  try {
+    const {
+      messageBody,
+      roomId,
+      userId: postedByUser,
+      messageType: type,
+      imageURLs,
+      replyMessageId,
+    } = req.body;
 
-  if (!req.body.roomId)
-    return res
-      .status(400)
-      .send(
-        "ei id:tä. Jos sitä ei laita, niin antaa laittaa silti jonkun idn tää. en tiedä miksi. Eiku update one joka tapauksessa updataa jonkun"
-      );
+    if (!req.body.roomId) {
+      res
+        .status(400)
+        .send(
+          "ei id:tä. Jos sitä ei laita, niin antaa laittaa silti jonkun idn tää. en tiedä miksi. Eiku update one joka tapauksessa updataa jonkun"
+        );
+    }
 
-  // let message = new Message({
-  //   messageBody: req.body.messageBody,
-  //   roomId: req.body.roomId,
-  // });
+    // let message = new Message({
+    //   messageBody: req.body.messageBody,
+    //   roomId: req.body.roomId,
+    // });
 
-  // const message = await AllMessages.findOneAndUpdate(
-  //   {
-  //     roomId,
-  //   },
-  //   {
-  // $addToSet: {
-  //   messages: {
-  //     messageBody,
-  //     roomId,
-  //     postedByUser,
-  //     replyMessageId,
-  //     type,
-  //     imageURLs: imageURLs || null,
-  //   },
-  // },
-  //   },
-  //   { returnDocument: "after" }
-  // ).exec();
-  //******* */
-  //******* */
-  //******* */
-  //******* */
-  //TÄMÄ VOI TOIMIA NOPEAMMIN ,JOS TEKEE TIMESAMPIN ITSE, SE VOI TEHDÄ TÄSSÄ SEN JA SITTEN LÄHETTÄÄ JA SIT VASTA LISÄÄ VIESTEIHIN UPDATELLA
-  // const newMessage = await AllMessages.findOneAndUpdate(
-  //   { _id: roomId },
+    // const message = await AllMessages.findOneAndUpdate(
+    //   {
+    //     roomId,
+    //   },
+    //   {
+    // $addToSet: {
+    //   messages: {
+    //     messageBody,
+    //     roomId,
+    //     postedByUser,
+    //     replyMessageId,
+    //     type,
+    //     imageURLs: imageURLs || null,
+    //   },
+    // },
+    //   },
+    //   { returnDocument: "after" }
+    // ).exec();
+    //******* */
+    //******* */
+    //******* */
+    //******* */
+    //TÄMÄ VOI TOIMIA NOPEAMMIN ,JOS TEKEE TIMESAMPIN ITSE, SE VOI TEHDÄ TÄSSÄ SEN JA SITTEN LÄHETTÄÄ JA SIT VASTA LISÄÄ VIESTEIHIN UPDATELLA
+    // const newMessage = await AllMessages.findOneAndUpdate(
+    //   { _id: roomId },
 
-  //   {
-  //     $addToSet: {
-  //       messages: {
-  //         messageBody, //: Math.random(),
-  //         roomId,
-  //         postedByUser,
-  //         replyMessageId,
-  //         type,
-  //         imageURLs: imageURLs || null,
-  //       },
-  //     },
-  //   },
-  //   { returnDocument: "after" }
-  // )
-  //   .lean()
-  //   .exec();
+    //   {
+    //     $addToSet: {
+    //       messages: {
+    //         messageBody, //: Math.random(),
+    //         roomId,
+    //         postedByUser,
+    //         replyMessageId,
+    //         type,
+    //         imageURLs: imageURLs || null,
+    //       },
+    //     },
+    //   },
+    //   { returnDocument: "after" }
+    // )
+    //   .lean()
+    //   .exec();
 
-  // const message = newMessage.messages[newMessage.messages.length - 1];
-  //******* */
-  //******* */
-  //******* */
-  //******* */
+    // const message = newMessage.messages[newMessage.messages.length - 1];
+    //******* */
+    //******* */
+    //******* */
+    //******* */
 
-  // return;
-  const message = await Message.create({
-    messageBody,
-    roomId,
-    postedByUser,
-    replyMessageId,
-    type,
-    imageURLs: imageURLs || null,
-  });
+    // return;
+    const message = await Message.create({
+      messageBody,
+      roomId,
+      postedByUser,
+      replyMessageId,
+      type,
+      imageURLs: imageURLs || null,
+    });
 
-  // const messageWithId = { [message._id]: message };
-  // console.log("täällä menee joo", roomId);
+    // const messageWithId = { [message._id]: message };
+    // console.log("täällä menee joo", roomId);
 
-  // ioUpdateToByRoomId
-  // const messageObject = { _id: message._id.toString(), message };
-  ioUpdateToByRoomId([roomId], "msg", "new message", message);
-  // ioUpdateToByRoomId([roomId], "new message", message);
-  // await AllTasks.create({ _id: "6229c4a085aaca98e525f169" });
-  const latestMessage = {
-    createdAt: message.createdAt,
-    messageBody: message.messageBody,
-    postedByUser: message.postedByUser,
-    roomId,
-  };
+    // ioUpdateToByRoomId
+    // const messageObject = { _id: message._id.toString(), message };
+    ioUpdateToByRoomId([roomId], "msg", "new message", message);
+    // ioUpdateToByRoomId([roomId], "new message", message);
+    // await AllTasks.create({ _id: "6229c4a085aaca98e525f169" });
+    const latestMessage = {
+      createdAt: message.createdAt,
+      messageBody: message.messageBody,
+      postedByUser: message.postedByUser,
+      roomId,
+    };
 
-  // ioUpdateToByRoomId([roomId], "roomLatestMessageChanged", latestMessage); //tähänkin varmistus, eli tuon updaten alle
+    // ioUpdateToByRoomId([roomId], "roomLatestMessageChanged", latestMessage); //tähänkin varmistus, eli tuon updaten alle
 
-  Room.findOneAndUpdate(
-    { _id: roomId },
-    {
-      latestMessage,
-      $inc: { messageSum: 1 },
-    },
+    Room.findOneAndUpdate(
+      { _id: roomId },
+      {
+        latestMessage,
+        $inc: { messageSum: 1 },
+      },
 
-    { new: true }
-  )
-    .lean()
-    .exec();
+      { new: true }
+    )
+      .lean()
+      .exec();
 
-  // io.to(roomId).emit("new message", {
-  //   message: messageWithId,
-  //   roomId,
-  // });
+    // io.to(roomId).emit("new message", {
+    //   message: messageWithId,
+    //   roomId,
+    // });
 
-  // console.log(
-  //   "katso: https://www.codegrepper.com/code-examples/javascript/how+to+add+items+into+a+document+array+mongoose"
-  // );
-  // console.log(
-  //   "updateOne päivittää jonkun, vaikka ei osuisi mikään filteristä. Eli täytyy olla tarkkana sen kanssa, ehkä käyttää jotain muuta"
-  // );
-  // console.log(
-  //   "katso: https://www.codegrepper.com/code-examples/javascript/how+to+add+items+into+a+document+array+mongoose"
-  // );
-  //   const room = await Room.find({ _id: req.body.roomId });
-  AllMessages.updateOne(
-    { _id: req.body.roomId },
-    { $addToSet: { messages: message } }
-  ).exec();
+    // console.log(
+    //   "katso: https://www.codegrepper.com/code-examples/javascript/how+to+add+items+into+a+document+array+mongoose"
+    // );
+    // console.log(
+    //   "updateOne päivittää jonkun, vaikka ei osuisi mikään filteristä. Eli täytyy olla tarkkana sen kanssa, ehkä käyttää jotain muuta"
+    // );
+    // console.log(
+    //   "katso: https://www.codegrepper.com/code-examples/javascript/how+to+add+items+into+a+document+array+mongoose"
+    // );
+    //   const room = await Room.find({ _id: req.body.roomId });
+    AllMessages.updateOne(
+      { _id: req.body.roomId },
+      { $addToSet: { messages: message } }
+    ).exec();
 
-  //   message = await message.save();
-  // console.log(message);
-  // global.io.emit("chat message", {
-  //   message,
-  // });
+    //   message = await message.save();
+    // console.log(message);
+    // global.io.emit("chat message", {
+    //   message,
+    // });
 
-  res.status(200).send("success");
-  // res.status(200).json({ success: true, message: message }); //send(message);
+    res.status(200).send("success");
+    // res.status(200).json({ success: true, message: message }); //send(message);
+  } catch (error) {
+    res.status(400).send(error, "code2iifk3");
+  }
 });
 
 router.get("/test2", auth, async (req, res) => {
