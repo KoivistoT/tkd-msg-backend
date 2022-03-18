@@ -204,18 +204,29 @@ const subscribeOtherUser = (roomId, otherUserId) => {
 
 async function checkUserTasks(currentUserId) {
   const data = await AllTasks.findById(currentUserId);
+
   //voiko jo poistaa ???
-  AllTasks.findOneAndUpdate(
-    { _id: currentUserId },
-    { tasks: [] },
-    { new: true }
-  )
-    .lean()
-    .exec();
+  // AllTasks.findOneAndUpdate(
+  //   { _id: currentUserId },
+  //   { tasks: [] },
+  //   { new: true }
+  // )
+  //   .lean()
+  //   .exec();
+
   if (data.tasks.length > 0) {
+    const lastTaskId = data.tasks[data.tasks.length - 1].taskId;
+    const taskGroups = [
+      {
+        taskGroupType: "msg",
+        data: data.tasks,
+        lastTaskId,
+      },
+    ];
+
     const socketId = getUserSocketIdByUserId(currentUserId);
     console.log("lähettää taskit");
-    io.to(socketId).emit("updates", data.tasks);
+    io.to(socketId).emit("updates", taskGroups);
   }
 }
 function ioUpdateByUserId(targetUsers, action, data) {
@@ -238,23 +249,35 @@ async function ioUpdateToAllUsers(action, data) {
   });
 }
 
-async function ioUpdateToByRoomId(rooms, action, data) {
+async function ioUpdateToByRoomId(rooms, taskGroupType, action, data) {
   rooms.map(async (roomId) => {
     const { members } = await Room.findById(roomId).lean().exec();
 
     members.map((currentUserId) => {
       const socketId = getUserSocketIdByUserId(currentUserId);
-      sendDataToUser(currentUserId, socketId, action, data);
+      sendDataToUser(currentUserId, socketId, taskGroupType, action, data);
     });
   });
 }
 
-async function sendDataToUser(currentUserId, socketId, action, data) {
+async function sendDataToUser(
+  currentUserId,
+  socketId,
+  taskGroupType,
+  taskType,
+  data
+) {
   try {
     // console.log(socketId);
     const taskId = Date.now();
     if (socketId) {
-      io.to(socketId).emit("updates", [{ type: action, data, taskId }]);
+      io.to(socketId).emit("updates", [
+        {
+          taskGroupType: taskGroupType,
+          data: [{ taskType, data, taskId }],
+          lastTaskId: taskId,
+        },
+      ]);
       // console.log("ei tee ", action, currentUserId);
     }
     // else {
@@ -264,10 +287,12 @@ async function sendDataToUser(currentUserId, socketId, action, data) {
     //     { $addToSet: { changes: { type: action, data } } }
     //   ).exec();
     // }
+    // else {
     await AllTasks.updateOne(
       { _id: currentUserId },
-      { $addToSet: { tasks: { type: action, data, taskId } } }
+      { $addToSet: { tasks: { taskType, data, taskId } } }
     ).exec();
+    // }
   } catch (error) {
     console.log(error, "code 9fi3r3ffe");
   }

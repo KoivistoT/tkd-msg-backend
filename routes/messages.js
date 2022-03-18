@@ -98,7 +98,7 @@ router.post("/send_message", auth, async (req, res) => {
 
   // ioUpdateToByRoomId
   // const messageObject = { _id: message._id.toString(), message };
-  ioUpdateToByRoomId([roomId], "new message", message);
+  ioUpdateToByRoomId([roomId], "msg", "new message", message);
   // ioUpdateToByRoomId([roomId], "new message", message);
   // await AllTasks.create({ _id: "6229c4a085aaca98e525f169" });
   const latestMessage = {
