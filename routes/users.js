@@ -14,7 +14,7 @@ const auth = require("../middleware/auth");
 const { AllMessages } = require("../models/allMessages");
 const { AllTasks } = require("../models/allTasks");
 
-router.post("/create_user", admin, async (req, res) => {
+router.post("/create_user", auth, async (req, res) => {
   const { error } = schema.validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
