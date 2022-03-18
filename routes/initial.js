@@ -10,7 +10,7 @@ const { AllMessages, allMessagesSchema } = require("../models/allMessages");
 const router = express.Router();
 const addObjectIds = require("../utils/addObjectIds");
 
-router.get("/", auth, async (req, res) => {
+router.get("/", async (req, res) => {
   // router.get("/:id", async (req, res) => {
 
   const userId = req.res.req.user._id;
@@ -168,7 +168,7 @@ router.get("/", auth, async (req, res) => {
     // console.log(initialData.messages["61e6b87218d455cf6ecdb913"].messages);
     res.send(initialData);
   } catch (error) {
-    return res.status(400).send(error);
+    return res.status(400).send(error, "Tämä joo");
   }
 });
 
