@@ -214,29 +214,48 @@ async function checkUserTasks(currentUserId) {
   //   .lean()
   //   .exec();
 
-  if (data.tasks.length > 0) {
-    const lastTaskId = data.tasks[data.tasks.length - 1].taskId;
-    const taskGroups = [
-      {
-        taskGroupType: "msg",
-        data: data.tasks,
-        lastTaskId,
-      },
-    ];
+  const roomAddedGroup = [];
+  const msgGroup = [];
+  const roomGroup = [];
+  const userGroup = [];
 
+  if (data.tasks.length > 0) {
+    data.tasks.forEach((task) => {
+      const { taskGroupType } = task;
+      if (taskGroupType === "roomAdded") {
+        roomAddedGroup.push(task);
+      }
+      if (taskGroupType === "msg") {
+        msgGroup.push(task);
+      }
+      if (taskGroupType === "room") {
+        roomGroup.push(task);
+      }
+      if (taskGroupType === "user") {
+        userGroup.push(task);
+      }
+    });
+
+    const taskGroups = [
+      { taskGroupType: "roomAdded", data: roomAddedGroup },
+      { taskGroupType: "room", data: roomGroup },
+      { taskGroupType: "user", data: userGroup },
+      { taskGroupType: "msg", data: msgGroup },
+    ];
+    // tee niin, että aina roomAdded ekana
     const socketId = getUserSocketIdByUserId(currentUserId);
     console.log("lähettää taskit");
     io.to(socketId).emit("updates", taskGroups);
   }
 }
-function ioUpdateByUserId(targetUsers, action, data) {
+function ioUpdateByUserId(targetUsers, taskGroupType, action, data) {
   targetUsers.forEach((currentUserId) => {
     const socketId = getUserSocketIdByUserId(currentUserId);
-    sendDataToUser(currentUserId, socketId, action, data);
+    sendDataToUser(currentUserId, socketId, taskGroupType, action, data);
   });
 }
 
-async function ioUpdateToAllUsers(action, data) {
+async function ioUpdateToAllUsers(taskGroupType, action, data) {
   const activeUsers = await User.aggregate([
     { $match: { status: "active" } },
     { $project: { _id: 1 } },
@@ -245,7 +264,7 @@ async function ioUpdateToAllUsers(action, data) {
   activeUsers.map((activeUser) => {
     const currentUserId = activeUser._id.toString();
     const socketId = getUserSocketIdByUserId(currentUserId);
-    sendDataToUser(currentUserId, socketId, action, data);
+    sendDataToUser(currentUserId, socketId, taskGroupType, action, data);
   });
 }
 
@@ -275,7 +294,6 @@ async function sendDataToUser(
         {
           taskGroupType: taskGroupType,
           data: [{ taskType, data, taskId }],
-          lastTaskId: taskId,
         },
       ]);
       // console.log("ei tee ", action, currentUserId);
@@ -290,7 +308,7 @@ async function sendDataToUser(
     // else {
     await AllTasks.updateOne(
       { _id: currentUserId },
-      { $addToSet: { tasks: { taskType, data, taskId } } }
+      { $addToSet: { tasks: { taskGroupType, taskType, data, taskId } } }
     ).exec();
     // }
   } catch (error) {

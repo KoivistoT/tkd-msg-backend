@@ -59,7 +59,7 @@ router.post("/create_private_room", auth, async (req, res) => {
 
   await AllMessages.create({ _id: room._id });
 
-  ioUpdateByUserId(members, "roomAdded", room);
+  ioUpdateByUserId(members, "roomAdded", "roomAdded", room);
 
   res.status(200).send(room);
 });
@@ -74,7 +74,7 @@ router.post("/change_room_name", auth, async (req, res) => {
 
   const newRoomObject = { roomId, newRoomName };
 
-  ioUpdateToByRoomId([roomId], "roomNameChanged", newRoomObject);
+  ioUpdateToByRoomId([roomId], "room", "roomNameChanged", newRoomObject);
 
   res.status(200).send(newRoomData);
 });
@@ -118,7 +118,7 @@ router.post("/create_direct_room", auth, async (req, res) => {
     ).exec();
   });
 
-  ioUpdateByUserId(roomUsers, "roomAdded", room);
+  ioUpdateByUserId(roomUsers, "roomAdded", "roomAdded", room);
 
   res.status(200).send(room);
 });
@@ -160,7 +160,7 @@ router.post("/create_channel", auth, async (req, res) => {
     }
   ).lean();
 
-  ioUpdateByUserId([roomCreator], "roomAdded", room);
+  ioUpdateByUserId([roomCreator], "roomAdded", "roomAdded", room);
 
   res.status(200).send(room);
 });
@@ -213,9 +213,14 @@ router.post("/change_members", auth, async (req, res) => {
     );
 
     const updatedRoomData = await Room.findById(roomId).lean();
-    ioUpdateByUserId(addToSetMembers, "roomAdded", updatedRoomData);
-    ioUpdateByUserId(pullMembers, "roomRemoved", updatedRoomData._id);
-    ioUpdateByUserId(sameMembers, "membersChanged", updatedRoomData);
+    ioUpdateByUserId(
+      addToSetMembers,
+      "roomAdded",
+      "roomAdded",
+      updatedRoomData
+    );
+    ioUpdateByUserId(pullMembers, "room", "roomRemoved", updatedRoomData._id);
+    ioUpdateByUserId(sameMembers, "room", "membersChanged", updatedRoomData);
 
     res.status(200).send(updatedRoomData);
   } catch (error) {
@@ -257,8 +262,8 @@ router.post("/leave_room", auth, async (req, res) => {
       AllMessages.deleteOne({ _id: roomId }).lean().exec();
     }
 
-    ioUpdateByUserId([userId], "roomRemoved", updatedRoomData._id);
-    ioUpdateByUserId(newMembersList, "membersChanged", updatedRoomData);
+    ioUpdateByUserId([userId], "room", "roomRemoved", updatedRoomData._id);
+    ioUpdateByUserId(newMembersList, "room", "membersChanged", updatedRoomData);
 
     res.status(200).send(updatedRoomData);
   } catch (error) {
@@ -312,7 +317,7 @@ router.get("/delete_room/:id", async (req, res) => {
       .exec();
   });
 
-  ioUpdateToByRoomId([roomId], "roomRemoved", roomId);
+  ioUpdateToByRoomId([roomId], "room", "roomRemoved", roomId);
 
   res.status(200).send(roomId);
 });
@@ -329,7 +334,7 @@ router.get("/archive_room/:id", async (req, res) => {
     { new: true }
   ).lean();
 
-  ioUpdateByUserId(roomData.members, "roomArchived", roomId);
+  ioUpdateByUserId(roomData.members, "room", "roomArchived", roomId);
 
   res.status(200).send(roomId);
 });
@@ -346,8 +351,8 @@ router.post("/activate_room", async (req, res) => {
     { new: true }
   ).lean();
 
-  ioUpdateByUserId([userId], "roomActivated", roomId);
-  ioUpdateByUserId(roomData.members, "roomAdded", roomData);
+  ioUpdateByUserId([userId], "room", "roomActivated", roomId);
+  ioUpdateByUserId(roomData.members, "roomAdded", "roomAdded", roomData);
 
   res.status(200).send(roomId);
 });
@@ -364,7 +369,7 @@ router.post("/activate_draft_room", async (req, res) => {
     { new: true }
   ).lean();
 
-  ioUpdateByUserId(roomData.members, "roomActivated", roomId);
+  ioUpdateByUserId(roomData.members, "room", "roomActivated", roomId);
 
   res.status(200).send(roomId);
 });

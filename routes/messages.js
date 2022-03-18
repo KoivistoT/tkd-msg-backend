@@ -346,7 +346,7 @@ router.post("/delete/", async (req, res) => {
     roomId,
     messageId,
   };
-  ioUpdateToByRoomId([roomId], "messageDeleted", messagesObject);
+  ioUpdateToByRoomId([roomId], "msg", "messageDeleted", messagesObject);
   //
   // const doc = await AllMessages.findById("61c07ea580c52533ef671f53");
   // console.log(doc);

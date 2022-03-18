@@ -46,7 +46,7 @@ router.post("/create_user", auth, async (req, res) => {
   ).lean();
 
   await AllTasks.create({ _id: newUser._id });
-  ioUpdateToAllUsers("newUser", newUser);
+  ioUpdateToAllUsers("user", "newUser", newUser);
   res
     .header("x-auth-token", token)
     .header("access-control-expose-headers", "x-auth-token")
@@ -91,7 +91,7 @@ router.get("/delete_user/:id", auth, async (req, res) => {
 
       // tämä yleiseen huoneiden muutokseen. Menee niille,
       //joillle kuuluu, eli on kyseinen huone
-      ioUpdateToByRoomId([room._id], "membersChanged", updatedRoomData);
+      ioUpdateToByRoomId([room._id], "room", "membersChanged", updatedRoomData);
 
       i++;
       if (targetRooms.length === i) resolve();
@@ -99,7 +99,7 @@ router.get("/delete_user/:id", auth, async (req, res) => {
   });
   Promise.all([changeMembers]);
 
-  ioUpdateToAllUsers("userDeleted", currentUserId);
+  ioUpdateToAllUsers("user", "userDeleted", currentUserId);
 
   res.send(currentUserId);
 });
@@ -121,7 +121,7 @@ router.post("/edit_user_data", auth, async (req, res) => {
     { new: true }
   ).lean();
 
-  ioUpdateToAllUsers("userDataEdited", newUserData);
+  ioUpdateToAllUsers("user", "userDataEdited", newUserData);
 
   res.status(200).send(newUserData);
 });
@@ -443,6 +443,7 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
 
       ioUpdateToByRoomId(
         [room._id.toString()],
+        "room",
         "membersChanged",
         updatedRoomData
       );
@@ -454,9 +455,9 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
   Promise.all([changeMembers]);
 
   if (status === "archived") {
-    ioUpdateToAllUsers("userArchived", userId);
+    ioUpdateToAllUsers("user", "userArchived", userId);
   } else {
-    ioUpdateToAllUsers("userTemporaryDeleted", userId);
+    ioUpdateToAllUsers("user", "userTemporaryDeleted", userId);
   }
   res.send(userId);
 });
@@ -510,7 +511,12 @@ router.get("/activate_user/:id", auth, async (req, res) => {
         .lean()
         .exec();
 
-      ioUpdateToByRoomId([room.toString()], "membersChanged", updatedRoomData);
+      ioUpdateToByRoomId(
+        [room.toString()],
+        "room",
+        "membersChanged",
+        updatedRoomData
+      );
       i++;
       if (userData.userRooms.length === i) resolve();
     });
@@ -522,7 +528,7 @@ router.get("/activate_user/:id", auth, async (req, res) => {
     "-password -last_seen_messages -contacts"
   ).lean();
 
-  ioUpdateToAllUsers("userActivated", currentUserId);
+  ioUpdateToAllUsers("user", "userActivated", currentUserId);
 
   res.send(currentUserId);
 });
