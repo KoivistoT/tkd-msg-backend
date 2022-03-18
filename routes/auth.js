@@ -28,7 +28,7 @@ router.post("/", async (req, res) => {
 
     const token = user.generateAuthToken();
 
-    res.send(token);
+    res.status(200).send(token);
   } catch (error) {
     return res.status(400).send(error, "code 99dii3");
   }

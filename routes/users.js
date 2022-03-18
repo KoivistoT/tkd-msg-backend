@@ -58,7 +58,7 @@ router.get("/all", auth, async (req, res) => {
   if (!users) return res.status(404).send("Users not found");
 
   const usersObjects = addObjectIds(users);
-  res.send(usersObjects);
+  res.status(200).send(usersObjects);
 });
 
 router.get("/delete_user/:id", auth, async (req, res) => {
@@ -101,7 +101,7 @@ router.get("/delete_user/:id", auth, async (req, res) => {
 
   ioUpdateToAllUsers("user", "userDeleted", currentUserId);
 
-  res.send(currentUserId);
+  res.status(200).send(currentUserId);
 });
 
 router.post("/edit_user_data", auth, async (req, res) => {
@@ -459,7 +459,7 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
   } else {
     ioUpdateToAllUsers("user", "userTemporaryDeleted", userId);
   }
-  res.send(userId);
+  res.status(200).send(userId);
 });
 
 router.get("/activate_user/:id", auth, async (req, res) => {
@@ -530,14 +530,14 @@ router.get("/activate_user/:id", auth, async (req, res) => {
 
   ioUpdateToAllUsers("user", "userActivated", currentUserId);
 
-  res.send(currentUserId);
+  res.status(200).send(currentUserId);
 });
 
 router.get("/:id", auth, async (req, res) => {
   const user = await User.findById(req.params.id).lean();
   if (!user) return res.status(404).send("User not found");
 
-  res.send(user);
+  res.status(200).send(user);
 });
 
 module.exports = router;

@@ -302,7 +302,7 @@ router.get("/room_images/:id", async (req, res) => {
     .reverse()
     .map((message) => Object.values(message)[0].imageURLs);
 
-  res.send({ imageURLs, roomId });
+  res.status(200).send({ imageURLs, roomId });
 });
 
 router.post("/edit2", async (req, res) => {
@@ -313,7 +313,7 @@ router.post("/edit2", async (req, res) => {
   console.log("pitää hakea sub documentin id:llä");
   //   message = await message.save();
 
-  res.send(doc);
+  res.status(200).send(doc);
 });
 
 router.post("/delete/", async (req, res) => {
@@ -353,7 +353,7 @@ router.post("/delete/", async (req, res) => {
   // console.log("pitää hakea sub documentin id:llä");
   // //   message = await message.save();
 
-  res.send("newMessageData");
+  res.status(200).send("newMessageData");
 });
 
 router.get("/:id", async (req, res) => {
