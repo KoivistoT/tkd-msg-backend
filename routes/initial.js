@@ -12,13 +12,12 @@ const addObjectIds = require("../utils/addObjectIds");
 
 router.get("/", async (req, res) => {
   // router.get("/:id", async (req, res) => {
-
-  const userId = req.res.req.user._id;
-  const user = await User.findById(userId);
-
-  if (!user) return res.status(404).send("User not found");
-
   try {
+    const userId = req.res.req.user._id;
+    const user = await User.findById(userId);
+
+    if (!user) return res.status(404).send("User not found");
+
     const userRoomsData = [];
     const userAllMessages = [];
     const userAllImages = {};
