@@ -7,7 +7,10 @@ const { AllMessages, validate } = require("../models/allMessages");
 const auth = require("../middleware/auth");
 const addObjectIds = require("../utils/addObjectIds");
 const { User } = require("../models/user");
-const { ioUpdateToByRoomId } = require("../utils/WebSockets");
+const {
+  ioUpdateToByRoomId,
+  ioUpdateToMessageSender,
+} = require("../utils/WebSockets");
 const { AllTasks } = require("../models/allTasks");
 
 const router = express.Router();
@@ -100,6 +103,8 @@ router.post("/send_message", auth, async (req, res) => {
 
     // ioUpdateToByRoomId
     // const messageObject = { _id: message._id.toString(), message };
+    ioUpdateToMessageSender(postedByUser, "msg", "new message", message);
+
     ioUpdateToByRoomId([roomId], "msg", "new message", message);
     // ioUpdateToByRoomId([roomId], "new message", message);
     // await AllTasks.create({ _id: "6229c4a085aaca98e525f169" });

@@ -287,9 +287,33 @@ async function ioUpdateToByRoomId(rooms, taskGroupType, action, data) {
 
     members.map((currentUserId) => {
       const socketId = getUserSocketIdByUserId(currentUserId);
-      sendDataToUser(currentUserId, socketId, taskGroupType, action, data);
+      if (action !== "new message" && currentUserId !== data.postedByUser) {
+        sendDataToUser(currentUserId, socketId, taskGroupType, action, data);
+      }
     });
   });
+}
+async function ioUpdateToMessageSender(
+  postedByUser,
+  taskGroupType,
+  action,
+  data
+) {
+  console.log("menee täällä");
+  const socketId = getUserSocketIdByUserId(postedByUser);
+  io.to(socketId).emit(
+    "updates",
+
+    {
+      latestTaskId: null,
+      data: [
+        {
+          taskGroupType: taskGroupType,
+          data: [{ taskType: action, data }],
+        },
+      ],
+    }
+  );
 }
 
 async function sendDataToUser(
@@ -349,3 +373,4 @@ module.exports.WebSockets = new WebSockets();
 module.exports.ioUpdateByUserId = ioUpdateByUserId;
 module.exports.ioUpdateToAllUsers = ioUpdateToAllUsers;
 module.exports.ioUpdateToByRoomId = ioUpdateToByRoomId;
+module.exports.ioUpdateToMessageSender = ioUpdateToMessageSender;
