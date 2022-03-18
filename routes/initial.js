@@ -10,14 +10,14 @@ const { AllMessages, allMessagesSchema } = require("../models/allMessages");
 const router = express.Router();
 const addObjectIds = require("../utils/addObjectIds");
 
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   // router.get("/:id", async (req, res) => {
   try {
     const userId = req.res.req.user._id;
     const user = await User.findById(userId);
 
     if (!user) return res.status(404).send("User not found");
-
+    res.send("onnistui");
     const userRoomsData = [];
     const userAllMessages = [];
     const userAllImages = {};

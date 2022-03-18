@@ -7,23 +7,31 @@ const express = require("express");
 const router = express.Router();
 
 router.post("/", async (req, res) => {
-  const { error } = schema.validate(req.body);
+  try {
+    const { error } = schema.validate(req.body);
 
-  if (error) return res.status(400).send(error.details[0].message);
+    if (error) return res.status(400).send(error.details[0].message);
 
-  let user = await User.findOne({ email: req.body.email });
+    let user = await User.findOne({ email: req.body.email });
 
-  if (!user) return res.status(400).send("Invalid email or password.");
+    if (!user) return res.status(400).send("Invalid email or password.");
 
-  if (user.status !== "active")
-    return res.status(400).send("Your account is not active.");
-  const validPassword = await bcrypt.compare(req.body.password, user.password);
+    if (user.status !== "active")
+      return res.status(400).send("Your account is not active.");
+    const validPassword = await bcrypt.compare(
+      req.body.password,
+      user.password
+    );
 
-  if (!validPassword) return res.status(400).send("Invalid email or password.");
+    if (!validPassword)
+      return res.status(400).send("Invalid email or password.");
 
-  const token = user.generateAuthToken();
+    const token = user.generateAuthToken();
 
-  res.send(token);
+    res.send(token);
+  } catch (error) {
+    return res.status(400).send(error, "code 99dii3");
+  }
 });
 
 const schema = Joi.object({
