@@ -236,12 +236,21 @@ async function checkUserTasks(currentUserId) {
       }
     });
 
-    const taskGroups = [
-      { taskGroupType: "roomAdded", data: roomAddedGroup },
-      { taskGroupType: "room", data: roomGroup },
-      { taskGroupType: "user", data: userGroup },
-      { taskGroupType: "msg", data: msgGroup },
-    ];
+    const latestTask = data.tasks.reduce((a, b) =>
+      a.taskId > b.taskId ? a : b
+    );
+    const latestTaskId = latestTask.taskId;
+
+    const taskGroups = {
+      latestTaskId,
+      data: [
+        { taskGroupType: "roomAdded", data: roomAddedGroup },
+        { taskGroupType: "room", data: roomGroup },
+        { taskGroupType: "user", data: userGroup },
+        { taskGroupType: "msg", data: msgGroup },
+      ],
+    };
+
     // tee niin, että aina roomAdded ekana
     const socketId = getUserSocketIdByUserId(currentUserId);
     console.log("lähettää taskit");
@@ -290,12 +299,19 @@ async function sendDataToUser(
     // console.log(socketId);
     const taskId = Date.now();
     if (socketId) {
-      io.to(socketId).emit("updates", [
+      io.to(socketId).emit(
+        "updates",
+
         {
-          taskGroupType: taskGroupType,
-          data: [{ taskType, data, taskId }],
-        },
-      ]);
+          latestTaskId: taskId,
+          data: [
+            {
+              taskGroupType: taskGroupType,
+              data: [{ taskType, data, taskId }],
+            },
+          ],
+        }
+      );
       // console.log("ei tee ", action, currentUserId);
     }
     // else {
