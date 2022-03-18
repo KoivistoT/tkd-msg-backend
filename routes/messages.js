@@ -148,7 +148,8 @@ router.post("/send_message", auth, async (req, res) => {
   //   message,
   // });
 
-  res.status(200).json({ success: true, message: message }); //send(message);
+  res.status(200).send("success");
+  // res.status(200).json({ success: true, message: message }); //send(message);
 });
 
 router.get("/test2", auth, async (req, res) => {
