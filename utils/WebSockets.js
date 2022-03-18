@@ -258,10 +258,14 @@ async function checkUserTasks(currentUserId) {
   }
 }
 function ioUpdateByUserId(targetUsers, taskGroupType, action, data) {
-  targetUsers.forEach((currentUserId) => {
-    const socketId = getUserSocketIdByUserId(currentUserId);
-    sendDataToUser(currentUserId, socketId, taskGroupType, action, data);
-  });
+  try {
+    targetUsers.forEach((currentUserId) => {
+      const socketId = getUserSocketIdByUserId(currentUserId);
+      sendDataToUser(currentUserId, socketId, taskGroupType, action, data);
+    });
+  } catch (error) {
+    console.log(error, "code 992iii2i");
+  }
 }
 
 async function ioUpdateToAllUsers(taskGroupType, action, data) {
@@ -333,8 +337,12 @@ async function sendDataToUser(
 }
 
 function getUserSocketIdByUserId(userId) {
-  const index = connectedUsers.findIndex((user) => user.userId === userId);
-  return index === -1 ? false : connectedUsers[index].socketId;
+  try {
+    const index = connectedUsers.findIndex((user) => user.userId === userId);
+    return index === -1 ? false : connectedUsers[index].socketId;
+  } catch (error) {
+    console.log(error, "code 2888282");
+  }
 }
 
 module.exports.WebSockets = new WebSockets();

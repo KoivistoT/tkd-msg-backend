@@ -24,7 +24,7 @@ router.post("/send_message", auth, async (req, res) => {
     } = req.body;
 
     if (!req.body.roomId) {
-      res
+      return res
         .status(400)
         .send(
           "ei id:tä. Jos sitä ei laita, niin antaa laittaa silti jonkun idn tää. en tiedä miksi. Eiku update one joka tapauksessa updataa jonkun"

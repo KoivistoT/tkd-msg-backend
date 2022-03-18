@@ -124,45 +124,48 @@ router.post("/create_direct_room", auth, async (req, res) => {
 });
 
 router.post("/create_channel", auth, async (req, res) => {
-  const { error } = schema.validate(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+  try {
+    const { error } = schema.validate(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
 
-  const roomType = "channel";
-  const { userId: roomCreator, roomName, description } = req.body;
+    const roomType = "channel";
+    const { userId: roomCreator, roomName, description } = req.body;
 
-  const result = await Room.findOne({ roomName }).lean();
-  if (result)
-    return res
-      .status(400)
-      .send("Channel with the same name is already registered.");
+    const result = await Room.findOne({ roomName }).lean();
+    if (result)
+      return res
+        .status(400)
+        .send("Channel with the same name is already registered.");
 
-  const room = await Room.create({
-    roomName,
-    type: roomType,
-    roomCreator,
-    members: [roomCreator],
-    description,
-  });
+    const room = await Room.create({
+      roomName,
+      type: roomType,
+      roomCreator,
+      members: [roomCreator],
+      description,
+    });
 
-  await AllMessages.create({ _id: room._id });
+    await AllMessages.create({ _id: room._id });
 
-  const roomId = room._id.toString();
-  await User.findOneAndUpdate(
-    { _id: roomCreator },
-    {
-      $addToSet: {
-        userRooms: roomId,
-        last_seen_messages: {
-          roomId,
-          lastSeenMessageSum: 0,
+    const roomId = room._id.toString();
+    await User.findOneAndUpdate(
+      { _id: roomCreator },
+      {
+        $addToSet: {
+          userRooms: roomId,
+          last_seen_messages: {
+            roomId,
+            lastSeenMessageSum: 0,
+          },
         },
-      },
-    }
-  ).lean();
+      }
+    ).lean();
 
-  ioUpdateByUserId([roomCreator], "roomAdded", "roomAdded", room);
-
-  res.status(200).send(room);
+    ioUpdateByUserId([roomCreator], "roomAdded", "roomAdded", room);
+  } catch (error) {
+    console.log(error, "code399dk3");
+  }
+  res.status(200).send("room");
 });
 
 router.post("/change_members", auth, async (req, res) => {
