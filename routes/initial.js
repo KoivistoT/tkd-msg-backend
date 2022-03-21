@@ -165,6 +165,7 @@ router.get("/", auth, async (req, res) => {
     };
 
     // console.log(initialData.messages["61e6b87218d455cf6ecdb913"].messages);
+
     res.status(200).send(initialData);
   } catch (error) {
     return res.status(400).send(error, "Tämä joo");
