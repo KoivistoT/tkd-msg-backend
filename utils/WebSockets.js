@@ -326,17 +326,17 @@ async function sendDataToUser(
 ) {
   try {
     // console.log(socketId);
-    const taskId = Date.now();
+    // const taskId = Date.now();
     if (socketId) {
       io.to(socketId).emit(
         "updates",
 
         {
-          latestTaskId: taskId,
+          latestTaskId: null,
           data: [
             {
               taskGroupType: taskGroupType,
-              data: [{ taskType, data, taskId }],
+              data: [{ taskType, data, taskId: null }],
             },
           ],
         }
@@ -351,6 +351,7 @@ async function sendDataToUser(
     //   ).exec();
     // }
     // else {
+    const taskId = Date.now();
 
     const isAlreadyCurrentRoomLatestMessageChanged = await AllTasks.aggregate([
       {
@@ -385,7 +386,7 @@ async function sendDataToUser(
     // console.log(isAlreadyCurrentRoomLatestMessageChanged[0].tasks[0].taskId);
     //ota tuon ticket id ja poista se
     if (isAlreadyCurrentRoomLatestMessageChanged.length !== 0) {
-      const tuliko = await AllTasks.findByIdAndUpdate(
+      await AllTasks.findByIdAndUpdate(
         {
           _id: currentUserId,
         },
