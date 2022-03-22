@@ -1,6 +1,7 @@
 const { AllTasks } = require("../models/allTasks");
 const { Room } = require("../models/room");
 const { User } = require("../models/user");
+const mongoose = require("mongoose");
 
 connectedUsers = [];
 liveUsers = [];
@@ -350,6 +351,59 @@ async function sendDataToUser(
     //   ).exec();
     // }
     // else {
+
+    const isAlreadyCurrentRoomLatestMessageChanged = await AllTasks.aggregate([
+      {
+        $match: {
+          $and: [
+            { _id: new mongoose.Types.ObjectId(currentUserId) },
+            { "tasks.taskType": "roomLatestMessageChanged" },
+            { "tasks.data.roomId": data.roomId },
+          ],
+        },
+      },
+      {
+        $project: {
+          tasks: {
+            $filter: {
+              input: "$tasks",
+              as: "tasks",
+              cond: {
+                $and: [
+                  {
+                    $eq: ["$$tasks.data.roomId", data.roomId],
+                    $eq: ["$$tasks.taskType", "roomLatestMessageChanged"],
+                  },
+                ],
+              },
+            },
+          },
+          _id: 0,
+        },
+      },
+    ]);
+    // console.log(isAlreadyCurrentRoomLatestMessageChanged[0].tasks[0].taskId);
+    //ota tuon ticket id ja poista se
+    if (isAlreadyCurrentRoomLatestMessageChanged.length !== 0) {
+      const tuliko = await AllTasks.findByIdAndUpdate(
+        {
+          _id: currentUserId,
+        },
+        {
+          $pull: {
+            tasks: {
+              taskId:
+                isAlreadyCurrentRoomLatestMessageChanged[0].tasks[0].taskId,
+            },
+          },
+        },
+
+        { new: true }
+      )
+        .lean()
+        .exec();
+    }
+
     await AllTasks.updateOne(
       { _id: currentUserId },
       { $addToSet: { tasks: { taskGroupType, taskType, data, taskId } } }
