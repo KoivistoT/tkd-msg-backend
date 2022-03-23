@@ -135,8 +135,8 @@ router.post("/save_push_token", auth, async (req, res) => {
     { new: true }
   ).lean();
 
-  console.log(currentUserPushToken, "tämä token");
-  console.log(newUserData, "uusi data");
+  // console.log(currentUserPushToken, "tämä token");
+  // console.log(newUserData, "uusi data");
   res.status(200).send(newUserData);
 });
 

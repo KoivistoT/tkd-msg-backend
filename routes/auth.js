@@ -18,6 +18,7 @@ router.post("/", async (req, res) => {
 
     if (user.status !== "active")
       return res.status(400).send("Your account is not active.");
+
     const validPassword = await bcrypt.compare(
       req.body.password,
       user.password
