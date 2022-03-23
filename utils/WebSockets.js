@@ -2,6 +2,7 @@ const { AllTasks } = require("../models/allTasks");
 const { Room } = require("../models/room");
 const { User } = require("../models/user");
 const mongoose = require("mongoose");
+const sendPushNotification = require("./sendPushNotification");
 
 connectedUsers = [];
 liveUsers = [];
@@ -293,6 +294,9 @@ async function ioUpdateToByRoomId(rooms, taskGroupType, action, data) {
 
       sendDataToUser(currentUserId, socketId, taskGroupType, action, data);
     });
+    if (action === "new message") {
+      sendPushNotification(members, data);
+    }
   });
 }
 async function ioUpdateToMessageSender(
