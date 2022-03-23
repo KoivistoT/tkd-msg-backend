@@ -125,6 +125,21 @@ router.post("/edit_user_data", auth, async (req, res) => {
 
   res.status(200).send(newUserData);
 });
+
+router.post("/save_push_token", auth, async (req, res) => {
+  const { currentUserId, currentUserPushToken } = req.body;
+
+  const newUserData = await User.findOneAndUpdate(
+    { _id: currentUserId },
+    { pushNotificationToken: currentUserPushToken },
+    { new: true }
+  ).lean();
+
+  console.log(currentUserPushToken, "tämä token");
+  console.log(newUserData, "uusi data");
+  res.status(200).send(newUserData);
+});
+
 router.post("/save_last_seen_message_sum", auth, async (req, res) => {
   const { currentUserId, roomId, lastSeenMessageSum } = req.body;
 

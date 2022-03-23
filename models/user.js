@@ -70,6 +70,7 @@ const schema = Joi.object({
   phone: Joi.string(),
   password: Joi.string().min(5).max(255).required(),
   status: Joi.string(),
+  pushNotificationToken: Joi.string(),
 });
 
 //   return userSchema.validate(user, schema);
