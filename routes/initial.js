@@ -10,7 +10,7 @@ const { AllMessages, allMessagesSchema } = require("../models/allMessages");
 const router = express.Router();
 const addObjectIds = require("../utils/addObjectIds");
 
-const SEND_MESSAGES_FIRST_SUM = 20;
+const SEND_MESSAGES_FIRST_SUM = 30;
 
 router.get("/", auth, async (req, res) => {
   // router.get("/:id", async (req, res) => {
@@ -187,27 +187,46 @@ router.post("/rest_messages/", auth, async (req, res) => {
   var start = +new Date();
 
   try {
-    const { currentUserId, roomsNow } = req.body;
-
+    const { currentUserId, messagesNow } = req.body;
+    // console.log(messagesNow);
     const userAllMessages = [];
 
     await Promise.all(
-      Object.keys(roomsNow).map(async (currentRoomId) => {
+      Object.keys(messagesNow).map(async (currentRoomId) => {
         // var start = +new Date();
 
         const result = await AllMessages.findById(currentRoomId).lean();
 
-        const lastObjectIndex =
-          result.messages.length -
-          (result.messages.length - roomsNow[currentRoomId].messageSum) -
-          SEND_MESSAGES_FIRST_SUM;
+        // console.log(result.messages);
+        // console.log(
+        //   Object.values(messagesNow[currentRoomId].messages)[
+        //     Object.values(messagesNow[currentRoomId].messages).length - 1
+        //   ],
+        //   "viimeisin joka on"
+        // );
+        if (
+          Object.values(messagesNow[currentRoomId].messages)[
+            Object.values(messagesNow[currentRoomId].messages).length - 1
+          ]
+        ) {
+          // console.log(
+          //   Object.values(messagesNow[currentRoomId].messages)[
+          //     Object.values(messagesNow[currentRoomId].messages).length - 1
+          //   ]._id,
+          //   "Tässä id"
+          // );
 
-        // console.log(lastObjectIndex);
+          const lastMessageIndex = result.messages.findIndex(
+            (message) =>
+              message._id.toString() ===
+              Object.values(messagesNow[currentRoomId].messages)[
+                Object.values(messagesNow[currentRoomId].messages).length - 1
+              ]._id
+          );
 
-        if (lastObjectIndex > 0) {
           const allMessages = await AllMessages.find(
             { _id: currentRoomId },
-            { messages: { $slice: [0, lastObjectIndex] } }
+            { messages: { $slice: [0, lastMessageIndex - 1] } }
           ).lean();
 
           if (allMessages[0].messages) {
