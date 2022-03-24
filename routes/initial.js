@@ -10,8 +10,11 @@ const { AllMessages, allMessagesSchema } = require("../models/allMessages");
 const router = express.Router();
 const addObjectIds = require("../utils/addObjectIds");
 
+const SEND_MESSAGES_FIRST_SUM = 30;
+
 router.get("/", auth, async (req, res) => {
   // router.get("/:id", async (req, res) => {
+  var start = +new Date();
   try {
     const userId = req.res.req.user._id;
     const user = await User.findById(userId);
@@ -70,7 +73,10 @@ router.get("/", auth, async (req, res) => {
             },
           ]),
           // AllMessages.findById(roomId).lean(),
-          AllMessages.findById(roomId).slice("messages", 2).lean(),
+          AllMessages.findById(roomId)
+
+            .slice("messages", -SEND_MESSAGES_FIRST_SUM)
+            .lean(),
           AllMessages.aggregate([
             { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
             {
@@ -164,7 +170,63 @@ router.get("/", auth, async (req, res) => {
 
     // console.log(initialData.messages["61e6b87218d455cf6ecdb913"].messages);
     // setTimeout(() => {
+
+    var end = +new Date();
+    var diff = end - start;
+    console.log(diff);
     res.status(200).send(initialData);
+    // }, 5000);
+  } catch (error) {
+    return res.status(400).send(error, "Tämä joo");
+  }
+});
+router.post("/rest_messages/", auth, async (req, res) => {
+  var start = +new Date();
+
+  try {
+    const { currentUserId, roomsNow } = req.body;
+
+    const userAllMessages = [];
+
+    await Promise.all(
+      Object.keys(roomsNow).map(async (currentRoomId) => {
+        // var start = +new Date();
+
+        const result = await AllMessages.findById(currentRoomId).lean();
+
+        const lastObject =
+          result.messages.length -
+          (result.messages.length - roomsNow[currentRoomId].messageSum) -
+          SEND_MESSAGES_FIRST_SUM;
+
+        console.log(lastObject);
+
+        if (lastObject > 0) {
+          const allMessages = await AllMessages.find(
+            { _id: currentRoomId },
+            { messages: { $slice: [0, lastObject] } }
+          ).lean();
+
+          if (allMessages[0].messages) {
+            const messagesObject = {
+              _id: allMessages[0]._id,
+              messages: addObjectIds(allMessages[0].messages.reverse()),
+            };
+            userAllMessages.push(messagesObject);
+          }
+        }
+      })
+    );
+
+    // const room = await Room.findById({_id:});
+
+    const messages = addObjectIds(userAllMessages);
+    var end = +new Date();
+    var diff = end - start;
+    console.log(diff);
+
+    res.status(200).send(messages);
+
     // }, 5000);
   } catch (error) {
     return res.status(400).send(error, "Tämä joo");

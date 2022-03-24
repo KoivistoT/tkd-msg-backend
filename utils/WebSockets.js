@@ -222,46 +222,50 @@ async function checkUserTasks(currentUserId) {
   const roomGroup = [];
   const userGroup = [];
 
-  if (data.tasks.length > 0) {
-    data.tasks.forEach((task) => {
-      const { taskGroupType } = task;
-      if (taskGroupType === "roomAdded") {
-        roomAddedGroup.push(task);
-      }
-      if (taskGroupType === "roomRemoved") {
-        roomRemovedGroup.push(task);
-      }
-      if (taskGroupType === "msg") {
-        msgGroup.push(task);
-      }
-      if (taskGroupType === "room") {
-        roomGroup.push(task);
-      }
-      if (taskGroupType === "user") {
-        userGroup.push(task);
-      }
-    });
+  try {
+    if (data.tasks.length > 0) {
+      data.tasks.forEach((task) => {
+        const { taskGroupType } = task;
+        if (taskGroupType === "roomAdded") {
+          roomAddedGroup.push(task);
+        }
+        if (taskGroupType === "roomRemoved") {
+          roomRemovedGroup.push(task);
+        }
+        if (taskGroupType === "msg") {
+          msgGroup.push(task);
+        }
+        if (taskGroupType === "room") {
+          roomGroup.push(task);
+        }
+        if (taskGroupType === "user") {
+          userGroup.push(task);
+        }
+      });
 
-    const latestTask = data.tasks.reduce((a, b) =>
-      a.taskId > b.taskId ? a : b
-    );
-    const latestTaskId = latestTask.taskId;
+      const latestTask = data.tasks.reduce((a, b) =>
+        a.taskId > b.taskId ? a : b
+      );
+      const latestTaskId = latestTask.taskId;
 
-    const taskGroups = {
-      latestTaskId,
-      data: [
-        { taskGroupType: "roomAdded", data: roomAddedGroup },
-        { taskGroupType: "roomRemoved", data: roomRemovedGroup },
-        { taskGroupType: "room", data: roomGroup },
-        { taskGroupType: "user", data: userGroup },
-        { taskGroupType: "msg", data: msgGroup },
-      ],
-    };
+      const taskGroups = {
+        latestTaskId,
+        data: [
+          { taskGroupType: "roomAdded", data: roomAddedGroup },
+          { taskGroupType: "roomRemoved", data: roomRemovedGroup },
+          { taskGroupType: "room", data: roomGroup },
+          { taskGroupType: "user", data: userGroup },
+          { taskGroupType: "msg", data: msgGroup },
+        ],
+      };
 
-    // tee niin, että aina roomAdded ekana
-    const socketId = getUserSocketIdByUserId(currentUserId);
-    console.log("lähettää taskit");
-    io.to(socketId).emit("updates", taskGroups);
+      // tee niin, että aina roomAdded ekana
+      const socketId = getUserSocketIdByUserId(currentUserId);
+      console.log("lähettää taskit");
+      io.to(socketId).emit("updates", taskGroups);
+    }
+  } catch (error) {
+    console.log(error, "code 8772772");
   }
 }
 function ioUpdateByUserId(targetUsers, taskGroupType, action, data) {
