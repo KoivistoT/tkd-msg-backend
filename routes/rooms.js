@@ -8,6 +8,7 @@ const addObjectIds = require("../utils/addObjectIds");
 const { User } = require("../models/user");
 const { ioUpdateToByRoomId, ioUpdateByUserId } = require("../utils/WebSockets");
 const sortArray = require("../utils/sortArray");
+const mongoose = require("mongoose");
 
 router.post("/create_private_room", auth, async (req, res) => {
   const { error } = schema.validate(req.body);
@@ -392,6 +393,40 @@ router.get("/:id", async (req, res) => {
   if (!result) return res.status(404).send("Room not found");
 
   res.status(200).send(result[0]);
+});
+router.get("/all_user_rooms/:id", async (req, res) => {
+  const userRoomsData = [];
+  const currentUserId = req.params.id;
+  const user = await User.findById(currentUserId);
+  await Promise.all(
+    user.userRooms.map(async (roomId) => {
+      const room = await Room.aggregate([
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(roomId),
+
+            $or: [
+              { $or: [{ status: "active" }, { status: "draft" }] },
+              {
+                $and: [{ roomCreator: currentUserId }, { status: "archived" }],
+              },
+            ],
+          },
+        },
+      ]);
+
+      if (room.length !== 0) {
+        const roomObject = {
+          _id: room[0]._id,
+          ...room[0],
+        };
+
+        userRoomsData.push(roomObject);
+      }
+    })
+  );
+
+  res.status(200).send(userRoomsData);
 });
 
 module.exports = router;

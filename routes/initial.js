@@ -69,8 +69,8 @@ router.get("/", auth, async (req, res) => {
               },
             },
           ]),
-          AllMessages.findById(roomId).lean(),
-          // AllMessages.findById(roomId).slice("messages", 2).lean(),
+          // AllMessages.findById(roomId).lean(),
+          AllMessages.findById(roomId).slice("messages", 2).lean(),
           AllMessages.aggregate([
             { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
             {
@@ -89,8 +89,6 @@ router.get("/", auth, async (req, res) => {
             {
               $project: { "messages.imageURLs": 1, _id: 0 },
             },
-
-            // { $limit: 1 },
           ]),
         ]);
 
