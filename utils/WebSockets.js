@@ -176,7 +176,7 @@ class WebSockets {
     // mute a chat room
     client.on("unsubscribe", (roomId) => {
       client.leave(roomId);
-      // console.log("lähti", roomId);
+      console.log("lähti", roomId);
     });
   }
 }
@@ -216,6 +216,7 @@ async function checkUserTasks(currentUserId) {
   //   .lean()
   //   .exec();
 
+  const roomRemovedGroup = [];
   const roomAddedGroup = [];
   const msgGroup = [];
   const roomGroup = [];
@@ -226,6 +227,9 @@ async function checkUserTasks(currentUserId) {
       const { taskGroupType } = task;
       if (taskGroupType === "roomAdded") {
         roomAddedGroup.push(task);
+      }
+      if (taskGroupType === "roomRemoved") {
+        roomRemovedGroup.push(task);
       }
       if (taskGroupType === "msg") {
         msgGroup.push(task);
@@ -247,6 +251,7 @@ async function checkUserTasks(currentUserId) {
       latestTaskId,
       data: [
         { taskGroupType: "roomAdded", data: roomAddedGroup },
+        { taskGroupType: "roomRemoved", data: roomRemovedGroup },
         { taskGroupType: "room", data: roomGroup },
         { taskGroupType: "user", data: userGroup },
         { taskGroupType: "msg", data: msgGroup },

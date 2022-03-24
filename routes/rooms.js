@@ -222,7 +222,12 @@ router.post("/change_members", auth, async (req, res) => {
       "roomAdded",
       updatedRoomData
     );
-    ioUpdateByUserId(pullMembers, "room", "roomRemoved", updatedRoomData._id);
+    ioUpdateByUserId(
+      pullMembers,
+      "roomRemoved",
+      "roomRemoved",
+      updatedRoomData._id
+    );
     ioUpdateByUserId(sameMembers, "room", "membersChanged", updatedRoomData);
 
     res.status(200).send(updatedRoomData);
@@ -265,7 +270,12 @@ router.post("/leave_room", auth, async (req, res) => {
       AllMessages.deleteOne({ _id: roomId }).lean().exec();
     }
 
-    ioUpdateByUserId([userId], "room", "roomRemoved", updatedRoomData._id);
+    ioUpdateByUserId(
+      [userId],
+      "roomRemoved",
+      "roomRemoved",
+      updatedRoomData._id
+    );
     ioUpdateByUserId(newMembersList, "room", "membersChanged", updatedRoomData);
 
     res.status(200).send(updatedRoomData);
@@ -320,7 +330,7 @@ router.get("/delete_room/:id", async (req, res) => {
       .exec();
   });
 
-  ioUpdateToByRoomId([roomId], "room", "roomRemoved", roomId);
+  ioUpdateByUserId(members, "roomRemoved", "roomRemoved", roomId);
 
   res.status(200).send(roomId);
 });
