@@ -248,9 +248,9 @@ router.post("/rest_messages/", auth, async (req, res) => {
     var diff = end - start;
     console.log(diff, "difference2");
 
-    setTimeout(() => {
-      res.status(200).send(messages);
-    }, 6000);
+    // setTimeout(() => {
+    res.status(200).send(messages);
+    // }, 6000);
 
     // }, 5000);
   } catch (error) {
