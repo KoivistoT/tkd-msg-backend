@@ -10,7 +10,7 @@ const { AllMessages, allMessagesSchema } = require("../models/allMessages");
 const router = express.Router();
 const addObjectIds = require("../utils/addObjectIds");
 
-const SEND_MESSAGES_FIRST_SUM = 30;
+const SEND_MESSAGES_FIRST_SUM = 15;
 
 router.get("/", auth, async (req, res) => {
   // router.get("/:id", async (req, res) => {
@@ -173,7 +173,7 @@ router.get("/", auth, async (req, res) => {
 
     var end = +new Date();
     var diff = end - start;
-    console.log(diff);
+    console.log(diff, "difference1");
 
     // setTimeout(() => {
     res.status(200).send(initialData);
@@ -224,6 +224,7 @@ router.post("/rest_messages/", auth, async (req, res) => {
               ]._id
           );
 
+          if (lastMessageIndex === 0) return;
           const allMessages = await AllMessages.find(
             { _id: currentRoomId },
             { messages: { $slice: [0, lastMessageIndex - 1] } }
@@ -245,11 +246,11 @@ router.post("/rest_messages/", auth, async (req, res) => {
     const messages = addObjectIds(userAllMessages);
     var end = +new Date();
     var diff = end - start;
-    console.log(diff);
+    console.log(diff, "difference2");
 
-    // setTimeout(() => {
-    res.status(200).send(messages);
-    // }, 6000);
+    setTimeout(() => {
+      res.status(200).send(messages);
+    }, 6000);
 
     // }, 5000);
   } catch (error) {
