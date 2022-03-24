@@ -10,7 +10,7 @@ const { AllMessages, allMessagesSchema } = require("../models/allMessages");
 const router = express.Router();
 const addObjectIds = require("../utils/addObjectIds");
 
-const SEND_MESSAGES_FIRST_SUM = 1;
+const SEND_MESSAGES_FIRST_SUM = 20;
 
 router.get("/", auth, async (req, res) => {
   // router.get("/:id", async (req, res) => {
@@ -202,7 +202,7 @@ router.post("/rest_messages/", auth, async (req, res) => {
           (result.messages.length - roomsNow[currentRoomId].messageSum) -
           SEND_MESSAGES_FIRST_SUM;
 
-        console.log(lastObjectIndex);
+        // console.log(lastObjectIndex);
 
         if (lastObjectIndex > 0) {
           const allMessages = await AllMessages.find(
