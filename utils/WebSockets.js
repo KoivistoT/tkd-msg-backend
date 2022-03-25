@@ -308,26 +308,28 @@ async function ioUpdateToByRoomId(rooms, taskGroupType, action, data) {
     }
   });
 }
-async function ioUpdateToMessageSender(
-  postedByUser,
-  taskGroupType,
-  action,
-  data
-) {
+async function ioUpdateToMessageSender(postedByUser, action, data) {
   const socketId = getUserSocketIdByUserId(postedByUser);
-  io.to(socketId).emit(
-    "updates",
+  io.to(socketId).emit(action, data);
+  //   postedByUser,
+  //   taskGroupType,
+  //   action,
+  //   data
+  // ) {
+  //   const socketId = getUserSocketIdByUserId(postedByUser);
+  //   io.to(socketId).emit(
+  //     "updates",
 
-    {
-      latestTaskId: null,
-      data: [
-        {
-          taskGroupType: taskGroupType,
-          data: [{ taskType: action, data }],
-        },
-      ],
-    }
-  );
+  //     {
+  //       latestTaskId: null,
+  //       data: [
+  //         {
+  //           taskGroupType: taskGroupType,
+  //           data: [{ taskType: action, data }],
+  //         },
+  //       ],
+  //     }
+  //   );
 }
 
 async function sendDataToUser(
