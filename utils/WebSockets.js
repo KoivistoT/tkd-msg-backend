@@ -3,6 +3,8 @@ const { Room } = require("../models/room");
 const { User } = require("../models/user");
 const mongoose = require("mongoose");
 const sendPushNotification = require("./sendPushNotification");
+const { Message } = require("../models/message");
+const { AllMessages } = require("../models/allMessages");
 
 connectedUsers = [];
 liveUsers = [];
@@ -77,6 +79,71 @@ class WebSockets {
       io.emit("users live", {
         connectedUsers,
       });
+    });
+
+    client.on("newChatMessage", async (data) => {
+      const {
+        currentUserId: postedByUser,
+        message: messageBody,
+        currentRoomId: roomId,
+        messageType: type,
+        imageURLs,
+        replyMessageId,
+      } = data;
+
+      try {
+        const message = await Message.create({
+          messageBody,
+          roomId,
+          postedByUser,
+          replyMessageId,
+          type,
+          imageURLs: imageURLs || null,
+        });
+
+        const socketId = getUserSocketIdByUserId(postedByUser);
+        io.to(socketId).emit("currentUserMessage", message);
+
+        ioUpdateToByRoomId([roomId], "msg", "new message", message);
+
+        const latestMessage = {
+          createdAt: message.createdAt,
+          messageBody: message.messageBody,
+          postedByUser: message.postedByUser,
+          roomId,
+        };
+
+        ioUpdateToByRoomId(
+          [roomId],
+          "room",
+          "roomLatestMessageChanged",
+          latestMessage
+        );
+
+        //tähänkin varmistus, eli tuon updaten alle
+
+        Room.findOneAndUpdate(
+          { _id: roomId },
+          {
+            latestMessage,
+            $inc: { messageSum: 1 },
+          },
+
+          { new: true }
+        )
+          .lean()
+          .exec();
+
+        AllMessages.updateOne(
+          { _id: roomId },
+          { $addToSet: { messages: message } }
+        ).exec();
+      } catch (error) {
+        console.log(error, "code 72766551");
+      }
+      // io.emit("users live", {
+      //   connectedUsers,
+      // });
     });
     // // add identity of user mapped to the socket id
     client.on("userOnline", (userId) => {

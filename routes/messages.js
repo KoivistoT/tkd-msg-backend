@@ -105,7 +105,7 @@ router.post("/send_message", auth, async (req, res) => {
     // const messageObject = { _id: message._id.toString(), message };
 
     // ioUpdateToMessageSender(postedByUser, "msg", "new message", message);
-    ioUpdateToMessageSender(postedByUser, "currentUserMessage", message);
+    // ioUpdateToMessageSender(postedByUser, "currentUserMessage", message);
 
     ioUpdateToByRoomId([roomId], "msg", "new message", message);
     // ioUpdateToByRoomId([roomId], "new message", message);
