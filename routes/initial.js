@@ -24,10 +24,10 @@ router.get("/", auth, async (req, res) => {
     const userRoomsData = [];
     const userAllMessages = [];
     const userAllImages = {};
-
+    let allUsers = [];
     //hae tämä erikseen
     //hae tämä erikseen
-    const allUsers = await User.find({}).lean();
+    // const allUsers = await User.find({}).lean();
     //  await User.aggregate([
     //   { $match: { status: "active" } },
     //   {
@@ -47,7 +47,7 @@ router.get("/", auth, async (req, res) => {
       user.userRooms.map(async (roomId) => {
         // var start = +new Date();
 
-        const [room, allMessages, allImages] = await Promise.all([
+        const [usersData, room, allMessages, allImages] = await Promise.all([
           // Room.findById(roomId).lean(),
           // Room.aggregate([
           //   {
@@ -60,6 +60,7 @@ router.get("/", auth, async (req, res) => {
           //   },
           // ]),
 
+          User.find({}).lean(),
           Room.aggregate([
             {
               $match: {
@@ -123,6 +124,9 @@ router.get("/", auth, async (req, res) => {
         // const AllMessagesTest2 = mongoose.model("AllMessages", allMessagesSchema);
         // katso jotain tuosta
 
+        if (usersData) {
+          allUsers = [...usersData];
+        }
         if (room.length !== 0) {
           const roomObject = {
             _id: room[0]._id,
