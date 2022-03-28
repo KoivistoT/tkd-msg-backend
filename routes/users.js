@@ -145,22 +145,12 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
     currentUserId,
     roomId,
     lastSeenMessageSum,
-    firstAlreadySeenMessageId,
+    // firstAlreadySeenMessageId,
   } = req.body;
 
   // const a = await User.f({}{ "last_seen_message.roomId": roomId }).exec();
 
   //pitäisi olla aina, onko hyvä silti varmistaa?
-  const isAlreadyAdded = await User.aggregate([
-    {
-      $match: {
-        $and: [
-          { _id: new mongoose.Types.ObjectId(currentUserId) },
-          { "last_seen_messages.roomId": roomId },
-        ],
-      },
-    },
-  ]);
 
   // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
   // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
@@ -384,6 +374,25 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
   // console.log("jatkuu kyllä");
   //täsä alkaa eri osio, jossa laitetaan lastseenmessagesum
   let newUserData;
+
+  //tämän kai saa kans niin, että update many kuten yllä, jossa array filter
+  //tämän kai saa kans niin, että update many kuten yllä, jossa array filter
+  //tämän kai saa kans niin, että update many kuten yllä, jossa array filter
+  //tämän kai saa kans niin, että update many kuten yllä, jossa array filter
+  //tämän kai saa kans niin, että update many kuten yllä, jossa array filter
+  //tämän kai saa kans niin, että update many kuten yllä, jossa array filter
+  //tämän kai saa kans niin, että update many kuten yllä, jossa array filter
+  //tämän kai saa kans niin, että update many kuten yllä, jossa array filter
+  const isAlreadyAdded = await User.aggregate([
+    {
+      $match: {
+        $and: [
+          { _id: new mongoose.Types.ObjectId(currentUserId) },
+          { "last_seen_messages.roomId": roomId },
+        ],
+      },
+    },
+  ]);
 
   if (isAlreadyAdded.length > 0) {
     newUserData = await User.updateOne(
