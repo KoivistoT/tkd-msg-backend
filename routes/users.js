@@ -141,7 +141,12 @@ router.post("/save_push_token", auth, async (req, res) => {
 });
 
 router.post("/save_last_seen_message_sum", auth, async (req, res) => {
-  const { currentUserId, roomId, lastSeenMessageSum } = req.body;
+  const {
+    currentUserId,
+    roomId,
+    lastSeenMessageSum,
+    firstAlreadySeenMessageId,
+  } = req.body;
 
   // const a = await User.f({}{ "last_seen_message.roomId": roomId }).exec();
 
@@ -171,6 +176,129 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
   // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
   // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
   // tee tämä niin, että jos isompi päivämäärä, kuin viimeksi merkattu, niin merkkaa luetuksi, vähän kuin remove tasks before
+
+  // console.log(, lastSeenMessageSum);
+
+  // const ab = await AllMessages.find({
+  //   "messages.readByRecipients.readByUserId": { $ne: currentUserId },
+  // });
+  const ab = await AllMessages.aggregate([
+    {
+      // "messages.$.readByRecipients": { readByUserId: currentUserId },
+      $match: { _id: new mongoose.Types.ObjectId(roomId) },
+    },
+    //   {
+    //     "$unwind": "$sub_collection"
+    // },
+    // {
+    //   $match: {
+    //     "messages.readByRecipients.readByUserId": {
+    //       $ne: { currentUserId },
+    //     },
+    //   },
+    // },
+    // {
+    //   $project: {
+    //     my: {
+    //       $filter: {
+    //         input: "$messages",
+    //         as: "msg",
+    //         cond: {
+    //           $eq: ["$$msg.readByRecipients.readByUserId", currentUserId],
+    //         },
+    //       },
+    //     },
+    //     // "messages.readByRecipients.readByUserId": 1,
+    //     // "messages._id": 1,
+    //   },
+    // },
+    {
+      $unwind: "$messages",
+    },
+
+    {
+      $match: {
+        "messages.readByRecipients.readByUserId": {
+          $ne: "6229c4a085aaca98e525f169",
+        },
+      },
+    },
+  ]);
+
+  ab.forEach((element) => {
+    console.log(element.messages.readByRecipients);
+  });
+
+  // const msg = await AllMessages.aggregate([
+  //   { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
+  //   // {
+  //   //   $project: {
+  //   //     messages: {
+  //   //       $slice: ["$messages", -difference],
+  //   //     },
+  //   //   },
+  //   // },
+  //   {
+  //     $project: {
+  //       "messages.postedByUser": 1,
+  //       "messages._id": 1,
+  //       _id: 0,
+  //     },
+  //   },
+  //   // { $unwind: { path: "$message" } },
+  // ]);
+
+  // if (firstAlreadySeenMessageId) {
+  //   let i = msg[0].messages.length - 1;
+
+  //   while (true) {
+  //     const currentMessageId = msg[0].messages[i]._id.toString();
+  //     const currentMessagePostedByUserId = msg[0].messages[i].postedByUser;
+  //     if (currentMessageId === firstAlreadySeenMessageId) break;
+  //     // if (currentMessagePostedByUserId === currentUserId) return;
+  //     //ei toimi vielä
+
+  //     AllMessages.findOneAndUpdate(
+  //       {
+  //         _id: roomId,
+  //         "messages._id": currentMessageId,
+  //       },
+  //       {
+  //         $addToSet: {
+  //           "messages.$.readByRecipients": { readByUserId: currentUserId },
+  //         },
+  //       },
+  //       { new: true }
+  //     ).exec();
+
+  //     i--;
+
+  //     if (i < 0) break;
+  //   }
+  // }
+
+  // .forEach((element) => {
+  //   // firstAlreadySeenMessageId
+
+  //     // return;
+  //     // AllMessages.findOneAndUpdate(
+  //     //   {
+  //     //     _id: roomId,
+  //     //     "messages._id": currentMessageId,
+  //     //   },
+  //     //   {
+  //     //     $addToSet: {
+  //     //       "messages.$.readByRecipients": { readByUserId: currentUserId },
+  //     //     },
+  //     //   },
+  //     //   { new: true }
+  //     // ).exec();
+
+  //   // while (true) {
+  //   //   console.log("k");
+  //   //   if (element._id.toString() === firstAlreadySeenMessageId) break;
+  //   // }
+  // });
 
   // let obj = isAlreadyAdded[0]?.last_seen_messages.find(
   //   (obj) => obj.roomId === roomId
@@ -246,11 +374,11 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
   //     },
   //   ]);
 
-  //   ioUpdateToByRoomId(
-  //     [roomId],
-  //     "readByRecepientsAdded",
-  //     updatedMessagesData[0].messages
-  //   );
+  //   // ioUpdateToByRoomId(
+  //   //   [roomId],
+  //   //   "readByRecepientsAdded",
+  //   //   updatedMessagesData[0].messages
+  //   // );
   // }
 
   // console.log("jatkuu kyllä");
