@@ -182,52 +182,52 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
   // const ab = await AllMessages.find({
   //   "messages.readByRecipients.readByUserId": { $ne: currentUserId },
   // });
-  const ab = await AllMessages.aggregate([
-    {
-      // "messages.$.readByRecipients": { readByUserId: currentUserId },
-      $match: { _id: new mongoose.Types.ObjectId(roomId) },
-    },
-    //   {
-    //     "$unwind": "$sub_collection"
-    // },
-    // {
-    //   $match: {
-    //     "messages.readByRecipients.readByUserId": {
-    //       $ne: { currentUserId },
-    //     },
-    //   },
-    // },
-    // {
-    //   $project: {
-    //     my: {
-    //       $filter: {
-    //         input: "$messages",
-    //         as: "msg",
-    //         cond: {
-    //           $eq: ["$$msg.readByRecipients.readByUserId", currentUserId],
-    //         },
-    //       },
-    //     },
-    //     // "messages.readByRecipients.readByUserId": 1,
-    //     // "messages._id": 1,
-    //   },
-    // },
-    {
-      $unwind: "$messages",
-    },
 
+  //*************** */
+  //*************** */
+  //*************** */
+  //*************** */
+  //*************** */
+  // const ab = await AllMessages.aggregate([
+  //   {
+  //     // "messages.$.readByRecipients": { readByUserId: currentUserId },
+  //     $match: { _id: new mongoose.Types.ObjectId(roomId) },
+  //   },
+  //   {
+  //     $unwind: "$messages",
+  //   },
+
+  //   {
+  //     $match: {
+  //       "messages.readByRecipients.readByUserId": {
+  //         $ne: "6229c4a085aaca98e525f169",
+  //       },
+  //     },
+  //   },
+  // ]);
+  //*************** */
+  //*************** */
+  //*************** */
+  //*************** */
+  //*************** */
+
+  const cc = await AllMessages.updateMany(
+    { _id: roomId },
     {
-      $match: {
-        "messages.readByRecipients.readByUserId": {
-          $ne: "6229c4a085aaca98e525f169",
-        },
+      $addToSet: {
+        "messages.$[element].readByRecipients": { readByUserId: currentUserId },
       },
     },
-  ]);
+    {
+      arrayFilters: [
+        { "element.readByRecipients.readByUserId": { $ne: currentUserId } },
+      ],
+    }
+  ).exec();
 
-  ab.forEach((element) => {
-    console.log(element.messages.readByRecipients);
-  });
+  // ab.forEach((element) => {
+  //   console.log(element.messages.readByRecipients);
+  // });
 
   // const msg = await AllMessages.aggregate([
   //   { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
