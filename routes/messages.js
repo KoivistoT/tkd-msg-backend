@@ -336,6 +336,35 @@ router.post("/edit2", async (req, res) => {
   res.status(200).send(doc);
 });
 
+router.post("/get_one_message", async (req, res) => {
+  const { roomId, messageId } = req.body;
+  console.log("meessge id", messageId, roomId);
+  const doc = await AllMessages.aggregate([
+    { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
+    {
+      $set: {
+        message: {
+          $filter: {
+            input: "$messages",
+            as: "m",
+            cond: { $eq: ["$$m._id", new mongoose.Types.ObjectId(messageId)] },
+          },
+        },
+      },
+    },
+    { $unwind: { path: "$message" } },
+
+    {
+      $project: { message: 1, _id: 0 },
+    },
+  ]);
+
+  //   message = await message.save();
+  if (!doc[0].message) return res.status(404).send("Messages not found");
+
+  res.status(200).send(doc[0].message);
+});
+
 router.post("/delete/", async (req, res) => {
   //post_message on parempi nimi
   console.log("tähän kaikki turva hommat, että jos ei löydy jne");

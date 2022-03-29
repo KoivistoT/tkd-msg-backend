@@ -143,7 +143,7 @@ router.post("/save_push_token", auth, async (req, res) => {
 router.post("/save_last_seen_message_sum", auth, async (req, res) => {
   const { currentUserId, roomId, lastSeenMessageSum } = req.body;
 
-  AllMessages.updateMany(
+  await AllMessages.updateMany(
     { _id: roomId },
     {
       $addToSet: {
