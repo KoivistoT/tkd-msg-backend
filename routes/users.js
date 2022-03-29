@@ -160,6 +160,8 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
     }
   ).exec();
 
+  io.to(roomId).emit("subscribe_read_at", true);
+
   User.updateOne(
     { _id: currentUserId, "last_seen_messages.roomId": roomId },
     {

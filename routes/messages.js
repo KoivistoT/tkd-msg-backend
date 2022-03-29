@@ -338,7 +338,7 @@ router.post("/edit2", async (req, res) => {
 
 router.post("/get_one_message", async (req, res) => {
   const { roomId, messageId } = req.body;
-  console.log("meessge id", messageId, roomId);
+  console.log("täällä menneee");
   const doc = await AllMessages.aggregate([
     { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
     {

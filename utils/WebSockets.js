@@ -73,6 +73,7 @@ class WebSockets {
       connectedUsers = connectedUsers.filter(
         (user) => user.socketId !== client.id
       );
+      console.log("disconnected");
 
       // console.log(connectedUsers);
       // console.log("disconnected", client.id);
@@ -181,7 +182,7 @@ class WebSockets {
 
     client.on("identity", (userId, accountType) => {
       // console.log(connectedUsers);
-      console.log("identity tuli");
+      // console.log("identity tuli");
       const index = connectedUsers.findIndex((user) => user.userId === userId);
 
       if (index === -1) {
@@ -243,7 +244,16 @@ class WebSockets {
     // mute a chat room
     client.on("unsubscribe", (roomId) => {
       client.leave(roomId);
-      console.log("lähti", roomId);
+      // console.log("lähti", roomId);
+    });
+
+    client.on("subscribe_read_at", async (roomId) => {
+      client.join(roomId);
+      // console.log("tuli read at", roomId);
+    });
+    client.on("unsubscribe_read_at", (roomId) => {
+      client.leave(roomId);
+      // console.log("lähti read at", roomId);
     });
   }
 }
