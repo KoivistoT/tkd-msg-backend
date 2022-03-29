@@ -142,14 +142,16 @@ router.post("/save_push_token", auth, async (req, res) => {
 
 router.post("/save_last_seen_message_sum", auth, async (req, res) => {
   const { currentUserId, roomId, lastSeenMessageSum } = req.body;
-
-  await AllMessages.updateMany(
+  console.log("katso ettei täällä ole turhaan");
+  //testaile, ettei tarci olla updateMany
+  await AllMessages.findOneAndUpdate(
     { _id: roomId },
     {
       $addToSet: {
         "messages.$[element].readByRecipients": { readByUserId: currentUserId },
       },
     },
+
     {
       arrayFilters: [
         {
@@ -160,6 +162,7 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
     }
   ).exec();
 
+  // tämä on ok tässä???? ettei erikseen functio webScketissa?
   io.to(roomId).emit("subscribe_read_at", true);
 
   User.updateOne(
