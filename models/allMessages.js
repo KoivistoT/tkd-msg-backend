@@ -40,7 +40,7 @@ const messageSchema = new mongoose.Schema(
     is_deleted: { type: Boolean, default: false },
     documentData: {
       documentDownloadURL: { type: String },
-      documentDbName: { type: String },
+      documentDisplayName: { type: String },
     },
     type: {
       type: String,

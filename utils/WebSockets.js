@@ -91,9 +91,9 @@ class WebSockets {
         imageURLs,
         replyMessageId,
         documentDownloadURL,
-        documentDbName,
+        documentDisplayName,
       } = data;
-      console.log(documentDownloadURL, documentDbName, "tulii");
+      console.log(documentDownloadURL, documentDisplayName, "tulii");
 
       try {
         const message = await Message.create({
@@ -103,9 +103,9 @@ class WebSockets {
           replyMessageId,
           type,
           imageURLs: imageURLs || null,
-          documentData: { documentDownloadURL, documentDbName },
+          documentData: { documentDownloadURL, documentDisplayName },
         });
-
+        // console.log(message, "tää joo");
         const socketId = getUserSocketIdByUserId(postedByUser);
         io.to(socketId).emit("currentUserMessage", message);
 

@@ -36,7 +36,7 @@ const messageSchema = new mongoose.Schema(
     imageURLs: { type: Array },
     documentData: {
       documentDownloadURL: { type: String },
-      documentDbName: { type: String },
+      documentDisplayName: { type: String },
     },
     messageStatus: { type: Boolean, default: false },
     is_deleted: { type: Boolean, default: false },
