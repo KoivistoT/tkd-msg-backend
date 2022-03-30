@@ -38,6 +38,10 @@ const messageSchema = new mongoose.Schema(
     imageURLs: { type: Array },
     messageStatus: { type: Boolean, default: false },
     is_deleted: { type: Boolean, default: false },
+    documentData: {
+      documentDownloadURL: { type: String },
+      documentDbName: { type: String },
+    },
     type: {
       type: String,
       default: () => MESSAGE_TYPES.TYPE_TEXT,

@@ -90,7 +90,10 @@ class WebSockets {
         messageType: type,
         imageURLs,
         replyMessageId,
+        documentDownloadURL,
+        documentDbName,
       } = data;
+      console.log(documentDownloadURL, documentDbName, "tulii");
 
       try {
         const message = await Message.create({
@@ -100,6 +103,7 @@ class WebSockets {
           replyMessageId,
           type,
           imageURLs: imageURLs || null,
+          documentData: { documentDownloadURL, documentDbName },
         });
 
         const socketId = getUserSocketIdByUserId(postedByUser);

@@ -34,6 +34,10 @@ const messageSchema = new mongoose.Schema(
     roomId: { type: String },
     replyMessageId: { type: String },
     imageURLs: { type: Array },
+    documentData: {
+      documentDownloadURL: { type: String },
+      documentDbName: { type: String },
+    },
     messageStatus: { type: Boolean, default: false },
     is_deleted: { type: Boolean, default: false },
     type: {
