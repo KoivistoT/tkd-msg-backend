@@ -93,7 +93,6 @@ class WebSockets {
         documentDownloadURL,
         documentDisplayName,
       } = data;
-      console.log(documentDownloadURL, documentDisplayName, "tulii");
 
       try {
         const message = await Message.create({

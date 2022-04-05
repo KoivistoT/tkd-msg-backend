@@ -164,6 +164,7 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
 
   // tämä on ok tässä???? ettei erikseen functio webScketissa?
   io.to(roomId).emit("subscribe_read_at", true);
+  console.log(lastSeenMessageSum, "tämä ei toimi");
 
   User.updateOne(
     { _id: currentUserId, "last_seen_messages.roomId": roomId },
