@@ -164,17 +164,42 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
 
   // tämä on ok tässä???? ettei erikseen functio webScketissa?
   io.to(roomId).emit("subscribe_read_at", true);
-  console.log(lastSeenMessageSum, "tämä ei toimi");
 
-  User.updateOne(
-    { _id: currentUserId, "last_seen_messages.roomId": roomId },
+  const isLastSeenMessagesAlreadyAdded = await User.aggregate([
     {
-      $set: { "last_seen_messages.$.lastSeenMessageSum": lastSeenMessageSum },
+      $match: {
+        $and: [
+          { _id: new mongoose.Types.ObjectId(currentUserId) },
+          { "last_seen_messages.roomId": roomId },
+        ],
+      },
     },
-    { new: true }
-  )
-    .lean()
-    .exec();
+  ]);
+
+  if (isLastSeenMessagesAlreadyAdded.length === 0) {
+    User.updateOne(
+      { _id: currentUserId },
+      {
+        $addToSet: {
+          userRooms: roomId,
+          last_seen_messages: {
+            roomId,
+            lastSeenMessageSum: lastSeenMessageSum,
+          },
+        },
+      }
+    ).exec();
+  } else {
+    User.updateOne(
+      { _id: currentUserId, "last_seen_messages.roomId": roomId },
+      {
+        $set: { "last_seen_messages.$.lastSeenMessageSum": lastSeenMessageSum },
+      },
+      { new: true }
+    )
+      .lean()
+      .exec();
+  }
 
   res.status(200).send("newUserData");
 });
