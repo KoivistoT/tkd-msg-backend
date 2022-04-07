@@ -227,7 +227,7 @@ router.post("/rest_messages/", auth, async (req, res) => {
           if (lastMessageIndex === 0) return;
           const allMessages = await AllMessages.find(
             { _id: currentRoomId },
-            { messages: { $slice: [0, lastMessageIndex - 1] } }
+            { messages: { $slice: [0, lastMessageIndex] } }
           ).lean();
 
           if (allMessages[0].messages) {
@@ -248,9 +248,9 @@ router.post("/rest_messages/", auth, async (req, res) => {
     var diff = end - start;
     console.log(diff, "difference2");
 
-    // setTimeout(() => {
-    res.status(200).send(messages);
-    // }, 6000);
+    setTimeout(() => {
+      res.status(200).send(messages);
+    }, 2000);
 
     // }, 5000);
   } catch (error) {
