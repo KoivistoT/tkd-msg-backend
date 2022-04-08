@@ -325,6 +325,100 @@ router.get("/room_images/:id", async (req, res) => {
   res.status(200).send({ imageURLs, roomId });
 });
 
+router.post("/add_reaction/", auth, async (req, res) => {
+  const { roomId, messageId, reaction, currentUserId } = req.body;
+  console.log(roomId, messageId, reaction, currentUserId);
+
+  const reactionObject = { reactionByUser: currentUserId, reaction };
+
+  const item = await AllMessages.aggregate([
+    { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
+    {
+      $set: {
+        message: {
+          $filter: {
+            input: "$messages",
+            as: "m",
+            cond: { $eq: ["$$m._id", new mongoose.Types.ObjectId(messageId)] },
+          },
+        },
+      },
+    },
+    { $unwind: { path: "$message" } },
+
+    {
+      $project: { "message.reactions": 1, _id: 0 },
+    },
+  ]);
+
+  console.log(item[0].message.reactions);
+  console.log(reactionObject);
+  if (item[0].message.reactions.includes(reactionObject)) {
+    console.log("kyllä");
+  }
+  item[0].message.reactions.forEach((element) => {
+    console.log(
+      element.reactionByUser === currentUserId && element.reaction === reaction
+    );
+  });
+  // const isAready = await AllMessages.find({
+  //   $match: {
+  //     _id: new mongoose.Types.ObjectId(roomId),
+
+  //     "messages._id": new mongoose.Types.ObjectId(messageId),
+  //     // "messages._id": new mongoose.Types.ObjectId(messageId),
+
+  //     "messages.reactions": {
+  //       reactionByUser: currentUserId,
+  //       reaction,
+  //     },
+  //   },
+  // }).exec();
+  // console.log(isAready);
+  // const isAready = await AllMessages.find({
+  //   //  { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
+  //   $match: {
+  //     _id: new mongoose.Types.ObjectId(roomId),
+
+  //     "messages._id": new mongoose.Types.ObjectId(messageId),
+  //     // "messages._id": new mongoose.Types.ObjectId(messageId),
+
+  //     "messages.reactions": {
+  //       reactionByUser: currentUserId,
+  //       reaction,
+  //     },
+  //   },
+  // });
+
+  await AllMessages.findOneAndUpdate(
+    { _id: roomId },
+    {
+      $addToSet: {
+        "messages.$[element].reactions": reactionObject,
+      },
+    },
+
+    {
+      arrayFilters: [
+        {
+          "element._id": messageId,
+        },
+      ],
+    }
+  ).exec();
+
+  // const newRoomData = await AllMessages.findOneAndUpdate(
+  //   { _id: roomId },
+  //   { roomName: newRoomName }
+  // ).lean();
+
+  // const newRoomObject = { roomId, newRoomName };
+
+  // ioUpdateToByRoomId([roomId], "room", "roomNameChanged", newRoomObject);
+
+  res.status(200).send("newRoomData");
+});
+
 router.post("/edit2", async (req, res) => {
   //post_message on parempi nimi
 

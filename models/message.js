@@ -31,6 +31,7 @@ const messageSchema = new mongoose.Schema(
     messageBody: {
       type: String,
     },
+    reactions: { type: Array },
     roomId: { type: String },
     replyMessageId: { type: String },
     imageURLs: { type: Array },

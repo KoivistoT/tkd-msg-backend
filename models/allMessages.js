@@ -34,6 +34,7 @@ const messageSchema = new mongoose.Schema(
       type: String,
     },
     roomId: { type: String },
+    reactions: { type: Array },
     replyMessageId: { type: String },
     imageURLs: { type: Array },
     messageStatus: { type: Boolean, default: false },
