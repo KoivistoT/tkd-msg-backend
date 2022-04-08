@@ -299,6 +299,7 @@ async function checkUserTasks(currentUserId) {
   const roomRemovedGroup = [];
   const roomAddedGroup = [];
   const msgGroup = [];
+  const messageUpdated = [];
   const roomGroup = [];
   const userGroup = [];
 
@@ -318,6 +319,9 @@ async function checkUserTasks(currentUserId) {
         if (taskGroupType === "room") {
           roomGroup.push(task);
         }
+        if (taskGroupType === "messageUpdated") {
+          messageUpdated.push(task);
+        }
         if (taskGroupType === "user") {
           userGroup.push(task);
         }
@@ -336,6 +340,7 @@ async function checkUserTasks(currentUserId) {
           { taskGroupType: "room", data: roomGroup },
           { taskGroupType: "user", data: userGroup },
           { taskGroupType: "msg", data: msgGroup },
+          { taskGroupType: "messageUpdated", data: messageUpdated },
         ],
       };
 
