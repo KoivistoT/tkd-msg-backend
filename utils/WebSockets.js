@@ -8,6 +8,7 @@ const { AllMessages } = require("../models/allMessages");
 
 connectedUsers = [];
 liveUsers = [];
+typers = [];
 class WebSockets {
   connection(client) {
     console.log(`[${client.id}] socket connected`);
@@ -165,6 +166,21 @@ class WebSockets {
       liveUsers = liveUsers.filter((user) => user !== userId);
 
       io.emit("userOnline", liveUsers);
+    });
+
+    client.on("isTyping", (roomId, userId) => {
+      console.log(roomId, userId, "typing here");
+      typers.push({ roomId, userId });
+      io.emit("typers", typers);
+    });
+    client.on("notTyping", (roomId, userId) => {
+      console.log(roomId, userId, "not typing here");
+      const index = typers.findIndex(
+        (item) => item.roomId === roomId && item.userId === userId
+      );
+      if (index === -1) return;
+      typers = typers.slice(index, 0);
+      io.emit("typers", typers);
     });
     // client.on("id connect", (data) => {
     //   console.log("täällä on nyt");
