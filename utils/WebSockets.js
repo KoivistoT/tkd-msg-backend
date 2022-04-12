@@ -206,8 +206,6 @@ class WebSockets {
     // });
 
     client.on("identity", (userId, accountType) => {
-      // console.log(connectedUsers);
-      // console.log("identity tuli");
       const index = connectedUsers.findIndex((user) => user.userId === userId);
 
       if (index === -1) {
@@ -223,6 +221,7 @@ class WebSockets {
         // console.log(connectedUsers[index].socketId, "pitäisi löytyä täältä");
         // console.log(connectedUsers, "Tässä kaikki käyttäjät");
       }
+      io.emit("typers", typers);
 
       checkUserTasks(userId);
       // console.log(users, "tässä käyttäjät");
