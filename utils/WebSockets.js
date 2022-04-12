@@ -169,17 +169,23 @@ class WebSockets {
     });
 
     client.on("isTyping", (roomId, userId) => {
-      console.log(roomId, userId, "typing here");
+      // console.log(roomId, userId, "typing here");
       typers.push({ roomId, userId });
+
       io.emit("typers", typers);
     });
     client.on("notTyping", (roomId, userId) => {
-      console.log(roomId, userId, "not typing here");
-      const index = typers.findIndex(
-        (item) => item.roomId === roomId && item.userId === userId
-      );
+      // console.log(roomId, userId, "not typing here");
+      const index = typers.findIndex((item) => {
+        return item.roomId === roomId && item.userId === userId;
+      });
+
       if (index === -1) return;
-      typers = typers.slice(index, 0);
+
+      typers = typers.filter(
+        (typer) => typer.roomId !== userId && typer.userId !== userId
+      );
+      // console.log(typers, "kaikki typerit");
       io.emit("typers", typers);
     });
     // client.on("id connect", (data) => {

@@ -326,8 +326,8 @@ router.get("/room_images/:id", async (req, res) => {
 });
 
 router.post("/add_reaction/", auth, async (req, res) => {
+  // var start = +new Date();
   const { roomId, messageId, reaction, currentUserId } = req.body;
-  console.log(roomId, messageId, reaction, currentUserId);
 
   const reactionObject = { reactionByUser: currentUserId, reaction };
 
@@ -353,7 +353,6 @@ router.post("/add_reaction/", auth, async (req, res) => {
 
   let action = "$addToSet";
 
-  console.log(item[0].message.reactions);
   if (item[0].message.reactions) {
     item[0].message.reactions.forEach((element) => {
       if (
@@ -420,6 +419,9 @@ router.post("/add_reaction/", auth, async (req, res) => {
     },
   ]);
 
+  // var end = +new Date();
+  // var diff = end - start;
+  // console.log(diff, "difference2");
   //nämä voisi olla niin ,että jos monta kertaa sama viesti päivittyy, niin lähettää vain viimeisen taskin
   ioUpdateToByRoomId(
     [roomId],
