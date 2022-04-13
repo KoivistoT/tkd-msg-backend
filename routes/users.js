@@ -5,6 +5,7 @@ const router = express.Router();
 const _ = require("lodash");
 const addObjectIds = require("../utils/addObjectIds");
 const mongoose = require("mongoose");
+const moment = require("moment");
 const {
   ioUpdateToAllUsers,
   ioUpdateToByRoomId,
@@ -138,6 +139,30 @@ router.post("/save_push_token", auth, async (req, res) => {
   // console.log(currentUserPushToken, "tämä token");
   // console.log(newUserData, "uusi data");
   res.status(200).send(newUserData);
+});
+
+router.post("/last_present", auth, async (req, res) => {
+  const { currentUserId } = req.body;
+  let user = await User.findById(currentUserId);
+  //toki pitäisi löytyä, mutta on nyt joku viealla
+
+  if (!user) return res.status(400).send("User do not exist.");
+
+  const newUserData = await User.findOneAndUpdate(
+    { _id: currentUserId },
+    { last_present: moment().format() },
+    { new: true }
+  ).lean();
+
+  res.status(200).send("present");
+});
+router.post("/get_last_user_last_present", auth, async (req, res) => {
+  const { userId } = req.body;
+
+  let { last_present } = await User.findById(userId);
+
+  const userData = { userId, last_present };
+  res.status(200).send(userData);
 });
 
 router.post("/save_last_seen_message_sum", auth, async (req, res) => {

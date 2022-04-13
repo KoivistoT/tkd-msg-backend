@@ -153,7 +153,7 @@ class WebSockets {
     // // add identity of user mapped to the socket id
     client.on("userOnline", (userId) => {
       const index = liveUsers.findIndex((user) => user === userId);
-      // console.log(index);
+
       if (index === -1) {
         liveUsers.push(userId);
       }
@@ -164,7 +164,7 @@ class WebSockets {
     client.on("userOffline", (userId) => {
       // console.log(userId, "offlineen meni");
       liveUsers = liveUsers.filter((user) => user !== userId);
-
+      console.log(liveUsers, "livenä nyt enää");
       io.emit("userOnline", liveUsers);
     });
 
@@ -175,6 +175,7 @@ class WebSockets {
       io.emit("typers", typers);
     });
     client.on("notTyping", (userId) => {
+      console.log("tuleeko tänne");
       typers = typers.filter((typer) => typer.userId !== userId);
       // console.log(typers, "kaikki typerit");
       io.emit("typers", typers);
@@ -260,7 +261,7 @@ class WebSockets {
     // mute a chat room
     client.on("unsubscribe", (roomId) => {
       client.leave(roomId);
-      // console.log("lähti", roomId);
+      console.log("lähti", roomId);
     });
 
     client.on("subscribe_read_at", async (roomId) => {
