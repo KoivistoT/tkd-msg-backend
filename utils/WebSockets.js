@@ -164,7 +164,7 @@ class WebSockets {
     client.on("userOffline", (userId) => {
       // console.log(userId, "offlineen meni");
       liveUsers = liveUsers.filter((user) => user !== userId);
-      console.log(liveUsers, "livenä nyt enää");
+      // console.log(liveUsers, "livenä nyt enää");
       io.emit("userOnline", liveUsers);
     });
 
@@ -175,7 +175,7 @@ class WebSockets {
       io.emit("typers", typers);
     });
     client.on("notTyping", (userId) => {
-      console.log("tuleeko tänne");
+      // console.log("tuleeko tänne");
       typers = typers.filter((typer) => typer.userId !== userId);
       // console.log(typers, "kaikki typerit");
       io.emit("typers", typers);
