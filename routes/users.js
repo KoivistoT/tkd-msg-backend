@@ -164,6 +164,25 @@ router.post("/get_last_user_last_present", auth, async (req, res) => {
   const userData = { userId, last_present };
   res.status(200).send(userData);
 });
+router.post("/get_unseen_message_sum", auth, async (req, res) => {
+  const { currentUserId, roomId } = req.body;
+
+  const { messageSum } = await Room.findById(roomId)
+    .select("messageSum")
+    .lean();
+  const { last_seen_messages } = await User.findById(currentUserId)
+    .select("last_seen_messages")
+    .lean();
+
+  const index = last_seen_messages.findIndex((room) => room.roomId === roomId);
+
+  const newMessagesSum =
+    index === -1
+      ? messageSum
+      : messageSum - last_seen_messages[index].lastSeenMessageSum;
+  console.log(newMessagesSum);
+  res.status(200).json({ newMessagesSum });
+});
 
 router.post("/save_last_seen_message_sum", auth, async (req, res) => {
   const { currentUserId, roomId, lastSeenMessageSum } = req.body;

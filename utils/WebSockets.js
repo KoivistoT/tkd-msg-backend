@@ -111,11 +111,32 @@ class WebSockets {
 
         ioUpdateToByRoomId([roomId], "msg", "new message", message);
 
+        //tähänkin varmistus, eli tuon updaten alle
+        const latestMessage2 = {
+          createdAt: message.createdAt,
+          messageBody: message.messageBody,
+          postedByUser: message.postedByUser,
+          roomId,
+        };
+
+        const room = await Room.findOneAndUpdate(
+          { _id: roomId },
+          {
+            latestMessage2,
+            $inc: { messageSum: 1 },
+          },
+
+          { new: true }
+        )
+          .lean()
+          .exec();
+
         const latestMessage = {
           createdAt: message.createdAt,
           messageBody: message.messageBody,
           postedByUser: message.postedByUser,
           roomId,
+          messageSum: room.messageSum,
         };
 
         ioUpdateToByRoomId(
@@ -124,20 +145,6 @@ class WebSockets {
           "roomLatestMessageChanged",
           latestMessage
         );
-
-        //tähänkin varmistus, eli tuon updaten alle
-
-        Room.findOneAndUpdate(
-          { _id: roomId },
-          {
-            latestMessage,
-            $inc: { messageSum: 1 },
-          },
-
-          { new: true }
-        )
-          .lean()
-          .exec();
 
         AllMessages.updateOne(
           { _id: roomId },
