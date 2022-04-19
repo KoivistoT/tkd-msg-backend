@@ -14,7 +14,7 @@ const SEND_MESSAGES_FIRST_SUM = 15;
 
 router.get("/", auth, async (req, res) => {
   // router.get("/:id", async (req, res) => {
-  var start = +new Date();
+  // var start = +new Date();
   try {
     const userId = req.res.req.user._id;
     const user = await User.findById(userId);
@@ -171,9 +171,9 @@ router.get("/", auth, async (req, res) => {
     // console.log(initialData.messages["61e6b87218d455cf6ecdb913"].messages);
     // setTimeout(() => {
 
-    var end = +new Date();
-    var diff = end - start;
-    console.log(diff, "difference1");
+    // var end = +new Date();
+    // var diff = end - start;
+    // console.log(diff, "difference1");
 
     // setTimeout(() => {
     res.status(200).send(initialData);
@@ -184,7 +184,7 @@ router.get("/", auth, async (req, res) => {
   }
 });
 router.post("/rest_messages/", auth, async (req, res) => {
-  var start = +new Date();
+  // var start = +new Date();
 
   try {
     const { currentUserId, messagesNow } = req.body;
@@ -244,9 +244,9 @@ router.post("/rest_messages/", auth, async (req, res) => {
     // const room = await Room.findById({_id:});
 
     const messages = addObjectIds(userAllMessages);
-    var end = +new Date();
-    var diff = end - start;
-    console.log(diff, "difference2");
+    // var end = +new Date();
+    // var diff = end - start;
+    // console.log(diff, "difference2");
 
     // setTimeout(() => {
     res.status(200).send(messages);

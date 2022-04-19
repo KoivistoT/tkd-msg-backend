@@ -11,14 +11,14 @@ liveUsers = [];
 typers = [];
 class WebSockets {
   connection(client) {
-    console.log(`[${client.id}] socket connected`);
+    // console.log(`[${client.id}] socket connected`);
     // console.log(users);
     // client.join("1111");
     // io.to("1111").emit("some event");
 
     // console.log(client.server.engine.clients);
     client.on("chat message", ({ msg, roomId }) => {
-      console.log("täällä hei on joo juu");
+      // console.log("täällä hei on joo juu");
       // console.log("tämä kyl käy");
       // console.log("message: " + msg);
       // client.emit("chat message", msg);
@@ -74,7 +74,7 @@ class WebSockets {
       connectedUsers = connectedUsers.filter(
         (user) => user.socketId !== client.id
       );
-      console.log("disconnected");
+      // console.log("disconnected");
 
       // console.log(connectedUsers);
       // console.log("disconnected", client.id);
@@ -112,17 +112,16 @@ class WebSockets {
         ioUpdateToByRoomId([roomId], "msg", "new message", message);
 
         //tähänkin varmistus, eli tuon updaten alle
-        const latestMessage2 = {
+        const latestMessage = {
           createdAt: message.createdAt,
           messageBody: message.messageBody,
           postedByUser: message.postedByUser,
-          roomId,
         };
 
         const room = await Room.findOneAndUpdate(
           { _id: roomId },
           {
-            latestMessage2,
+            latestMessage,
             $inc: { messageSum: 1 },
           },
 
@@ -131,7 +130,7 @@ class WebSockets {
           .lean()
           .exec();
 
-        const latestMessage = {
+        const latestMessage2 = {
           createdAt: message.createdAt,
           messageBody: message.messageBody,
           postedByUser: message.postedByUser,
@@ -143,7 +142,7 @@ class WebSockets {
           [roomId],
           "room",
           "roomLatestMessageChanged",
-          latestMessage
+          latestMessage2
         );
 
         AllMessages.updateOne(
@@ -268,7 +267,7 @@ class WebSockets {
     // mute a chat room
     client.on("unsubscribe", (roomId) => {
       client.leave(roomId);
-      console.log("lähti", roomId);
+      // console.log("lähti", roomId);
     });
 
     client.on("subscribe_read_at", async (roomId) => {
@@ -367,7 +366,7 @@ async function checkUserTasks(currentUserId) {
 
       // tee niin, että aina roomAdded ekana
       const socketId = getUserSocketIdByUserId(currentUserId);
-      console.log("lähettää taskit");
+      // console.log("lähettää taskit");
       io.to(socketId).emit("updates", taskGroups);
     }
   } catch (error) {
