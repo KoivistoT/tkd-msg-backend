@@ -76,7 +76,7 @@ const sendPushMessages = async (allPushTokensData) => {
       // return;
       try {
         const tickets = await expo.sendPushNotificationsAsync(chunk);
-        console.log("Tickets", tickets);
+        // console.log("Tickets", tickets);
       } catch (error) {
         console.log("Error sending chunk", error);
       }
@@ -87,12 +87,13 @@ const sendPushMessages = async (allPushTokensData) => {
 };
 
 const getPushMessage = (token, data) => {
+  const { roomId, postedByUser, messageBody, type } = data;
   return {
     to: token,
     sound: "default",
     body: data.messageBody,
     channelId: "live-notifications",
-    data: { roomId: data.roomId },
+    data: { roomId, postedByUser, messageBody, type },
     ttl: 1000,
     priority: "high",
   };
