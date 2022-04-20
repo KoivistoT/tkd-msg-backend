@@ -3,20 +3,9 @@ const { Expo } = require("expo-server-sdk");
 module.exports = async function (members, data) {
   const allUsers = await User.find().lean().exec();
   const allPushTokensData = [];
+
   members.map((currentUserId) => {
-    //laita tämä taas pois
-    //laita tämä taas pois
-    //laita tämä taas pois
-    //laita tämä taas pois
-    //laita tämä taas pois
-    //laita tämä taas pois
-    // if (currentUserId === data.postedByUser) return;
-    //laita tämä taas pois
-    //laita tämä taas pois
-    //laita tämä taas pois
-    //laita tämä taas pois
-    //laita tämä taas pois
-    //laita tämä taas pois
+    if (currentUserId === data.postedByUser) return;
 
     const index = allUsers.findIndex(
       (user) => user._id.toString() === currentUserId
