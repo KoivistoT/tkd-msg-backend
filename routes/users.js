@@ -54,6 +54,27 @@ router.post("/create_user", auth, async (req, res) => {
     .send(_.pick(user, ["_id", "name", "email"]));
 });
 
+router.post("/edit_password", auth, async (req, res) => {
+  const { email, password } = req.body;
+  console.log(email, password);
+  if (!password) return res.status(400).send("Please add a password.");
+
+  let user = await User.findOne({ email });
+  if (!user) return res.status(400).send("User not found.");
+
+  const salt = await bcrypt.genSalt(10);
+
+  const newPassword = await bcrypt.hash(password, salt);
+
+  const newUserData = await User.findOneAndUpdate(
+    { email },
+    { password: newPassword },
+    { new: true }
+  ).lean();
+
+  res.status(200).send(newUserData);
+});
+
 router.get("/all", auth, async (req, res) => {
   const users = await User.find({});
   if (!users) return res.status(404).send("Users not found");
