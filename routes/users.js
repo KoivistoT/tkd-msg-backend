@@ -126,6 +126,19 @@ router.post("/edit_user_data", auth, async (req, res) => {
 
   res.status(200).send(newUserData);
 });
+router.post("/save_edited_user_data", auth, async (req, res) => {
+  const { currentUserId, fieldName, value } = req.body.data;
+
+  const newUserData = await User.findOneAndUpdate(
+    { _id: currentUserId },
+    { [fieldName]: value },
+    { new: true }
+  ).lean();
+
+  ioUpdateToAllUsers("user", "userDataEdited", newUserData);
+
+  res.status(200).send(newUserData);
+});
 
 router.post("/save_push_token", auth, async (req, res) => {
   const { currentUserId, currentUserPushToken } = req.body;
