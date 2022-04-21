@@ -68,6 +68,14 @@ router.post("/create_private_room", auth, async (req, res) => {
 router.post("/change_room_name", auth, async (req, res) => {
   const { roomId, newRoomName } = req.body;
 
+  const isNameFree = await Room.find({ roomName: newRoomName }).lean();
+
+  if (isNameFree.length !== 0) {
+    return res
+      .status(400)
+      .send("Channel with the same name is already registered.");
+  }
+
   const newRoomData = await Room.findOneAndUpdate(
     { _id: roomId },
     { roomName: newRoomName }
