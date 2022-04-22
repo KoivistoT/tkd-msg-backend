@@ -362,7 +362,7 @@ router.get("/activate_user/:id", auth, async (req, res) => {
         $addToSet: {
           last_seen_messages: {
             roomId,
-            lastSeenMessageSum: roomData[0].messageSum,
+            lastSeenMessageSum: roomData[0]?.messageSum,
           },
         },
       },
