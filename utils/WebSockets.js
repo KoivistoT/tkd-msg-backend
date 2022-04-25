@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const sendPushNotification = require("./sendPushNotification");
 const { Message } = require("../models/message");
 const { AllMessages } = require("../models/allMessages");
+const removeItemFromArray = require("./removeItemFromArray");
 
 connectedUsers = [];
 liveUsers = [];
@@ -397,21 +398,28 @@ async function ioUpdateToAllUsers(taskGroupType, action, data) {
   });
 }
 
-async function ioUpdateToByRoomId(rooms, taskGroupType, action, data) {
+async function ioUpdateToByRoomId(
+  rooms,
+  taskGroupType,
+  action,
+  data,
+  currentUserId
+) {
   rooms.map(async (roomId) => {
     const room = await Room.findById(roomId).lean().exec();
 
     if (!room) return;
 
-    room.members.map((currentUserId) => {
-      const socketId = getUserSocketIdByUserId(currentUserId);
-      if (action === "new message" && currentUserId === data.postedByUser)
-        return;
+    const members = removeItemFromArray(currentUserId, room.members);
 
-      sendDataToUser(currentUserId, socketId, taskGroupType, action, data);
+    members.map((userId) => {
+      const socketId = getUserSocketIdByUserId(userId);
+      if (action === "new message" && userId === data.postedByUser) return;
+
+      sendDataToUser(userId, socketId, taskGroupType, action, data);
     });
     if (action === "new message") {
-      sendPushNotification(room.members, data);
+      sendPushNotification(members, data);
     }
   });
 }

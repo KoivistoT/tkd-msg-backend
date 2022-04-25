@@ -423,11 +423,13 @@ router.post("/add_reaction/", auth, async (req, res) => {
   // var diff = end - start;
   // console.log(diff, "difference2");
   //nämä voisi olla niin ,että jos monta kertaa sama viesti päivittyy, niin lähettää vain viimeisen taskin
+  // console.log(updatedMessage[0].message);
   ioUpdateToByRoomId(
     [roomId],
     "messageUpdated",
     "messageUpdated",
-    updatedMessage[0].message
+    updatedMessage[0].message,
+    currentUserId
   );
 
   res.status(200).send("newRoomData");
