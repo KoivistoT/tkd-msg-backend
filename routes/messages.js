@@ -478,7 +478,7 @@ router.post("/get_one_message", async (req, res) => {
 router.post("/delete/", async (req, res) => {
   //post_message on parempi nimi
   console.log("tähän kaikki turva hommat, että jos ei löydy jne");
-  const { messageId, roomId } = req.body;
+  const { messageId, roomId, currentUserId } = req.body;
   // console.log(messageId, roomId);
 
   const newMessageData = await AllMessages.updateOne(
@@ -505,7 +505,13 @@ router.post("/delete/", async (req, res) => {
     roomId,
     messageId,
   };
-  ioUpdateToByRoomId([roomId], "msg", "messageDeleted", messagesObject);
+  ioUpdateToByRoomId(
+    [roomId],
+    "msg",
+    "messageDeleted",
+    messagesObject,
+    currentUserId
+  );
   //
   // const doc = await AllMessages.findById("61c07ea580c52533ef671f53");
   // console.log(doc);
