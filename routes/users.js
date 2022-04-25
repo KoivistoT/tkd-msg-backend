@@ -156,7 +156,7 @@ router.post("/save_edited_user_data", auth, async (req, res) => {
     { new: true }
   ).lean();
 
-  ioUpdateToAllUsers("user", "userDataEdited", newUserData);
+  ioUpdateToAllUsers("user", "userDataEdited", newUserData, currentUserId);
 
   res.status(200).send(newUserData);
 });

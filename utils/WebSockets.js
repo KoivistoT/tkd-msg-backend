@@ -385,16 +385,18 @@ function ioUpdateByUserId(targetUsers, taskGroupType, action, data) {
   }
 }
 
-async function ioUpdateToAllUsers(taskGroupType, action, data) {
+async function ioUpdateToAllUsers(taskGroupType, action, data, currentUserId) {
   const activeUsers = await User.aggregate([
     { $match: { status: "active" } },
     { $project: { _id: 1 } },
   ]);
 
   activeUsers.map((activeUser) => {
-    const currentUserId = activeUser._id.toString();
-    const socketId = getUserSocketIdByUserId(currentUserId);
-    sendDataToUser(currentUserId, socketId, taskGroupType, action, data);
+    if (activeUser._id.toString() === currentUserId) return;
+
+    const userId = activeUser._id.toString();
+    const socketId = getUserSocketIdByUserId(userId);
+    sendDataToUser(userId, socketId, taskGroupType, action, data);
   });
 }
 
