@@ -283,7 +283,7 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
 });
 
 router.post("/archive_or_delete_user", auth, async (req, res) => {
-  const { userId, status } = req.body;
+  const { userId, status, currentUserId } = req.body;
 
   await User.findOneAndUpdate(
     { _id: userId },
@@ -318,7 +318,8 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
         [room._id.toString()],
         "room",
         "membersChanged",
-        updatedRoomData
+        updatedRoomData,
+        currentUserId
       );
 
       i++;
@@ -328,18 +329,17 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
   Promise.all([changeMembers]);
 
   if (status === "archived") {
-    ioUpdateToAllUsers("user", "userArchived", userId);
+    ioUpdateToAllUsers("user", "userArchived", userId, currentUserId);
   } else {
-    ioUpdateToAllUsers("user", "userTemporaryDeleted", userId);
+    ioUpdateToAllUsers("user", "userTemporaryDeleted", userId, currentUserId);
   }
   res.status(200).send(userId);
 });
 
-router.get("/activate_user/:id", auth, async (req, res) => {
-  const currentUserId = req.params.id;
-
+router.post("/activate_user", auth, async (req, res) => {
+  const { userId, currentUserId } = req.body;
   const userData = await User.findOneAndUpdate(
-    { _id: currentUserId },
+    { _id: userId },
     { status: "active" },
     { new: true }
   ).lean();
@@ -357,7 +357,7 @@ router.get("/activate_user/:id", auth, async (req, res) => {
     ]);
 
     await User.findOneAndUpdate(
-      { _id: currentUserId },
+      { _id: userId },
       {
         $addToSet: {
           last_seen_messages: {
@@ -378,7 +378,7 @@ router.get("/activate_user/:id", auth, async (req, res) => {
     userData.userRooms.forEach(async (room) => {
       const updatedRoomData = await Room.findByIdAndUpdate(
         { _id: room },
-        { $addToSet: { members: currentUserId } },
+        { $addToSet: { members: userId } },
         { new: true }
       )
         .lean()
@@ -388,7 +388,8 @@ router.get("/activate_user/:id", auth, async (req, res) => {
         [room.toString()],
         "room",
         "membersChanged",
-        updatedRoomData
+        updatedRoomData,
+        currentUserId
       );
       i++;
       if (userData.userRooms.length === i) resolve();
@@ -396,14 +397,11 @@ router.get("/activate_user/:id", auth, async (req, res) => {
   });
   Promise.all([changeMembers]);
 
-  await User.findById(
-    currentUserId,
-    "-password -last_seen_messages -contacts"
-  ).lean();
+  await User.findById(userId, "-password -last_seen_messages -contacts").lean();
 
-  ioUpdateToAllUsers("user", "userActivated", currentUserId);
+  ioUpdateToAllUsers("user", "userActivated", userId, currentUserId);
 
-  res.status(200).send(currentUserId);
+  res.status(200).send(userId);
 });
 
 router.get("/:id", auth, async (req, res) => {
