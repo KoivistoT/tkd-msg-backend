@@ -399,11 +399,11 @@ async function ioUpdateToAllUsers(taskGroupType, action, data) {
 
 async function ioUpdateToByRoomId(rooms, taskGroupType, action, data) {
   rooms.map(async (roomId) => {
-    const a = await Room.findById(roomId).lean().exec();
+    const room = await Room.findById(roomId).lean().exec();
 
-    if (!a) return;
+    if (!room) return;
 
-    a.members.map((currentUserId) => {
+    room.members.map((currentUserId) => {
       const socketId = getUserSocketIdByUserId(currentUserId);
       if (action === "new message" && currentUserId === data.postedByUser)
         return;
@@ -411,7 +411,7 @@ async function ioUpdateToByRoomId(rooms, taskGroupType, action, data) {
       sendDataToUser(currentUserId, socketId, taskGroupType, action, data);
     });
     if (action === "new message") {
-      sendPushNotification(a.members, data);
+      sendPushNotification(room.members, data);
     }
   });
 }

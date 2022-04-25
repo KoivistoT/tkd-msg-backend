@@ -9,6 +9,7 @@ const { User } = require("../models/user");
 const { ioUpdateToByRoomId, ioUpdateByUserId } = require("../utils/WebSockets");
 const sortArray = require("../utils/sortArray");
 const mongoose = require("mongoose");
+const removeItemFromArray = require("../utils/removeItemFromArray");
 
 router.post("/create_private_room", auth, async (req, res) => {
   const { error } = schema.validate(req.body);
@@ -179,7 +180,7 @@ router.post("/create_channel", auth, async (req, res) => {
 
 router.post("/change_members", auth, async (req, res) => {
   // tähän validointi
-  const { roomId, members: newMemberList } = req.body;
+  const { roomId, members: newMemberList, currentUserId } = req.body;
 
   let result = await Room.findOne({ _id: roomId }).lean();
   if (!result) return res.status(400).send("Can't find room");
@@ -237,7 +238,13 @@ router.post("/change_members", auth, async (req, res) => {
       "roomRemoved",
       updatedRoomData._id
     );
-    ioUpdateByUserId(sameMembers, "room", "membersChanged", updatedRoomData);
+
+    ioUpdateByUserId(
+      removeItemFromArray(currentUserId, sameMembers),
+      "room",
+      "membersChanged",
+      updatedRoomData
+    );
 
     res.status(200).send(updatedRoomData);
   } catch (error) {
@@ -279,12 +286,6 @@ router.post("/leave_room", auth, async (req, res) => {
       AllMessages.deleteOne({ _id: roomId }).lean().exec();
     }
 
-    ioUpdateByUserId(
-      [userId],
-      "roomRemoved",
-      "roomRemoved",
-      updatedRoomData._id
-    );
     ioUpdateByUserId(newMembersList, "room", "membersChanged", updatedRoomData);
 
     res.status(200).send(updatedRoomData);
@@ -304,8 +305,8 @@ router.get("/all_channels", async (req, res) => {
   res.status(200).send(dataWithIds);
 });
 
-router.get("/delete_room/:id", async (req, res) => {
-  const roomId = req.params.id;
+router.post("/delete_room/", auth, async (req, res) => {
+  const { roomId, currentUserId } = req.body;
 
   const roomData = await Room.find({ _id: roomId })
     .select("members type")
@@ -339,7 +340,12 @@ router.get("/delete_room/:id", async (req, res) => {
       .exec();
   });
 
-  ioUpdateByUserId(members, "roomRemoved", "roomRemoved", roomId);
+  ioUpdateByUserId(
+    removeItemFromArray(currentUserId, members),
+    "roomRemoved",
+    "roomRemoved",
+    roomId
+  );
 
   res.status(200).send(roomId);
 });
