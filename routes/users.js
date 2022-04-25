@@ -143,7 +143,7 @@ router.post("/edit_user_data", auth, async (req, res) => {
     { new: true }
   ).lean();
 
-  ioUpdateToAllUsers("user", "userDataEdited", newUserData);
+  ioUpdateToAllUsers("user", "userDataEdited", newUserData, userId);
 
   res.status(200).send(newUserData);
 });
