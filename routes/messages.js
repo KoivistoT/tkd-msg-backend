@@ -8,7 +8,7 @@ const auth = require("../middleware/auth");
 const addObjectIds = require("../utils/addObjectIds");
 const { User } = require("../models/user");
 const {
-  ioUpdateToByRoomId,
+  ioUpdateByRoomId,
   ioUpdateToMessageSender,
 } = require("../utils/WebSockets");
 const { AllTasks } = require("../models/allTasks");
@@ -101,14 +101,14 @@ router.post("/send_message", auth, async (req, res) => {
     // const messageWithId = { [message._id]: message };
     // console.log("täällä menee joo", roomId);
 
-    // ioUpdateToByRoomId
+    // ioUpdateByRoomId
     // const messageObject = { _id: message._id.toString(), message };
 
     // ioUpdateToMessageSender(postedByUser, "msg", "new message", message);
     // ioUpdateToMessageSender(postedByUser, "currentUserMessage", message);
 
-    ioUpdateToByRoomId([roomId], "msg", "new message", message);
-    // ioUpdateToByRoomId([roomId], "new message", message);
+    ioUpdateByRoomId([roomId], "msg", "new message", message);
+    // ioUpdateByRoomId([roomId], "new message", message);
     // await AllTasks.create({ _id: "6229c4a085aaca98e525f169" });
     const latestMessage = {
       createdAt: message.createdAt,
@@ -117,7 +117,7 @@ router.post("/send_message", auth, async (req, res) => {
       roomId,
     };
 
-    ioUpdateToByRoomId(
+    ioUpdateByRoomId(
       [roomId],
       "room",
       "roomLatestMessageChanged",
@@ -424,7 +424,7 @@ router.post("/add_reaction/", auth, async (req, res) => {
   // console.log(diff, "difference2");
   //nämä voisi olla niin ,että jos monta kertaa sama viesti päivittyy, niin lähettää vain viimeisen taskin
   // console.log(updatedMessage[0].message);
-  ioUpdateToByRoomId(
+  ioUpdateByRoomId(
     [roomId],
     "messageUpdated",
     "messageUpdated",
@@ -496,7 +496,7 @@ router.post("/delete/", async (req, res) => {
     //   if (err) {
     //     console.log(err);
     //   } else {
-    //     ioUpdateToByRoomId([roomId], "messageDeleted", result);
+    //     ioUpdateByRoomId([roomId], "messageDeleted", result);
     //   }
     // }
   ).exec();
@@ -505,7 +505,7 @@ router.post("/delete/", async (req, res) => {
     roomId,
     messageId,
   };
-  ioUpdateToByRoomId(
+  ioUpdateByRoomId(
     [roomId],
     "msg",
     "messageDeleted",

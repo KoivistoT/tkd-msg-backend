@@ -110,7 +110,7 @@ class WebSockets {
         const socketId = getUserSocketIdByUserId(postedByUser);
         io.to(socketId).emit("currentUserMessage", message);
 
-        ioUpdateToByRoomId([roomId], "msg", "new message", message);
+        ioUpdateByRoomId([roomId], "msg", "new message", message);
 
         //tähänkin varmistus, eli tuon updaten alle
         const latestMessage = {
@@ -139,7 +139,7 @@ class WebSockets {
           messageSum: room.messageSum,
         };
 
-        ioUpdateToByRoomId(
+        ioUpdateByRoomId(
           [roomId],
           "room",
           "roomLatestMessageChanged",
@@ -400,7 +400,7 @@ async function ioUpdateToAllUsers(taskGroupType, action, data, currentUserId) {
   });
 }
 
-async function ioUpdateToByRoomId(
+async function ioUpdateByRoomId(
   rooms,
   taskGroupType,
   action,
@@ -567,5 +567,5 @@ function getUserSocketIdByUserId(userId) {
 module.exports.WebSockets = new WebSockets();
 module.exports.ioUpdateByUserId = ioUpdateByUserId;
 module.exports.ioUpdateToAllUsers = ioUpdateToAllUsers;
-module.exports.ioUpdateToByRoomId = ioUpdateToByRoomId;
+module.exports.ioUpdateByRoomId = ioUpdateByRoomId;
 module.exports.ioUpdateToMessageSender = ioUpdateToMessageSender;

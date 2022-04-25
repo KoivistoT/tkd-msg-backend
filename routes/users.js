@@ -6,10 +6,7 @@ const _ = require("lodash");
 const addObjectIds = require("../utils/addObjectIds");
 const mongoose = require("mongoose");
 const moment = require("moment");
-const {
-  ioUpdateToAllUsers,
-  ioUpdateToByRoomId,
-} = require("../utils/WebSockets");
+const { ioUpdateToAllUsers, ioUpdateByRoomId } = require("../utils/WebSockets");
 const { Room } = require("../models/room");
 const auth = require("../middleware/auth");
 const { AllMessages } = require("../models/allMessages");
@@ -113,7 +110,7 @@ router.get("/delete_user/:id", auth, async (req, res) => {
 
       // tämä yleiseen huoneiden muutokseen. Menee niille,
       //joillle kuuluu, eli on kyseinen huone
-      ioUpdateToByRoomId([room._id], "room", "membersChanged", updatedRoomData);
+      ioUpdateByRoomId([room._id], "room", "membersChanged", updatedRoomData);
 
       i++;
       if (targetRooms.length === i) resolve();
@@ -314,7 +311,7 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
         .lean()
         .exec();
 
-      ioUpdateToByRoomId(
+      ioUpdateByRoomId(
         [room._id.toString()],
         "room",
         "membersChanged",
@@ -384,7 +381,7 @@ router.post("/activate_user", auth, async (req, res) => {
         .lean()
         .exec();
 
-      ioUpdateToByRoomId(
+      ioUpdateByRoomId(
         [room.toString()],
         "room",
         "membersChanged",

@@ -6,7 +6,7 @@ const router = express.Router();
 const { AllMessages } = require("../models/allMessages");
 const addObjectIds = require("../utils/addObjectIds");
 const { User } = require("../models/user");
-const { ioUpdateToByRoomId, ioUpdateByUserId } = require("../utils/WebSockets");
+const { ioUpdateByRoomId, ioUpdateByUserId } = require("../utils/WebSockets");
 const sortArray = require("../utils/sortArray");
 const mongoose = require("mongoose");
 const removeItemFromArray = require("../utils/removeItemFromArray");
@@ -84,7 +84,7 @@ router.post("/change_room_name", auth, async (req, res) => {
 
   const newRoomObject = { roomId, newRoomName };
 
-  ioUpdateToByRoomId([roomId], "room", "roomNameChanged", newRoomObject);
+  ioUpdateByRoomId([roomId], "room", "roomNameChanged", newRoomObject);
 
   res.status(200).send(newRoomData);
 });
