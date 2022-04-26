@@ -12,73 +12,11 @@ liveUsers = [];
 typers = [];
 class WebSockets {
   connection(client) {
-    // console.log(`[${client.id}] socket connected`);
-    // console.log(users);
-    // client.join("1111");
-    // io.to("1111").emit("some event");
-
-    // console.log(client.server.engine.clients);
-    client.on("chat message", ({ msg, roomId }) => {
-      // console.log("täällä hei on joo juu");
-      // console.log("tämä kyl käy");
-      // console.log("message: " + msg);
-      // client.emit("chat message", msg);
-      // global.io.sockets.emit("new message", {
-      //   message: msg,
-      //   roomId: roomId,
-      // });
-      // console.log(roomId, msg);
-      // global.io.sockets.in(roomId).emit("new message", { message: msg });
-      // client.broadcast.to('my room').emit('hello', msg);
-      //tämä toimii, mut global ei
-      //tässä ei ehkä tiedä kuka lähettää?
-      //kuitenkin siinä esimerkissä se toimii globalin kautta
-      // console.log(roomId);
-      // client.to(roomId).emit("new message", {
-      //   message: msg,
-      //   roomId: roomId,
-      // });
-      // client.broadcast.in(roomId).emit("new message", {
-      //   message: msg,
-      //   roomId: roomId,
-      // });
-      // client.broadcast.emit(/* ... */);
-      // console.log(roomId);
-      // client.broadcast.to(roomId).emit("new message", {
-      //   message: msg,
-      //   roomId: roomId,
-      // });
-      // global.io.sockets.broadcast
-      //tee index uusiksi
-      //tee index uusiksi
-      //tee index uusiksi
-      //tee index uusiksi
-      //tee index uusiksi
-      //tee index uusiksi
-      //tee index uusiksi
-      //tee index uusiksi
-      //tee index uusiksi
-      //tee index uusiksi
-      //tee index uusiksi
-      //tee index uusiksi
-      // console.log(client.id, "tämä lähettää");
-      // console.log(users, "tässä käyttäjät");
-      // console.log(roomId, "room id johon lähettää");
-      // global.io.sockets.to(roomId).emit("new message", {
-      //   message: msg,
-      //   roomId: roomId,
-      // });
-    });
-
-    // event fired when the chat room is disconnected
     client.on("disconnect", () => {
       connectedUsers = connectedUsers.filter(
         (user) => user.socketId !== client.id
       );
-      // console.log("disconnected");
 
-      // console.log(connectedUsers);
-      // console.log("disconnected", client.id);
       io.emit("users live", {
         connectedUsers,
       });
@@ -106,13 +44,12 @@ class WebSockets {
           imageURLs: imageURLs || null,
           documentData: { documentDownloadURL, documentDisplayName },
         });
-        // console.log(message, "tää joo");
+
         const socketId = getUserSocketIdByUserId(postedByUser);
         io.to(socketId).emit("currentUserMessage", message);
 
         ioUpdateByRoomId([roomId], "msg", "new message", message);
 
-        //tähänkin varmistus, eli tuon updaten alle
         const latestMessage = {
           createdAt: message.createdAt,
           messageBody: message.messageBody,
@@ -153,11 +90,8 @@ class WebSockets {
       } catch (error) {
         console.log(error, "code 72766551");
       }
-      // io.emit("users live", {
-      //   connectedUsers,
-      // });
     });
-    // // add identity of user mapped to the socket id
+
     client.on("userOnline", (userId) => {
       const index = liveUsers.findIndex((user) => user === userId);
 
@@ -165,45 +99,8 @@ class WebSockets {
         liveUsers.push(userId);
       }
 
-      // console.log(liveUsers);
       io.emit("userOnline", liveUsers);
     });
-    client.on("userOffline", (userId) => {
-      // console.log(userId, "offlineen meni");
-      liveUsers = liveUsers.filter((user) => user !== userId);
-      // console.log(liveUsers, "livenä nyt enää");
-      io.emit("userOnline", liveUsers);
-    });
-
-    client.on("isTyping", (roomId, userId) => {
-      // console.log(roomId, userId, "typing here");
-      typers.push({ roomId, userId });
-
-      io.emit("typers", typers);
-    });
-    client.on("notTyping", (userId) => {
-      // console.log("tuleeko tänne");
-      typers = typers.filter((typer) => typer.userId !== userId);
-      // console.log(typers, "kaikki typerit");
-      io.emit("typers", typers);
-    });
-
-    // client.on("id connect", (data) => {
-    //   console.log("täällä on nyt");
-    //   data.users.forEach((userId) => {
-    //     const index = users.findIndex((user) => user.userId === userId);
-    //     if (index !== -1) {
-    //       const socketId = users[index].socketId;
-    //       console.log(socketId, "Tässä kyseisen socket Id");
-
-    //       io.to(socketId).emit("updates", "roomRemoved", {
-    //         roomId: data.roomId,
-    //       });
-    //     } else {
-    //       console.log("ei ole nyt yhteydessä");
-    //     }
-    //   });
-    // });
 
     client.on("identity", (userId, accountType) => {
       const index = connectedUsers.findIndex((user) => user.userId === userId);
@@ -215,107 +112,48 @@ class WebSockets {
           accountType,
         });
       } else {
-        // console.log(client.id, "tämä on uusi");
-
         connectedUsers[index].socketId = client.id;
-        // console.log(connectedUsers[index].socketId, "pitäisi löytyä täältä");
-        // console.log(connectedUsers, "Tässä kaikki käyttäjät");
       }
+
       io.emit("typers", typers);
-
       checkUserTasks(userId);
-      // console.log(users, "tässä käyttäjät");
     });
-    // subscribe person to chat & other user as well
-    // client.on("login", ({ name, roomId }, callback) => {
-    //   // const { user, error } = addUser(socket.id, name, room);
-    //   // if (error) return callback(error);
-    //   // const error = "nyt meni pieleen"
-    //   // return callback(error)
-
-    //   client.join(roomId);
-    //   // console.log(
-    //   //   "katso saako tämän niin, että ei lähetä ollenkaan lähettäjälle tieota. Tee ensin erikseen yksinkertaisesti"
-    //   // );
-    //   global.io.sockets.in(roomId).emit("notification", {
-    //     title: "Someone's here",
-    //     description: `"tähän muuttuja" just entered the room`,
-    //   });
-
-    //   // global.io.in(room).emit("users", "ljjowiejfiwjelfij");
-    //   callback();
-    // });
 
     client.on("subscribe", async (roomId, otherUserId = "") => {
-      // subscribeOtherUser(roomId, otherUserId);
-      // console.log(global.io.sockets, "täältä tää");
-
       client.join(roomId);
-
-      // const socketsInARoomInSomeNamespace = io
-      //   .of("/")
-      //   .in("/" + roomId)
-      //   .fetchSockets()
-      //   .then((room) => {
-      //     console.log("clients in this room: ", room.length);
-      //   });
-
-      // const sockets = await client.in(roomId).fetchSockets();
-
-      // console.log(roomId, "huone id, join");
     });
 
-    // mute a chat room
     client.on("unsubscribe", (roomId) => {
       client.leave(roomId);
-      // console.log("lähti", roomId);
     });
 
     client.on("subscribe_read_at", async (roomId) => {
       client.join(roomId);
-      // console.log("tuli read at", roomId);
     });
+
     client.on("unsubscribe_read_at", (roomId) => {
       client.leave(roomId);
-      // console.log("lähti read at", roomId);
+    });
+
+    client.on("userOffline", (userId) => {
+      liveUsers = liveUsers.filter((user) => user !== userId);
+      io.emit("userOnline", liveUsers);
+    });
+
+    client.on("isTyping", (roomId, userId) => {
+      typers.push({ roomId, userId });
+      io.emit("typers", typers);
+    });
+
+    client.on("notTyping", (userId) => {
+      typers = typers.filter((typer) => typer.userId !== userId);
+      io.emit("typers", typers);
     });
   }
 }
-
-function listSocketsProperty(myProperty) {
-  let sck = global.io.sockets.sockets;
-  const mapIter = sck.entries();
-  while (1) {
-    let en = mapIter.next().value?.[0];
-    if (en) console.log(sck.get(en)[myProperty]);
-    else break;
-  }
-}
-
-const subscribeOtherUser = (roomId, otherUserId) => {
-  const userSockets = connectedUsers.filter(
-    (user) => user.userId === otherUserId
-  );
-  // console.log(userSockets);
-  userSockets.map((userInfo) => {
-    const socketConn = global.io.sockets.connected(userInfo.socketId);
-    if (socketConn) {
-      socketConn.join(roomId);
-    }
-  });
-};
 
 async function checkUserTasks(currentUserId) {
   const data = await AllTasks.findById(currentUserId);
-
-  //voiko jo poistaa ???
-  // AllTasks.findOneAndUpdate(
-  //   { _id: currentUserId },
-  //   { tasks: [] },
-  //   { new: true }
-  // )
-  //   .lean()
-  //   .exec();
 
   const roomRemovedGroup = [];
   const roomAddedGroup = [];
@@ -365,15 +203,14 @@ async function checkUserTasks(currentUserId) {
         ],
       };
 
-      // tee niin, että aina roomAdded ekana
       const socketId = getUserSocketIdByUserId(currentUserId);
-      // console.log("lähettää taskit");
       io.to(socketId).emit("updates", taskGroups);
     }
   } catch (error) {
     console.log(error, "code 8772772");
   }
 }
+
 function ioUpdateByUserId(targetUsers, taskGroupType, action, data) {
   try {
     targetUsers.forEach((currentUserId) => {
@@ -426,28 +263,10 @@ async function ioUpdateByRoomId(
     }
   });
 }
+
 async function ioUpdateToMessageSender(postedByUser, action, data) {
   const socketId = getUserSocketIdByUserId(postedByUser);
   io.to(socketId).emit(action, data);
-  //   postedByUser,
-  //   taskGroupType,
-  //   action,
-  //   data
-  // ) {
-  //   const socketId = getUserSocketIdByUserId(postedByUser);
-  //   io.to(socketId).emit(
-  //     "updates",
-
-  //     {
-  //       latestTaskId: null,
-  //       data: [
-  //         {
-  //           taskGroupType: taskGroupType,
-  //           data: [{ taskType: action, data }],
-  //         },
-  //       ],
-  //     }
-  //   );
 }
 
 async function sendDataToUser(
@@ -458,8 +277,6 @@ async function sendDataToUser(
   data
 ) {
   try {
-    // console.log(socketId);
-    // const taskId = Date.now();
     if (socketId) {
       io.to(socketId).emit(
         "updates",
@@ -474,23 +291,11 @@ async function sendDataToUser(
           ],
         }
       );
-      // console.log("ei tee ", action, currentUserId);
-    }
-    // else {
-    //   console.log("tekee buckettiin", action, currentUserId, bucketId);
-    //   ChangeBucket.updateOne(
-    //     { _id: currentUserId },
-    //     { $addToSet: { changes: { type: action, data } } }
-    //   ).exec();
-    // }
-    // else {
-
-    // console.log(taskType, taskId, "täsä tietoja");
-    else {
+    } else {
       const taskId = Date.now();
 
-      const isAlreadyCurrentRoomLatestMessageChanged = await AllTasks.aggregate(
-        [
+      const isAlreadyCurrentRoomLatestMessageChangedTask =
+        await AllTasks.aggregate([
           {
             $match: {
               $and: [
@@ -519,12 +324,9 @@ async function sendDataToUser(
               _id: 0,
             },
           },
-        ]
-      );
+        ]);
 
-      // console.log(isAlreadyCurrentRoomLatestMessageChanged[0].tasks[0].taskId);
-      //ota tuon ticket id ja poista se
-      if (isAlreadyCurrentRoomLatestMessageChanged.length !== 0) {
+      if (isAlreadyCurrentRoomLatestMessageChangedTask.length !== 0) {
         await AllTasks.findByIdAndUpdate(
           {
             _id: currentUserId,
@@ -533,7 +335,8 @@ async function sendDataToUser(
             $pull: {
               tasks: {
                 taskId:
-                  isAlreadyCurrentRoomLatestMessageChanged[0].tasks[0].taskId,
+                  isAlreadyCurrentRoomLatestMessageChangedTask[0].tasks[0]
+                    .taskId,
               },
             },
           },
@@ -549,8 +352,6 @@ async function sendDataToUser(
         { $addToSet: { tasks: { taskGroupType, taskType, data, taskId } } }
       ).exec();
     }
-
-    // }
   } catch (error) {
     console.log(error, "code 9fi3r3ffe");
   }

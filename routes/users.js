@@ -187,6 +187,7 @@ router.post("/last_present", auth, async (req, res) => {
 
   res.status(200).send("present");
 });
+
 router.post("/get_last_user_last_present", auth, async (req, res) => {
   const { userId } = req.body;
 
@@ -237,7 +238,6 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
     }
   ).exec();
 
-  // tämä on ok tässä???? ettei erikseen functio webScketissa?
   io.to(roomId).emit("subscribe_read_at", true);
 
   const isLastSeenMessagesAlreadyAdded = await User.aggregate([
@@ -344,7 +344,6 @@ router.post("/activate_user", auth, async (req, res) => {
     { new: true }
   ).lean();
 
-  //nämä functiot on myös roomsissa, voisiko olla static method
   userData.userRooms.forEach(async (roomId) => {
     const roomData = await Room.aggregate([
       { $match: { _id: new mongoose.Types.ObjectId(roomId) } },

@@ -17,6 +17,7 @@ router.post("/create_private_room", auth, async (req, res) => {
 
   const roomType = "private";
   const { userId, otherUserId } = req.body;
+
   const sortedIdArray = await sortArray([userId, otherUserId]);
 
   let result = await Room.findOne({
@@ -39,10 +40,9 @@ router.post("/create_private_room", auth, async (req, res) => {
     status: "draft",
   });
 
-  //tämä toistuu kolmesti tee static method
   const roomId = room._id.toString();
-  User.addRoomToUsers(members, roomId);
 
+  User.addRoomToUsers(members, roomId);
   await AllMessages.create({ _id: room._id });
 
   ioUpdateByUserId(members, "roomAdded", "roomAdded", room);
@@ -166,7 +166,6 @@ router.post("/create_channel", auth, async (req, res) => {
 });
 
 router.post("/change_members", auth, async (req, res) => {
-  // tähän validointi
   const { roomId, members: newMemberList, currentUserId } = req.body;
 
   let result = await Room.findOne({ _id: roomId }).lean();
