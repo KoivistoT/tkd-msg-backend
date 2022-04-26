@@ -38,7 +38,7 @@ const schema = Joi.object({
   topic: Joi.string(),
 });
 
-roomSchema.statics.findPrivateRoomByName = function () {
+roomSchema.statics.addMember = function () {
   try {
     return "lkj";
   } catch (error) {

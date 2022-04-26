@@ -282,23 +282,14 @@ router.post("/leave_room", auth, async (req, res) => {
   }
 });
 
-router.get("/all_channels", auth, async (req, res) => {
-  const roomData = await Room.aggregate([{ $match: { type: "channel" } }]);
-
-  if (roomData.length === 0) return res.status(404).send("Room not found");
-
-  const dataWithIds = addObjectIds(roomData);
-
-  res.status(200).send(dataWithIds);
-});
-
 router.post("/delete_room/", auth, async (req, res) => {
   const { roomId, currentUserId } = req.body;
 
   const roomData = await Room.findById(roomId).select("members type").lean();
 
   if (roomData.length === 0) return res.status(404).send("Room not found");
-  const members = roomData[0].members;
+
+  const members = roomData.members;
 
   Room.deleteOne({ _id: roomId }).lean().exec();
   AllMessages.deleteOne({ _id: roomId }).lean().exec();
@@ -311,16 +302,7 @@ router.post("/delete_room/", auth, async (req, res) => {
       },
       { safe: true, multi: false }
     )
-      // User.findByIdAndUpdate(
-      //   // { _id: userId, "last_seen_messages.roomId": roomId },
-      //   // { $pull: { userRooms: roomId } },
-      //   // { $pull: { "last_seen_messages.roomId": roomId } }
-      //   { _id: userId, "last_seen_messages.roomId": roomId },
-      //   {
-      //     $pull: { "last_seen_messages.$.roomId": roomId },
 
-      //   }
-      // )
       .lean()
       .exec();
   });
@@ -331,23 +313,6 @@ router.post("/delete_room/", auth, async (req, res) => {
     "roomRemoved",
     roomId
   );
-
-  res.status(200).send(roomId);
-});
-
-router.get("/archive_room/:id", auth, async (req, res) => {
-  const roomId = req.params.id;
-
-  const result = await Room.findById(roomId).lean();
-  if (!result) return res.status(404).send("Room not found");
-
-  const roomData = await Room.findOneAndUpdate(
-    { _id: roomId },
-    { status: "archived" },
-    { new: true }
-  ).lean();
-
-  ioUpdateByUserId(roomData.members, "room", "roomArchived", roomId);
 
   res.status(200).send(roomId);
 });
@@ -385,47 +350,6 @@ router.post("/activate_draft_room", auth, async (req, res) => {
   ioUpdateByUserId(roomData.members, "room", "roomActivated", roomId);
 
   res.status(200).send(roomId);
-});
-
-router.get("/:id", auth, async (req, res) => {
-  const result = await Room.findById(req.params.id); //.select("-messages");
-  if (!result) return res.status(404).send("Room not found");
-
-  res.status(200).send(result[0]);
-});
-router.get("/all_user_rooms/:id", auth, async (req, res) => {
-  const userRoomsData = [];
-  const currentUserId = req.params.id;
-  const user = await User.findById(currentUserId);
-  await Promise.all(
-    user.userRooms.map(async (roomId) => {
-      const room = await Room.aggregate([
-        {
-          $match: {
-            _id: new mongoose.Types.ObjectId(roomId),
-
-            $or: [
-              { $or: [{ status: "active" }, { status: "draft" }] },
-              {
-                $and: [{ roomCreator: currentUserId }, { status: "archived" }],
-              },
-            ],
-          },
-        },
-      ]);
-
-      if (room.length !== 0) {
-        const roomObject = {
-          _id: room[0]._id,
-          ...room[0],
-        };
-
-        userRoomsData.push(roomObject);
-      }
-    })
-  );
-
-  res.status(200).send(userRoomsData);
 });
 
 module.exports = router;
