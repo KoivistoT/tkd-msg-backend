@@ -7,5 +7,6 @@ module.exports = function () {
     .connect(db)
     // .then(mongoose.set("useCreateIndex", true)) // tämä ei ollut kursissa
     // .then(() => winston.info(`Connected to ${db}...`))
-    .then(() => console.log(`Connected to ${db}...`));
+    .then(() => console.log(`Connected to ${db}...`))
+    .catch((error) => console.log(error, "code 2881772"));
 };

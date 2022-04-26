@@ -282,6 +282,9 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
 router.post("/archive_or_delete_user", auth, async (req, res) => {
   const { userId, status, currentUserId } = req.body;
 
+  const user = await User.findById(userId).lean();
+  if (!user) return res.status(404).send("User not found");
+
   await User.findOneAndUpdate(
     { _id: userId },
     { status, last_seen_messages: [] },
