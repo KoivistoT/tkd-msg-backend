@@ -24,8 +24,6 @@ const roomSchema = new mongoose.Schema(
   }
 );
 
-const Room = mongoose.model("Room", roomSchema);
-
 const schema = Joi.object({
   type: Joi.string(),
   roomName: Joi.string(),
@@ -40,6 +38,14 @@ const schema = Joi.object({
   topic: Joi.string(),
 });
 
+roomSchema.statics.findPrivateRoomByName = function () {
+  try {
+    return "lkj";
+  } catch (error) {
+    throw error;
+  }
+};
+const Room = mongoose.model("Room", roomSchema);
 exports.roomSchema = roomSchema;
 exports.Room = Room;
 exports.schema = schema;

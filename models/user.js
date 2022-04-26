@@ -43,9 +43,7 @@ userSchema.methods.generateAuthToken = function () {
   );
   return token;
 };
-const User = mongoose.model("User", userSchema);
 
-// function validateUser(user) {
 const schema = Joi.object({
   firstName: Joi.string().min(1).max(50).required(),
   lastName: Joi.string().min(1).max(50).required(),
@@ -59,6 +57,30 @@ const schema = Joi.object({
   pushNotificationToken: Joi.string(),
 });
 
+userSchema.statics.addRoomToUsers = function (roomUsers, roomId) {
+  try {
+    roomUsers.forEach((userId) => {
+      this.updateOne(
+        { _id: userId },
+        {
+          $addToSet: {
+            userRooms: roomId,
+            last_seen_messages: {
+              roomId,
+              lastSeenMessageSum: 0,
+            },
+          },
+        }
+      )
+        .lean()
+        .exec();
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
+const User = mongoose.model("User", userSchema);
 exports.userSchema = userSchema;
 exports.User = User;
 exports.schema = schema;

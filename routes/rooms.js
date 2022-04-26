@@ -41,23 +41,7 @@ router.post("/create_private_room", auth, async (req, res) => {
 
   //tämä toistuu kolmesti tee static method
   const roomId = room._id.toString();
-  members.forEach((userId) => {
-    User.updateOne(
-      { _id: userId },
-      {
-        $addToSet: {
-          userRooms: roomId,
-          last_seen_messages: {
-            roomId,
-            lastSeenMessageSum: 0,
-          },
-        },
-      }
-    )
-
-      .lean()
-      .exec();
-  });
+  User.addRoomToUsers(members, roomId);
 
   await AllMessages.create({ _id: room._id });
 
@@ -140,20 +124,7 @@ router.post("/create_direct_room", auth, async (req, res) => {
   await AllMessages.create({ _id: room._id });
 
   const roomId = room._id.toString();
-  roomUsers.forEach((userId) => {
-    User.updateOne(
-      { _id: userId },
-      {
-        $addToSet: {
-          userRooms: roomId,
-          last_seen_messages: {
-            roomId,
-            lastSeenMessageSum: 0,
-          },
-        },
-      }
-    ).exec();
-  });
+  User.addRoomToUsers(roomUsers, roomId);
 
   ioUpdateByUserId(roomUsers, "roomAdded", "roomAdded", room);
 
@@ -185,18 +156,7 @@ router.post("/create_channel", auth, async (req, res) => {
     await AllMessages.create({ _id: room._id });
 
     const roomId = room._id.toString();
-    await User.findOneAndUpdate(
-      { _id: roomCreator },
-      {
-        $addToSet: {
-          userRooms: roomId,
-          last_seen_messages: {
-            roomId,
-            lastSeenMessageSum: 0,
-          },
-        },
-      }
-    ).lean();
+    User.addRoomToUsers([roomCreator], roomId);
 
     ioUpdateByUserId([roomCreator], "roomAdded", "roomAdded", room);
   } catch (error) {
