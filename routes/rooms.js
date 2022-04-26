@@ -69,6 +69,9 @@ router.post("/create_private_room", auth, async (req, res) => {
 router.post("/change_room_name", auth, async (req, res) => {
   const { roomId, newRoomName } = req.body;
 
+  const result = await Room.findById(roomId).lean();
+  if (!result) return res.status(404).send("Room not found");
+
   const isNameFree = await Room.find({ roomName: newRoomName }).lean();
 
   if (isNameFree.length !== 0) {
@@ -85,6 +88,30 @@ router.post("/change_room_name", auth, async (req, res) => {
   const newRoomObject = { roomId, newRoomName };
 
   ioUpdateByRoomId([roomId], "room", "roomNameChanged", newRoomObject);
+
+  res.status(200).send(newRoomData);
+});
+
+router.post("/change_room_description", auth, async (req, res) => {
+  const { roomId, description, currentUserId } = req.body;
+
+  const result = await Room.findById(roomId).lean();
+  if (!result) return res.status(404).send("Room not found");
+
+  const newRoomData = await Room.findOneAndUpdate(
+    { _id: roomId },
+    { description: description }
+  ).lean();
+
+  const newRoomObject = { roomId, description };
+
+  ioUpdateByRoomId(
+    [roomId],
+    "room",
+    "roomDescriptionChanged",
+    newRoomObject,
+    currentUserId
+  );
 
   res.status(200).send(newRoomData);
 });
@@ -308,9 +335,7 @@ router.get("/all_channels", auth, async (req, res) => {
 router.post("/delete_room/", auth, async (req, res) => {
   const { roomId, currentUserId } = req.body;
 
-  const roomData = await Room.find({ _id: roomId })
-    .select("members type")
-    .lean();
+  const roomData = await Room.findById(roomId).select("members type").lean();
 
   if (roomData.length === 0) return res.status(404).send("Room not found");
   const members = roomData[0].members;
@@ -403,7 +428,7 @@ router.post("/activate_draft_room", auth, async (req, res) => {
 });
 
 router.get("/:id", auth, async (req, res) => {
-  const result = await Room.find({ _id: req.params.id }); //.select("-messages");
+  const result = await Room.findById(req.params.id); //.select("-messages");
   if (!result) return res.status(404).send("Room not found");
 
   res.status(200).send(result[0]);

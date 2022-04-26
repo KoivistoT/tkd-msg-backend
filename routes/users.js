@@ -82,7 +82,7 @@ router.get("/all", auth, async (req, res) => {
 
 router.get("/delete_user/:id", auth, async (req, res) => {
   const currentUserId = req.params.id;
-  const userData = await User.find({ _id: currentUserId });
+  const userData = await User.findById(currentUserId);
 
   if (userData.length === 0) return res.status(404).send("User not found");
 
