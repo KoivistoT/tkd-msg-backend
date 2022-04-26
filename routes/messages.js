@@ -1,19 +1,10 @@
 const mongoose = require("mongoose");
 const express = require("express");
-
-const { Room } = require("../models/room");
-const { Message, messageSchema } = require("../models/message");
-const { AllMessages, validate } = require("../models/allMessages");
+const router = express.Router();
 const auth = require("../middleware/auth");
 const addObjectIds = require("../utils/addObjectIds");
-const { User } = require("../models/user");
-const {
-  ioUpdateByRoomId,
-  ioUpdateToMessageSender,
-} = require("../utils/WebSockets");
-const { AllTasks } = require("../models/allTasks");
-
-const router = express.Router();
+const { AllMessages } = require("../models/allMessages");
+const { ioUpdateByRoomId } = require("../utils/WebSockets");
 
 // router.post("/send_message", auth, async (req, res) => {
 //   try {

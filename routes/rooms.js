@@ -1,15 +1,13 @@
 const express = require("express");
-const { Room, schema } = require("../models/room");
-const _ = require("lodash");
-const auth = require("../middleware/auth");
 const router = express.Router();
-const { AllMessages } = require("../models/allMessages");
 const addObjectIds = require("../utils/addObjectIds");
-const { User } = require("../models/user");
-const { ioUpdateByRoomId, ioUpdateByUserId } = require("../utils/WebSockets");
-const sortArray = require("../utils/sortArray");
-const mongoose = require("mongoose");
+const auth = require("../middleware/auth");
 const removeItemFromArray = require("../utils/removeItemFromArray");
+const sortArray = require("../utils/sortArray");
+const { AllMessages } = require("../models/allMessages");
+const { Room, schema } = require("../models/room");
+const { ioUpdateByRoomId, ioUpdateByUserId } = require("../utils/WebSockets");
+const { User } = require("../models/user");
 
 router.post("/create_private_room", auth, async (req, res) => {
   const { error } = schema.validate(req.body);

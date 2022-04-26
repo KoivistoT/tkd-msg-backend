@@ -1,9 +1,7 @@
 const express = require("express");
-const auth = require("../middleware/auth");
-
-const { AllTasks } = require("../models/allTasks");
-
 const router = express.Router();
+const auth = require("../middleware/auth");
+const { AllTasks } = require("../models/allTasks");
 
 // router.get("/get_tasks/:id", auth, async (req, res) => {
 //   const currentUserId = req.params.id;
@@ -61,7 +59,6 @@ router.post("/remove_older_tasks_items", auth, async (req, res) => {
 
   AllTasks.updateMany(
     { _id: currentUserId },
-
     {
       $pull: {
         tasks: { taskId: { $lt: taskId + 1 } },

@@ -1,5 +1,6 @@
 const { User } = require("../models/user");
 const { Expo } = require("expo-server-sdk");
+
 module.exports = async function (members, data) {
   const allUsers = await User.find().lean().exec();
   const allPushTokensData = [];
@@ -23,6 +24,7 @@ module.exports = async function (members, data) {
       );
     }
   });
+
   sendPushMessages(allPushTokensData);
 };
 
@@ -46,16 +48,6 @@ const sendPushMessages = async (allPushTokensData) => {
   } catch (error) {
     console.log(error, "code 837728333");
   }
-
-  //   const chunks = expo.chunkPushNotifications([
-  //     unique,
-  //     {
-  //       to: unique,
-  //       sound: "default",
-  //       body: "Tästä avaamalla menee featureen",
-  //       data: { goScreen: "feature" },
-  //     },
-  //   ]);
 
   const sendChunks = async () => {
     chunks.forEach(async (chunk) => {

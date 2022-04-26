@@ -1,16 +1,15 @@
 const express = require("express");
-const { User, validate, schema } = require("../models/user");
-const bcrypt = require("bcrypt");
-const router = express.Router();
-const _ = require("lodash");
-const addObjectIds = require("../utils/addObjectIds");
-const mongoose = require("mongoose");
 const moment = require("moment");
-const { ioUpdateToAllUsers, ioUpdateByRoomId } = require("../utils/WebSockets");
-const { Room } = require("../models/room");
+const router = express.Router();
 const auth = require("../middleware/auth");
+const mongoose = require("mongoose");
+const addObjectIds = require("../utils/addObjectIds");
+const bcrypt = require("bcrypt");
 const { AllMessages } = require("../models/allMessages");
 const { AllTasks } = require("../models/allTasks");
+const { Room } = require("../models/room");
+const { User, validate, schema } = require("../models/user");
+const { ioUpdateToAllUsers, ioUpdateByRoomId } = require("../utils/WebSockets");
 
 router.post("/create_user", auth, async (req, res) => {
   const { error } = schema.validate(req.body);

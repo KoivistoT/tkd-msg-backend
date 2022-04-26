@@ -1,20 +1,15 @@
-const Joi = require("joi");
-const bcrypt = require("bcrypt");
-const _ = require("lodash");
-const { User } = require("../models/user");
-const mongoose = require("mongoose");
 const express = require("express");
+const router = express.Router();
+const mongoose = require("mongoose");
 const auth = require("../middleware/auth");
+const addObjectIds = require("../utils/addObjectIds");
+const { User } = require("../models/user");
 const { Room } = require("../models/room");
 const { AllMessages, allMessagesSchema } = require("../models/allMessages");
-const router = express.Router();
-const addObjectIds = require("../utils/addObjectIds");
 
 const SEND_MESSAGES_FIRST_SUM = 15;
 
 router.get("/", auth, async (req, res) => {
-  // router.get("/:id", async (req, res) => {
-  // var start = +new Date();
   try {
     const userId = req.res.req.user._id;
     const user = await User.findById(userId);
@@ -25,41 +20,11 @@ router.get("/", auth, async (req, res) => {
     const userAllMessages = [];
     const userAllImages = {};
 
-    //hae tämä erikseen
-    //hae tämä erikseen
     const allUsers = await User.find({}).lean();
-    //  await User.aggregate([
-    //   { $match: { status: "active" } },
-    //   {
-    //     $project: {
-    //       password: 0,
-    //       last_seen_messages: 0,
-    //       userRooms: 0,
-    //       contacts: 0,
-    //     },
-    //   },
-    // ]);
-
-    //hae tämä erikseen
-    //hae tämä erikseen
 
     await Promise.all(
       user.userRooms.map(async (roomId) => {
-        // var start = +new Date();
-
         const [room, allMessages, allImages] = await Promise.all([
-          // Room.findById(roomId).lean(),
-          // Room.aggregate([
-          //   {
-          //     $match: {
-          //       $and: [
-          //         { _id: new mongoose.Types.ObjectId(roomId) },
-          //         { status: "active" },
-          //       ],
-          //     },
-          //   },
-          // ]),
-
           Room.aggregate([
             {
               $match: {
@@ -72,7 +37,6 @@ router.get("/", auth, async (req, res) => {
               },
             },
           ]),
-          // AllMessages.findById(roomId).lean(),
           AllMessages.findById(roomId)
 
             .slice("messages", -SEND_MESSAGES_FIRST_SUM)
@@ -98,31 +62,6 @@ router.get("/", auth, async (req, res) => {
           ]),
         ]);
 
-        // var end = +new Date();
-        // var diff = end - start;
-        // console.log(diff);
-
-        // AllMessages.findSomething(roomId, function (err, products) {
-        //   // console.log(err);
-        //   console.log(products, "tässä on nyt");
-        // });
-
-        // const a = await AllMessages.findById({ _id: roomId });
-        // const b = await AllMessages.findById({ _id: roomId }).lean();
-        // console.log(a);
-
-        // console.log(a === b);
-        // const allMessagesTest = await AllMessages.find({
-        //   _id: roomId,
-        // })
-        //   // .select("-_id")
-        //   .slice("messages", 2);
-        // console.log(allMessagesTest);
-
-        //https://mongoosejs.com/docs/queries.html
-        // const AllMessagesTest2 = mongoose.model("AllMessages", allMessagesSchema);
-        // katso jotain tuosta
-
         if (room.length !== 0) {
           const roomObject = {
             _id: room[0]._id,
@@ -131,15 +70,6 @@ router.get("/", auth, async (req, res) => {
           // console.log(roomObject);
           userRoomsData.push(roomObject);
         }
-
-        // if (usersArchivedRooms.length !== 0) {
-        //   const roomObject = {
-        //     _id: usersArchivedRooms[0]._id,
-        //     ...usersArchivedRooms[0],
-        //   };
-        //   // console.log(roomObject);
-        //   userRoomsData.push(roomObject);
-        // }
 
         if (allMessages) {
           const messagesObject = {
@@ -158,8 +88,6 @@ router.get("/", auth, async (req, res) => {
       })
     );
 
-    // const room = await Room.findById({_id:});
-
     const initialData = {
       user,
       allUsers: addObjectIds(allUsers),
@@ -168,54 +96,25 @@ router.get("/", auth, async (req, res) => {
       allImages: userAllImages,
     };
 
-    // console.log(initialData.messages["61e6b87218d455cf6ecdb913"].messages);
-    // setTimeout(() => {
-
-    // var end = +new Date();
-    // var diff = end - start;
-    // console.log(diff, "difference1");
-
-    // setTimeout(() => {
     res.status(200).send(initialData);
-    // }, 6000);
-    // }, 5000);
   } catch (error) {
     return res.status(400).send(error, "Tämä joo");
   }
 });
 router.post("/rest_messages/", auth, async (req, res) => {
-  // var start = +new Date();
-
   try {
     const { currentUserId, messagesNow } = req.body;
-    // console.log(messagesNow);
     const userAllMessages = [];
 
     await Promise.all(
       Object.keys(messagesNow).map(async (currentRoomId) => {
-        // var start = +new Date();
-
         const result = await AllMessages.findById(currentRoomId).lean();
 
-        // console.log(result.messages);
-        // console.log(
-        //   Object.values(messagesNow[currentRoomId].messages)[
-        //     Object.values(messagesNow[currentRoomId].messages).length - 1
-        //   ],
-        //   "viimeisin joka on"
-        // );
         if (
           Object.values(messagesNow[currentRoomId].messages)[
             Object.values(messagesNow[currentRoomId].messages).length - 1
           ]
         ) {
-          // console.log(
-          //   Object.values(messagesNow[currentRoomId].messages)[
-          //     Object.values(messagesNow[currentRoomId].messages).length - 1
-          //   ]._id,
-          //   "Tässä id"
-          // );
-
           const lastMessageIndex = result.messages.findIndex(
             (message) =>
               message._id.toString() ===
@@ -241,18 +140,9 @@ router.post("/rest_messages/", auth, async (req, res) => {
       })
     );
 
-    // const room = await Room.findById({_id:});
-
     const messages = addObjectIds(userAllMessages);
-    // var end = +new Date();
-    // var diff = end - start;
-    // console.log(diff, "difference2");
 
-    // setTimeout(() => {
     res.status(200).send(messages);
-    // }, 5000);
-
-    // }, 5000);
   } catch (error) {
     return res.status(400).send(error, "Tämä joo");
   }
