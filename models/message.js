@@ -46,8 +46,6 @@ const messageSchema = new mongoose.Schema(
       default: () => MESSAGE_TYPES.TYPE_TEXT,
     },
     readByRecipients: [readByRecipientSchema],
-    // created_at: { type: Date, default: Date.now() },
-    // updated_at: { type: Date, default: Date.now() },
   },
   {
     timestamps: true,

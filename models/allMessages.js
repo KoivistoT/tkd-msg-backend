@@ -1,10 +1,5 @@
 const mongoose = require("mongoose");
-// const { messageSchema } = require("./message");
-// const { userSchema } = require("./user");
-// const { messageSchema } = require("./message");
 
-// const { messageType2Schema } = require("./messageType2");
-//https://stackfame.com/mongodb-chat-schema-mongoose-chat-schema-chat-application
 const MESSAGE_TYPES = {
   TYPE_TEXT: "text",
   TYPE_IMAGE: "image",
@@ -14,7 +9,6 @@ const MESSAGE_TYPES = {
 
 const readByRecipientSchema = new mongoose.Schema(
   {
-    //voi olla myös ilman id:tä, eli laita id false, katso vielä miten laitetaan. Vie turhaa tilaa se
     readByUserId: String,
     readAt: {
       type: Date,
@@ -28,7 +22,6 @@ const readByRecipientSchema = new mongoose.Schema(
 
 const messageSchema = new mongoose.Schema(
   {
-    //   roomId: { type: String, required: true }, // tässä voisi käyttää roomSchemaa, mutta se ei toiminut mulla, kun jotenkin ristiin menee schemat
     postedByUser: { type: String },
     messageBody: {
       type: String,
@@ -48,8 +41,6 @@ const messageSchema = new mongoose.Schema(
       default: () => MESSAGE_TYPES.TYPE_TEXT,
     },
     readByRecipients: [readByRecipientSchema],
-    // created_at: { type: Date, default: Date.now() },
-    // updated_at: { type: Date, default: Date.now() },
   },
   {
     timestamps: true,
@@ -57,7 +48,6 @@ const messageSchema = new mongoose.Schema(
   }
 );
 const allMessagesSchema = new mongoose.Schema({
-  // _id: { type: String },
   messages: [messageSchema],
 });
 

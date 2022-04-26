@@ -1,9 +1,7 @@
 const mongoose = require("mongoose");
-const { userSchema } = require("./user");
-const { messageSchema } = require("./message");
+
 const Joi = require("joi");
 
-//https://stackfame.com/mongodb-chat-schema-mongoose-chat-schema-chat-application
 const roomSchema = new mongoose.Schema(
   {
     roomName: {
@@ -12,15 +10,13 @@ const roomSchema = new mongoose.Schema(
       trim: true,
     },
     roomCreator: { type: String },
-    type: { type: String, required: true }, //private or group or...
+    type: { type: String, required: true },
     status: { type: String, default: "active" },
     topic: { type: String },
     latestMessage: { type: Object },
     description: { type: String },
-    // members: [userSchema],
     members: { type: Array, default: [] },
-    // messages: [messageSchema],
-    messageSum: { type: Number, default: 0 }, //tarvitseeko tätä...
+    messageSum: { type: Number, default: 0 },
   },
   {
     timestamps: true,

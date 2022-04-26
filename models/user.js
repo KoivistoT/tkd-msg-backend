@@ -5,28 +5,12 @@ const jwt = require("jsonwebtoken");
 
 const userSchema = new mongoose.Schema(
   {
-    // userName: {
-    //   type: String,
-    //   // required: true,
-    //   trim: true,
-    //   unique: true,
-    // },
     firstName: { type: String },
     lastName: { type: String },
     displayName: { type: String },
-    logs: {
-      last_login: { type: Date },
-      last_activity: { type: Date },
-      last_password_reset: { type: Date },
-    },
     email: { type: String, lowercase: true, unique: true },
-    state: {
-      online: { type: Boolean, default: false },
-      available: { type: Boolean, default: false },
-    },
     last_seen_messages: { type: Array, default: [] },
     userRooms: { type: Array, default: [] },
-    contacts: { type: Array, default: [] },
     phone: { type: String, default: "" },
     last_present: { type: String },
     password: {
@@ -37,7 +21,6 @@ const userSchema = new mongoose.Schema(
     },
     pushNotificationToken: { type: String },
     accountType: { type: String },
-    is_active: { type: Boolean, default: true },
     status: { type: String, default: "active" },
   },
   {
@@ -75,9 +58,6 @@ const schema = Joi.object({
   status: Joi.string(),
   pushNotificationToken: Joi.string(),
 });
-
-//   return userSchema.validate(user, schema);
-// }
 
 exports.userSchema = userSchema;
 exports.User = User;
