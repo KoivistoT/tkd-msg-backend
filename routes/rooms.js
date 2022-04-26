@@ -295,7 +295,7 @@ router.post("/leave_room", auth, async (req, res) => {
   }
 });
 
-router.get("/all_channels", async (req, res) => {
+router.get("/all_channels", auth, async (req, res) => {
   const roomData = await Room.aggregate([{ $match: { type: "channel" } }]);
 
   if (roomData.length === 0) return res.status(404).send("Room not found");
@@ -350,7 +350,7 @@ router.post("/delete_room/", auth, async (req, res) => {
   res.status(200).send(roomId);
 });
 
-router.get("/archive_room/:id", async (req, res) => {
+router.get("/archive_room/:id", auth, async (req, res) => {
   const roomId = req.params.id;
 
   const result = await Room.findById(roomId).lean();
@@ -367,7 +367,7 @@ router.get("/archive_room/:id", async (req, res) => {
   res.status(200).send(roomId);
 });
 
-router.post("/activate_room", async (req, res) => {
+router.post("/activate_room", auth, async (req, res) => {
   const { roomId, userId } = req.body;
 
   const result = await Room.findById(roomId).lean();
@@ -385,7 +385,7 @@ router.post("/activate_room", async (req, res) => {
   res.status(200).send(roomId);
 });
 
-router.post("/activate_draft_room", async (req, res) => {
+router.post("/activate_draft_room", auth, async (req, res) => {
   const { roomId, userId } = req.body;
 
   const result = await Room.findById(roomId).lean();
@@ -402,13 +402,13 @@ router.post("/activate_draft_room", async (req, res) => {
   res.status(200).send(roomId);
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", auth, async (req, res) => {
   const result = await Room.find({ _id: req.params.id }); //.select("-messages");
   if (!result) return res.status(404).send("Room not found");
 
   res.status(200).send(result[0]);
 });
-router.get("/all_user_rooms/:id", async (req, res) => {
+router.get("/all_user_rooms/:id", auth, async (req, res) => {
   const userRoomsData = [];
   const currentUserId = req.params.id;
   const user = await User.findById(currentUserId);

@@ -296,7 +296,7 @@ router.get("/test2", auth, async (req, res) => {
   res.status(200).send("joo"); //send(message);
 });
 
-router.get("/room_images/:id", async (req, res) => {
+router.get("/room_images/:id", auth, async (req, res) => {
   const roomId = req.params.id;
   const roomImageURLs = await AllMessages.aggregate([
     { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
@@ -435,7 +435,7 @@ router.post("/add_reaction/", auth, async (req, res) => {
   res.status(200).send("newRoomData");
 });
 
-router.post("/edit2", async (req, res) => {
+router.post("/edit2", auth, async (req, res) => {
   //post_message on parempi nimi
 
   const doc = await AllMessages.findById("61c07ea580c52533ef671f53");
@@ -446,7 +446,7 @@ router.post("/edit2", async (req, res) => {
   res.status(200).send(doc);
 });
 
-router.post("/get_one_message", async (req, res) => {
+router.post("/get_one_message", auth, async (req, res) => {
   const { roomId, messageId } = req.body;
 
   const doc = await AllMessages.aggregate([
@@ -475,7 +475,7 @@ router.post("/get_one_message", async (req, res) => {
   res.status(200).send(doc[0].message);
 });
 
-router.post("/delete/", async (req, res) => {
+router.post("/delete/", auth, async (req, res) => {
   //post_message on parempi nimi
   console.log("tähän kaikki turva hommat, että jos ei löydy jne");
   const { messageId, roomId, currentUserId } = req.body;
@@ -521,7 +521,7 @@ router.post("/delete/", async (req, res) => {
   res.status(200).send("newMessageData");
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", auth, async (req, res) => {
   // console.log(req.params.id);
   const roomId = req.params.id;
 
