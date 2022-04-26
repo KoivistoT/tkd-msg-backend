@@ -420,6 +420,7 @@ async function ioUpdateByRoomId(
 
       sendDataToUser(userId, socketId, taskGroupType, action, data);
     });
+
     if (action === "new message") {
       sendPushNotification(members, data);
     }
