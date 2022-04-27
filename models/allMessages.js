@@ -223,6 +223,49 @@ allMessagesSchema.statics.addNewMessage = async function (roomId, message) {
   }
 };
 
+allMessagesSchema.statics.getAllMessagesOnInit = async function (
+  roomId,
+  SEND_MESSAGES_FIRST_SUM
+) {
+  try {
+    const messages = await this.findById(roomId)
+      .slice("messages", -SEND_MESSAGES_FIRST_SUM)
+      .lean();
+
+    return messages;
+  } catch (error) {
+    // throw "Could not delete the messge.";
+  }
+};
+
+allMessagesSchema.statics.getAllImageURLsOnInit = async function (roomId) {
+  try {
+    const imageURLs = await this.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
+      {
+        $set: {
+          messages: {
+            $filter: {
+              input: "$messages",
+              as: "m",
+              cond: { $eq: ["$$m.type", "image"] },
+            },
+          },
+        },
+      },
+      { $unwind: { path: "$messages" } },
+      { $unwind: { path: "$messages.imageURLs" } },
+      {
+        $project: { "messages.imageURLs": 1, _id: 0 },
+      },
+    ]);
+
+    return imageURLs;
+  } catch (error) {
+    // throw "Could not delete the messge.";
+  }
+};
+
 allMessagesSchema.statics.getRoomMessagesById = async function (roomId) {
   try {
     const result = await this.findById(roomId).lean();
@@ -261,6 +304,49 @@ allMessagesSchema.statics.addReadByRecipients = async function (
         ],
       }
     ).exec();
+  } catch (error) {
+    // throw "Could not get the messages.";
+  }
+};
+
+allMessagesSchema.statics.getRestMessagesOnInit = async function (messagesNow) {
+  try {
+    const userAllMessages = [];
+
+    await Promise.all(
+      Object.keys(messagesNow).map(async (currentRoomId) => {
+        const result = await this.findById(currentRoomId).lean();
+
+        if (
+          Object.values(messagesNow[currentRoomId].messages)[
+            Object.values(messagesNow[currentRoomId].messages).length - 1
+          ]
+        ) {
+          const lastMessageIndex = result.messages.findIndex(
+            (message) =>
+              message._id.toString() ===
+              Object.values(messagesNow[currentRoomId].messages)[
+                Object.values(messagesNow[currentRoomId].messages).length - 1
+              ]._id
+          );
+
+          if (lastMessageIndex === 0) return;
+          const allMessages = await this.find(
+            { _id: currentRoomId },
+            { messages: { $slice: [0, lastMessageIndex] } }
+          ).lean();
+
+          if (allMessages[0].messages) {
+            const messagesObject = {
+              _id: allMessages[0]._id,
+              messages: addObjectIds(allMessages[0].messages.reverse()),
+            };
+            userAllMessages.push(messagesObject);
+          }
+        }
+      })
+    );
+    return userAllMessages;
   } catch (error) {
     // throw "Could not get the messages.";
   }

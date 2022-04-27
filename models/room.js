@@ -64,7 +64,28 @@ roomSchema.statics.addOrRemoveItemsInArrayById = async function (
 
 roomSchema.statics.getUserRoomsById = async function (userId) {
   try {
-    const rooms = this.find({ members: { $all: [userId] } });
+    const rooms = await this.find({ members: { $all: [userId] } });
+
+    return rooms;
+  } catch (error) {
+    // throw "Could not get the messages.";
+  }
+};
+
+roomSchema.statics.getUseRoomsOnInit = async function (roomId, userId) {
+  try {
+    const rooms = await this.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(roomId),
+
+          $or: [
+            { $or: [{ status: "active" }, { status: "draft" }] },
+            { $and: [{ roomCreator: userId }, { status: "archived" }] },
+          ],
+        },
+      },
+    ]);
 
     return rooms;
   } catch (error) {
