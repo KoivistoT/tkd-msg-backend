@@ -1,15 +1,13 @@
 const express = require("express");
-const moment = require("moment");
 const router = express.Router();
 const auth = require("../middleware/auth");
 const _ = require("lodash");
-const mongoose = require("mongoose");
 const addObjectIds = require("../utils/addObjectIds");
 const bcrypt = require("bcrypt");
 const { AllMessages } = require("../models/allMessages");
 const { AllTasks } = require("../models/allTasks");
 const { Room } = require("../models/room");
-const { User, validate, schema } = require("../models/user");
+const { User, schema } = require("../models/user");
 const { ioUpdateToAllUsers, ioUpdateByRoomId } = require("../utils/WebSockets");
 
 router.post("/create_user", auth, async (req, res) => {
@@ -129,22 +127,10 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
   const user = await User.findById(userId).lean();
   if (!user) return res.status(404).send("User not found");
 
-  await User.findOneAndUpdate(
-    { _id: userId },
-    { status, last_seen_messages: [] },
-    { new: true }
-  ).lean();
-
-  await AllTasks.findOneAndUpdate(
-    { _id: userId },
-    { changes: [] },
-    { new: true }
-  )
-    .lean()
-    .exec();
+  await User.archiveOrDeleteUser(userId, status);
+  await AllTasks.clearTasks(userId);
 
   const allUserRooms = await Room.getUserRoomsById(userId);
-
   var changeMembers = new Promise((resolve) => {
     let i = 0;
 
@@ -152,7 +138,12 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
       const { type, _id: roomId } = room;
       if (type === "private") return;
 
-      const updatedRoomData = await Room.pullMember(roomId, userId);
+      const updatedRoomData = await Room.addOrRemoveItemsInArrayById(
+        roomId,
+        "$pull",
+        "members",
+        userId
+      );
 
       ioUpdateByRoomId(
         [roomId.toString()],
@@ -168,60 +159,45 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
   });
   Promise.all([changeMembers]);
 
-  if (status === "archived") {
-    ioUpdateToAllUsers("user", "userArchived", userId, currentUserId);
-  } else {
-    ioUpdateToAllUsers("user", "userTemporaryDeleted", userId, currentUserId);
-  }
+  ioUpdateToAllUsers(
+    "user",
+    status === "archived" ? "userArchived" : "userTemporaryDeleted",
+    userId,
+    currentUserId
+  );
+
   res.status(200).send(userId);
 });
 
 router.post("/activate_user", auth, async (req, res) => {
   const { userId, currentUserId } = req.body;
-  const userData = await User.findOneAndUpdate(
-    { _id: userId },
-    { status: "active" },
-    { new: true }
-  ).lean();
+
+  const userData = await User.updateOneField(userId, "status", "active");
 
   userData.userRooms.forEach(async (roomId) => {
-    const roomData = await Room.aggregate([
-      { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
-      { $unwind: { path: "$_id" } },
-      {
-        $project: {
-          messageSum: 1,
-        },
-      },
-    ]);
+    const messageSum = await Room.getRoomMessageSumById(roomId);
 
-    await User.findOneAndUpdate(
-      { _id: userId },
+    await User.addOrRemoveItemsInArrayById(
+      userId,
+      "$addToSet",
+      "last_seen_messages",
       {
-        $addToSet: {
-          last_seen_messages: {
-            roomId,
-            lastSeenMessageSum: roomData[0]?.messageSum,
-          },
-        },
-      },
-      { new: true }
-    )
-      .lean()
-      .exec();
+        roomId,
+        lastSeenMessageSum: messageSum ? messageSum : 0,
+      }
+    );
   });
 
   var changeMembers = new Promise((resolve) => {
     let i = 0;
 
     userData.userRooms.forEach(async (room) => {
-      const updatedRoomData = await Room.findByIdAndUpdate(
-        { _id: room },
-        { $addToSet: { members: userId } },
-        { new: true }
-      )
-        .lean()
-        .exec();
+      const updatedRoomData = await Room.addOrRemoveItemsInArrayById(
+        room,
+        "$addToSet",
+        "members",
+        userId
+      );
 
       ioUpdateByRoomId(
         [room.toString()],
@@ -237,17 +213,9 @@ router.post("/activate_user", auth, async (req, res) => {
   Promise.all([changeMembers]);
 
   await User.findById(userId, "-password -last_seen_messages -contacts").lean();
-
   ioUpdateToAllUsers("user", "userActivated", userId, currentUserId);
 
   res.status(200).send(userId);
 });
-
-// router.get("/:id", auth, async (req, res) => {
-//   const user = await User.findById(req.params.id).lean();
-//   if (!user) return res.status(404).send("User not found");
-
-//   res.status(200).send(user);
-// });
 
 module.exports = router;

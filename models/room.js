@@ -38,25 +38,52 @@ const schema = Joi.object({
   topic: Joi.string(),
 });
 
-roomSchema.statics.pullMember = async function (roomId, userId) {
+roomSchema.statics.addOrRemoveItemsInArrayById = async function (
+  roomId,
+  action,
+  fieldName,
+  value
+) {
   try {
-    const updatedRoomData = await this.findByIdAndUpdate(
+    const updatedData = await this.findOneAndUpdate(
       { _id: roomId },
-      { $pull: { members: userId } },
+      {
+        [action]: {
+          [fieldName]: value,
+        },
+      },
       { new: true }
     )
       .lean()
       .exec();
-    return updatedRoomData;
+    return updatedData;
   } catch (error) {
-    // throw "Could not get the messages.";
+    // throw "Could not update data."
   }
 };
+
 roomSchema.statics.getUserRoomsById = async function (userId) {
   try {
     const rooms = this.find({ members: { $all: [userId] } });
 
     return rooms;
+  } catch (error) {
+    // throw "Could not get the messages.";
+  }
+};
+roomSchema.statics.getRoomMessageSumById = async function (roomId) {
+  try {
+    const roomData = await this.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
+      { $unwind: { path: "$_id" } },
+      {
+        $project: {
+          messageSum: 1,
+        },
+      },
+    ]);
+
+    return roomData[0].messageSum;
   } catch (error) {
     // throw "Could not get the messages.";
   }

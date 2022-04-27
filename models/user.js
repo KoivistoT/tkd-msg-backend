@@ -121,6 +121,41 @@ userSchema.statics.updateOneField = async function (
     // throw "Could not update data."
   }
 };
+userSchema.statics.archiveOrDeleteUser = async function (userId, status) {
+  try {
+    await this.findOneAndUpdate(
+      { _id: userId },
+      { status, last_seen_messages: [] },
+      { new: true }
+    ).lean();
+    return true;
+  } catch (error) {
+    // throw "Could not update data."
+  }
+};
+userSchema.statics.addOrRemoveItemsInArrayById = async function (
+  userId,
+  action,
+  fieldName,
+  value
+) {
+  try {
+    const updatedData = await this.findOneAndUpdate(
+      { _id: userId },
+      {
+        [action]: {
+          [fieldName]: value,
+        },
+      },
+      { new: true }
+    )
+      .lean()
+      .exec();
+    return updatedData;
+  } catch (error) {
+    // throw "Could not update data."
+  }
+};
 
 userSchema.statics.addReadByMessageSum = async function (
   currentUserId,
