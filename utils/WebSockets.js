@@ -56,19 +56,9 @@ class WebSockets {
           postedByUser: message.postedByUser,
         };
 
-        const room = await Room.findOneAndUpdate(
-          { _id: roomId },
-          {
-            latestMessage,
-            $inc: { messageSum: 1 },
-          },
+        const room = await Room.updateLatestMessage(roomId, latestMessage);
 
-          { new: true }
-        )
-          .lean()
-          .exec();
-
-        const latestMessage2 = {
+        const latestMessageWithMessagesum = {
           createdAt: message.createdAt,
           messageBody: message.messageBody,
           postedByUser: message.postedByUser,
@@ -80,13 +70,10 @@ class WebSockets {
           [roomId],
           "room",
           "roomLatestMessageChanged",
-          latestMessage2
+          latestMessageWithMessagesum
         );
 
-        AllMessages.updateOne(
-          { _id: roomId },
-          { $addToSet: { messages: message } }
-        ).exec();
+        AllMessages.addNewMessage(roomId, message);
       } catch (error) {
         console.log(error, "code 72766551");
       }
@@ -153,61 +140,11 @@ class WebSockets {
 }
 
 async function checkUserTasks(currentUserId) {
-  const data = await AllTasks.findById(currentUserId);
+  const taskGroups = await AllTasks.getUserTasksById(currentUserId);
 
-  const roomRemovedGroup = [];
-  const roomAddedGroup = [];
-  const msgGroup = [];
-  const messageUpdated = [];
-  const roomGroup = [];
-  const userGroup = [];
-
-  try {
-    if (data.tasks.length > 0) {
-      data.tasks.forEach((task) => {
-        const { taskGroupType } = task;
-        if (taskGroupType === "roomAdded") {
-          roomAddedGroup.push(task);
-        }
-        if (taskGroupType === "roomRemoved") {
-          roomRemovedGroup.push(task);
-        }
-        if (taskGroupType === "msg") {
-          msgGroup.push(task);
-        }
-        if (taskGroupType === "room") {
-          roomGroup.push(task);
-        }
-        if (taskGroupType === "messageUpdated") {
-          messageUpdated.push(task);
-        }
-        if (taskGroupType === "user") {
-          userGroup.push(task);
-        }
-      });
-
-      const latestTask = data.tasks.reduce((a, b) =>
-        a.taskId > b.taskId ? a : b
-      );
-      const latestTaskId = latestTask.taskId;
-
-      const taskGroups = {
-        latestTaskId,
-        data: [
-          { taskGroupType: "roomAdded", data: roomAddedGroup },
-          { taskGroupType: "roomRemoved", data: roomRemovedGroup },
-          { taskGroupType: "room", data: roomGroup },
-          { taskGroupType: "user", data: userGroup },
-          { taskGroupType: "msg", data: msgGroup },
-          { taskGroupType: "messageUpdated", data: messageUpdated },
-        ],
-      };
-
-      const socketId = getUserSocketIdByUserId(currentUserId);
-      io.to(socketId).emit("updates", taskGroups);
-    }
-  } catch (error) {
-    console.log(error, "code 8772772");
+  if (taskGroups) {
+    const socketId = getUserSocketIdByUserId(currentUserId);
+    io.to(socketId).emit("updates", taskGroups);
   }
 }
 
@@ -223,17 +160,14 @@ function ioUpdateByUserId(targetUsers, taskGroupType, action, data) {
 }
 
 async function ioUpdateToAllUsers(taskGroupType, action, data, currentUserId) {
-  const activeUsers = await User.aggregate([
-    { $match: { status: "active" } },
-    { $project: { _id: 1 } },
-  ]);
+  const activeUsers = await User.getActiveUsers();
 
   activeUsers.map((activeUser) => {
-    if (activeUser._id.toString() === currentUserId) return;
+    const activeUserId = activeUser._id.toString();
+    if (activeUserId === currentUserId) return;
 
-    const userId = activeUser._id.toString();
-    const socketId = getUserSocketIdByUserId(userId);
-    sendDataToUser(userId, socketId, taskGroupType, action, data);
+    const socketId = getUserSocketIdByUserId(activeUserId);
+    sendDataToUser(activeUserId, socketId, taskGroupType, action, data);
   });
 }
 
@@ -278,79 +212,17 @@ async function sendDataToUser(
 ) {
   try {
     if (socketId) {
-      io.to(socketId).emit(
-        "updates",
-
-        {
-          latestTaskId: null,
-          data: [
-            {
-              taskGroupType: taskGroupType,
-              data: [{ taskType, data, taskId: null }],
-            },
-          ],
-        }
-      );
+      io.to(socketId).emit("updates", {
+        latestTaskId: null,
+        data: [
+          {
+            taskGroupType: taskGroupType,
+            data: [{ taskType, data, taskId: null }],
+          },
+        ],
+      });
     } else {
-      const taskId = Date.now();
-
-      const isAlreadyCurrentRoomLatestMessageChangedTask =
-        await AllTasks.aggregate([
-          {
-            $match: {
-              $and: [
-                { _id: new mongoose.Types.ObjectId(currentUserId) },
-                { "tasks.taskType": "roomLatestMessageChanged" },
-                { "tasks.data.roomId": data.roomId },
-              ],
-            },
-          },
-          {
-            $project: {
-              tasks: {
-                $filter: {
-                  input: "$tasks",
-                  as: "tasks",
-                  cond: {
-                    $and: [
-                      {
-                        $eq: ["$$tasks.data.roomId", data.roomId],
-                        $eq: ["$$tasks.taskType", "roomLatestMessageChanged"],
-                      },
-                    ],
-                  },
-                },
-              },
-              _id: 0,
-            },
-          },
-        ]);
-
-      if (isAlreadyCurrentRoomLatestMessageChangedTask.length !== 0) {
-        await AllTasks.findByIdAndUpdate(
-          {
-            _id: currentUserId,
-          },
-          {
-            $pull: {
-              tasks: {
-                taskId:
-                  isAlreadyCurrentRoomLatestMessageChangedTask[0].tasks[0]
-                    .taskId,
-              },
-            },
-          },
-
-          { new: true }
-        )
-          .lean()
-          .exec();
-      }
-
-      await AllTasks.updateOne(
-        { _id: currentUserId },
-        { $addToSet: { tasks: { taskGroupType, taskType, data, taskId } } }
-      ).exec();
+      AllTasks.updateTasks(currentUserId, taskGroupType, taskType, data);
     }
   } catch (error) {
     console.log(error, "code 9fi3r3ffe");

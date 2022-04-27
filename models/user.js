@@ -147,6 +147,19 @@ userSchema.statics.removeRoomFromUserById = async function (roomId, userId) {
     // throw "Could not update data."
   }
 };
+
+userSchema.statics.getActiveUsers = async function () {
+  try {
+    const activeUsers = await this.aggregate([
+      { $match: { status: "active" } },
+      { $project: { _id: 1 } },
+    ]);
+    return activeUsers;
+  } catch (error) {
+    // throw "Could not update data."
+  }
+};
+
 userSchema.statics.addOrRemoveItemsInArrayById = async function (
   userId,
   action,

@@ -104,6 +104,29 @@ roomSchema.statics.updateOneField = async function (roomId, fieldName, value) {
   }
 };
 
+roomSchema.statics.updateLatestMessage = async function (
+  roomId,
+  latestMessage
+) {
+  try {
+    const updatedData = await Room.findOneAndUpdate(
+      { _id: roomId },
+      {
+        latestMessage,
+        $inc: { messageSum: 1 },
+      },
+
+      { new: true }
+    )
+      .lean()
+      .exec();
+
+    return updatedData;
+  } catch (error) {
+    // throw "Could not get the messages.";
+  }
+};
+
 roomSchema.statics.createRoom = async function (
   roomName,
   type,

@@ -192,6 +192,7 @@ allMessagesSchema.statics.getImageURLsByRoomId = async function (roomId) {
     // throw "Could not get the images URLs.";
   }
 };
+
 allMessagesSchema.statics.deleteMessageById = async function (
   roomId,
   messageId
@@ -203,6 +204,18 @@ allMessagesSchema.statics.deleteMessageById = async function (
         "messages._id": messageId,
       },
       { $set: { "messages.$.is_deleted": true } }
+    ).exec();
+    return true;
+  } catch (error) {
+    // throw "Could not delete the messge.";
+  }
+};
+
+allMessagesSchema.statics.addNewMessage = async function (roomId, message) {
+  try {
+    AllMessages.updateOne(
+      { _id: roomId },
+      { $addToSet: { messages: message } }
     ).exec();
     return true;
   } catch (error) {
