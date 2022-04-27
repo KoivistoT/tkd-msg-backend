@@ -1,7 +1,6 @@
 const { AllTasks } = require("../models/allTasks");
 const { Room } = require("../models/room");
 const { User } = require("../models/user");
-const mongoose = require("mongoose");
 const sendPushNotification = require("./sendPushNotification");
 const { Message } = require("../models/message");
 const { AllMessages } = require("../models/allMessages");
