@@ -53,7 +53,7 @@ router.post("/create_user", auth, async (req, res) => {
 
 router.post("/edit_password", auth, async (req, res) => {
   const { email, password } = req.body;
-  console.log(email, password);
+
   if (!password) return res.status(400).send("Please add a password.");
 
   let user = await User.findOne({ email });
@@ -80,139 +80,36 @@ router.get("/all", auth, async (req, res) => {
   res.status(200).send(userObjects);
 });
 
-// router.get("/delete_user/:id", auth, async (req, res) => {
-//   const currentUserId = req.params.id;
-//   const userData = await User.findById(currentUserId);
-
-//   if (userData.length === 0) return res.status(404).send("User not found");
-
-//   await User.deleteOne({ _id: currentUserId }).lean();
-//   await AllTasks.findOneAndUpdate(
-//     { _id: currentUserId },
-//     { changes: [] },
-//     { new: true }
-//   )
-//     .lean()
-//     .exec();
-//   const targetRooms = await Room.find({
-//     members: { $all: [currentUserId] },
-//   }).lean();
-
-//   var changeMembers = new Promise((resolve) => {
-//     let i = 0;
-
-//     targetRooms.forEach(async (room) => {
-//       const updatedRoomData = await Room.findByIdAndUpdate(
-//         { _id: room._id },
-//         { $pull: { members: currentUserId } },
-//         { new: true }
-//       ).exec();
-
-//       // tämä yleiseen huoneiden muutokseen. Menee niille,
-//       //joillle kuuluu, eli on kyseinen huone
-//       ioUpdateByRoomId([room._id], "room", "membersChanged", updatedRoomData);
-
-//       i++;
-//       if (targetRooms.length === i) resolve();
-//     });
-//   });
-//   Promise.all([changeMembers]);
-
-//   ioUpdateToAllUsers("user", "userDeleted", currentUserId);
-
-//   res.status(200).send(currentUserId);
-// });
-
 router.post("/edit_user_data", auth, async (req, res) => {
-  const {
-    accountType,
-    firstName,
-    lastName,
-    displayName,
-    email,
-    phone,
-    userId,
-  } = req.body;
-
-  const newUserData = await User.findOneAndUpdate(
-    { _id: userId },
-    { accountType, firstName, lastName, displayName, email, phone },
-    { new: true }
-  ).lean();
+  const { userId } = req.body;
+  const newUserData = await User.updateUserDataById(req.body);
 
   ioUpdateToAllUsers("user", "userDataEdited", newUserData, userId);
 
   res.status(200).send(newUserData);
 });
+
 router.post("/save_edited_user_data", auth, async (req, res) => {
   const { currentUserId, fieldName, value } = req.body.data;
 
-  const newUserData = await User.findOneAndUpdate(
-    { _id: currentUserId },
-    { [fieldName]: value },
-    { new: true }
-  ).lean();
+  const newUserData = await User.updateOneField(
+    currentUserId,
+    fieldName,
+    value
+  );
 
   ioUpdateToAllUsers("user", "userDataEdited", newUserData, currentUserId);
 
   res.status(200).send(newUserData);
 });
 
-router.post("/save_push_token", auth, async (req, res) => {
-  const { currentUserId, currentUserPushToken } = req.body;
-
-  const newUserData = await User.findOneAndUpdate(
-    { _id: currentUserId },
-    { pushNotificationToken: currentUserPushToken },
-    { new: true }
-  ).lean();
-
-  // console.log(currentUserPushToken, "tämä token");
-  // console.log(newUserData, "uusi data");
-  res.status(200).send(newUserData);
-});
-
-router.post("/last_present", auth, async (req, res) => {
-  const { currentUserId } = req.body;
-  let user = await User.findById(currentUserId);
-  if (!user) return res.status(400).send("User do not exist.");
-
-  User.findOneAndUpdate(
-    { _id: currentUserId },
-    { last_present: moment().format() },
-    { new: true }
-  ).lean();
-
-  res.status(200).send("present");
-});
-
 router.post("/get_last_user_last_present", auth, async (req, res) => {
   const { userId } = req.body;
-
   let { last_present } = await User.findById(userId);
 
   const userData = { userId, last_present };
   res.status(200).send(userData);
 });
-// router.post("/get_unseen_message_sum", auth, async (req, res) => {
-//   const { currentUserId, roomId } = req.body;
-
-//   const { messageSum } = await Room.findById(roomId)
-//     .select("messageSum")
-//     .lean();
-//   const { last_seen_messages } = await User.findById(currentUserId)
-//     .select("last_seen_messages")
-//     .lean();
-
-//   const index = last_seen_messages.findIndex((room) => room.roomId === roomId);
-
-//   const newMessagesSum =
-//     index === -1
-//       ? messageSum
-//       : messageSum - last_seen_messages[index].lastSeenMessageSum;
-//   console.log(newMessagesSum);
-//   res.status(200).json({ newMessagesSum });
-// });
 
 router.post("/save_last_seen_message_sum", auth, async (req, res) => {
   const { currentUserId, roomId, lastSeenMessageSum } = req.body;

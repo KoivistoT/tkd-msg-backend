@@ -76,7 +76,48 @@ userSchema.statics.addRoomToUsers = function (roomUsers, roomId) {
         .exec();
     });
   } catch (error) {
-    throw error;
+    // throw "Could not get room."
+  }
+};
+
+userSchema.statics.updateUserDataById = async function (data) {
+  try {
+    const {
+      accountType,
+      firstName,
+      lastName,
+      displayName,
+      email,
+      phone,
+      userId,
+    } = data;
+
+    const updatedData = await this.findOneAndUpdate(
+      { _id: userId },
+      { accountType, firstName, lastName, displayName, email, phone },
+      { new: true }
+    ).lean();
+
+    return updatedData;
+  } catch (error) {
+    // throw "Could not update data."
+  }
+};
+userSchema.statics.updateOneField = async function (
+  currentUserId,
+  fieldName,
+  value
+) {
+  try {
+    const updatedData = await User.findOneAndUpdate(
+      { _id: currentUserId },
+      { [fieldName]: value },
+      { new: true }
+    ).lean();
+
+    return updatedData;
+  } catch (error) {
+    // throw "Could not update data."
   }
 };
 
