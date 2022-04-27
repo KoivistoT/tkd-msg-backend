@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { check } = require("../utils/check");
 
 const MESSAGE_TYPES = {
   TYPE_TEXT: "text",
@@ -51,20 +52,113 @@ const allMessagesSchema = new mongoose.Schema({
   messages: [messageSchema],
 });
 
-allMessagesSchema.statics.findSomething = function (roomId, callback) {
-  // return this.findOne(
-  //   { _id: roomId, "messages.messageBody": "123123123123" },
-  //   function (err, list) {
-  //     console.log(list);
-  //   }
-  // );
-  //https://masteringjs.io/tutorials/mongoose/aggregate
-  // this.aggregate(
-  //   [{ $match: "61e6a80eb30d002e91d67b5a" }],
-  //   function (err, list) {
-  //     console.log(list);
-  //   }
-  // );
+allMessagesSchema.statics.updateReactions = async function (
+  roomId,
+  messageId,
+  reaction,
+  currentUserId
+) {
+  try {
+    const reactionObject = { reactionByUser: currentUserId, reaction };
+
+    const item = await this.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
+      {
+        $set: {
+          message: {
+            $filter: {
+              input: "$messages",
+              as: "m",
+              cond: {
+                $eq: ["$$m._id", new mongoose.Types.ObjectId(messageId)],
+              },
+            },
+          },
+        },
+      },
+      { $unwind: { path: "$message" } },
+
+      {
+        $project: { "message.reactions": 1, _id: 0 },
+      },
+    ]);
+
+    let action = check.addOrPullReaction(
+      item[0].message.reactions,
+      reaction,
+      currentUserId
+    );
+
+    await this.findOneAndUpdate(
+      { _id: roomId },
+      {
+        [action]: {
+          "messages.$[element].reactions": reactionObject,
+        },
+      },
+
+      {
+        arrayFilters: [
+          {
+            "element._id": messageId,
+          },
+        ],
+      }
+    ).exec();
+
+    const updatedMessage = await this.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
+      {
+        $set: {
+          message: {
+            $filter: {
+              input: "$messages",
+              as: "m",
+              cond: {
+                $eq: ["$$m._id", new mongoose.Types.ObjectId(messageId)],
+              },
+            },
+          },
+        },
+      },
+      { $unwind: { path: "$message" } },
+
+      {
+        $project: { message: 1, _id: 0 },
+      },
+    ]);
+    return updatedMessage[0].message;
+  } catch (error) {
+    throw error;
+  }
+};
+allMessagesSchema.statics.findMessageById = async function (roomId, messageId) {
+  try {
+    const item = await AllMessages.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
+      {
+        $set: {
+          message: {
+            $filter: {
+              input: "$messages",
+              as: "m",
+              cond: {
+                $eq: ["$$m._id", new mongoose.Types.ObjectId(messageId)],
+              },
+            },
+          },
+        },
+      },
+      { $unwind: { path: "$message" } },
+
+      {
+        $project: { message: 1, _id: 0 },
+      },
+    ]);
+    return item[0].message;
+  } catch (error) {
+    throw error;
+  }
 };
 
 const AllMessages = mongoose.model("AllMessages", allMessagesSchema);

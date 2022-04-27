@@ -5,6 +5,7 @@ const auth = require("../middleware/auth");
 const addObjectIds = require("../utils/addObjectIds");
 const { AllMessages } = require("../models/allMessages");
 const { ioUpdateByRoomId } = require("../utils/WebSockets");
+const { check } = require("../utils/check");
 
 // router.post("/send_message", auth, async (req, res) => {
 //   try {
@@ -317,142 +318,34 @@ router.get("/room_images/:id", auth, async (req, res) => {
 });
 
 router.post("/add_reaction/", auth, async (req, res) => {
-  // var start = +new Date();
   const { roomId, messageId, reaction, currentUserId } = req.body;
 
-  const reactionObject = { reactionByUser: currentUserId, reaction };
+  const updatedMessage = await AllMessages.updateReactions(
+    roomId,
+    messageId,
+    reaction,
+    currentUserId
+  );
 
-  const item = await AllMessages.aggregate([
-    { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
-    {
-      $set: {
-        message: {
-          $filter: {
-            input: "$messages",
-            as: "m",
-            cond: { $eq: ["$$m._id", new mongoose.Types.ObjectId(messageId)] },
-          },
-        },
-      },
-    },
-    { $unwind: { path: "$message" } },
-
-    {
-      $project: { "message.reactions": 1, _id: 0 },
-    },
-  ]);
-
-  let action = "$addToSet";
-
-  if (item[0].message.reactions) {
-    item[0].message.reactions.forEach((element) => {
-      if (
-        element.reactionByUser === currentUserId &&
-        element.reaction === reaction
-      ) {
-        action = "$pull";
-        return;
-      }
-    });
-  }
-
-  await AllMessages.findOneAndUpdate(
-    { _id: roomId },
-    {
-      [action]: {
-        "messages.$[element].reactions": reactionObject,
-      },
-    },
-
-    {
-      arrayFilters: [
-        {
-          "element._id": messageId,
-        },
-      ],
-    }
-  ).exec();
-
-  // await AllMessages.findOneAndUpdate(
-  //   { _id: roomId },
-  //   {
-  //     $set: {
-  //       "messages.$[element].messageBody": Math.random().toString(),
-  //     },
-  //   },
-
-  //   {
-  //     arrayFilters: [
-  //       {
-  //         "element._id": messageId,
-  //       },
-  //     ],
-  //   }
-  // ).exec();
-
-  const updatedMessage = await AllMessages.aggregate([
-    { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
-    {
-      $set: {
-        message: {
-          $filter: {
-            input: "$messages",
-            as: "m",
-            cond: { $eq: ["$$m._id", new mongoose.Types.ObjectId(messageId)] },
-          },
-        },
-      },
-    },
-    { $unwind: { path: "$message" } },
-
-    {
-      $project: { message: 1, _id: 0 },
-    },
-  ]);
-
-  // var end = +new Date();
-  // var diff = end - start;
-  // console.log(diff, "difference2");
-  //nämä voisi olla niin ,että jos monta kertaa sama viesti päivittyy, niin lähettää vain viimeisen taskin
-  // console.log(updatedMessage[0].message);
   ioUpdateByRoomId(
     [roomId],
     "messageUpdated",
     "messageUpdated",
-    updatedMessage[0].message,
+    updatedMessage,
     currentUserId
   );
 
-  res.status(200).send("newRoomData");
+  res.status(200).send(updatedMessage);
 });
 
 router.post("/get_one_message", auth, async (req, res) => {
   const { roomId, messageId } = req.body;
 
-  const doc = await AllMessages.aggregate([
-    { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
-    {
-      $set: {
-        message: {
-          $filter: {
-            input: "$messages",
-            as: "m",
-            cond: { $eq: ["$$m._id", new mongoose.Types.ObjectId(messageId)] },
-          },
-        },
-      },
-    },
-    { $unwind: { path: "$message" } },
+  const message = await AllMessages.findMessageById(roomId, messageId);
 
-    {
-      $project: { message: 1, _id: 0 },
-    },
-  ]);
+  if (!message) return res.status(404).send("Messages not found");
 
-  //   message = await message.save();
-  if (!doc[0].message) return res.status(404).send("Messages not found");
-
-  res.status(200).send(doc[0].message);
+  res.status(200).send(message);
 });
 
 router.post("/delete/", auth, async (req, res) => {
