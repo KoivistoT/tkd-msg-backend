@@ -233,11 +233,7 @@ router.post("/leave_room", auth, async (req, res) => {
   const updatedMembersList = result.members.filter((user) => user !== userId);
 
   await Room.addOrRemoveItemsInArrayById(roomId, "$pull", "members", userId);
-
-  await User.findByIdAndUpdate(
-    { _id: userId },
-    { $pull: { userRooms: roomId, last_seen_messages: { roomId: roomId } } }
-  ).lean();
+  await User.removeRoomFromUserById(roomId, userId);
 
   const updatedRoomData = await Room.findById(roomId).lean();
 
@@ -271,7 +267,6 @@ router.post("/delete_room/", auth, async (req, res) => {
   const { roomId, currentUserId } = req.body;
 
   const roomData = await Room.findById(roomId).select("members type").lean();
-
   if (roomData.length === 0) return res.status(404).send("Room not found");
 
   const members = roomData.members;
@@ -280,16 +275,7 @@ router.post("/delete_room/", auth, async (req, res) => {
   AllMessages.deleteOne({ _id: roomId }).lean().exec();
 
   members.forEach((userId) => {
-    User.findOneAndUpdate(
-      { _id: userId },
-      {
-        $pull: { userRooms: roomId, last_seen_messages: { roomId: roomId } },
-      },
-      { safe: true, multi: false }
-    )
-
-      .lean()
-      .exec();
+    User.removeRoomFromUserById(roomId, userId);
   });
 
   ioUpdateByUserId(
@@ -308,11 +294,7 @@ router.post("/activate_room", auth, async (req, res) => {
   const result = await Room.findById(roomId).lean();
   if (!result) return res.status(404).send("Room not found");
 
-  const roomData = await Room.findOneAndUpdate(
-    { _id: roomId },
-    { status: "active" },
-    { new: true }
-  ).lean();
+  const roomData = await Room.updateOneField(roomId, "status", "active");
 
   ioUpdateByUserId([userId], "room", "roomActivated", roomId);
   ioUpdateByUserId(roomData.members, "roomAdded", "roomAdded", roomData);
@@ -326,11 +308,7 @@ router.post("/activate_draft_room", auth, async (req, res) => {
   const result = await Room.findById(roomId).lean();
   if (!result) return res.status(404).send("Room not found");
 
-  const roomData = await Room.findOneAndUpdate(
-    { _id: roomId },
-    { status: "active" },
-    { new: true }
-  ).lean();
+  const roomData = await Room.updateOneField(roomId, "status", "active");
 
   ioUpdateByUserId(roomData.members, "room", "roomActivated", roomId);
 

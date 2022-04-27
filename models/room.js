@@ -94,7 +94,8 @@ roomSchema.statics.updateOneField = async function (roomId, fieldName, value) {
   try {
     const updatedData = await this.findOneAndUpdate(
       { _id: roomId },
-      { [fieldName]: value }
+      { [fieldName]: value },
+      { new: true }
     ).lean();
 
     return updatedData;

@@ -133,6 +133,20 @@ userSchema.statics.archiveOrDeleteUser = async function (userId, status) {
     // throw "Could not update data."
   }
 };
+
+userSchema.statics.removeRoomFromUserById = async function (roomId, userId) {
+  try {
+    this.findOneAndUpdate(
+      { _id: userId },
+      { $pull: { userRooms: roomId, last_seen_messages: { roomId: roomId } } }
+    )
+      .lean()
+      .exec();
+    return true;
+  } catch (error) {
+    // throw "Could not update data."
+  }
+};
 userSchema.statics.addOrRemoveItemsInArrayById = async function (
   userId,
   action,
