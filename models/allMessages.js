@@ -191,6 +191,37 @@ allMessagesSchema.statics.getImageURLsByRoomId = async function (roomId) {
     throw error;
   }
 };
+allMessagesSchema.statics.deleteMessageById = async function (
+  roomId,
+  messageId
+) {
+  try {
+    AllMessages.updateOne(
+      {
+        _id: roomId,
+        "messages._id": messageId,
+      },
+      { $set: { "messages.$.is_deleted": true } }
+    ).exec();
+    return true;
+  } catch (error) {
+    throw error;
+  }
+};
+allMessagesSchema.statics.getRoomMessagesById = async function (roomId) {
+  try {
+    const result = await this.findById(roomId).lean();
+
+    const messagesObject = {
+      _id: result._id,
+      messages: addObjectIds(result.messages.reverse()),
+    };
+
+    return messagesObject;
+  } catch (error) {
+    throw error;
+  }
+};
 
 const AllMessages = mongoose.model("AllMessages", allMessagesSchema);
 

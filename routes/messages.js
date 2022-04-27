@@ -328,70 +328,34 @@ router.post("/get_one_message", auth, async (req, res) => {
 });
 
 router.post("/delete/", auth, async (req, res) => {
-  //post_message on parempi nimi
-  console.log("tähän kaikki turva hommat, että jos ei löydy jne");
   const { messageId, roomId, currentUserId } = req.body;
-  // console.log(messageId, roomId);
 
-  const newMessageData = await AllMessages.updateOne(
-    {
-      _id: roomId,
-      "messages._id": messageId,
-    },
-    //päivitä teksti
-    { $set: { "messages.$.is_deleted": true } }
+  // tähän error check?
+  AllMessages.deleteMessageById(roomId, messageId);
 
-    //lisää arrayhin objecti
-    // { $addToSet: { "messages.$.readByRecipients": { readByUserId: "1234" } } },
-
-    // (err, result) => {
-    //   if (err) {
-    //     console.log(err);
-    //   } else {
-    //     ioUpdateByRoomId([roomId], "messageDeleted", result);
-    //   }
-    // }
-  ).exec();
-
-  const messagesObject = {
-    roomId,
-    messageId,
-  };
   ioUpdateByRoomId(
     [roomId],
     "msg",
     "messageDeleted",
-    messagesObject,
+    {
+      roomId,
+      messageId,
+    },
     currentUserId
   );
-  //
-  // const doc = await AllMessages.findById("61c07ea580c52533ef671f53");
-  // console.log(doc);
-  // console.log("pitää hakea sub documentin id:llä");
-  // //   message = await message.save();
 
   res.status(200).send("newMessageData");
 });
 
 router.get("/:id", auth, async (req, res) => {
-  // console.log(req.params.id);
   const roomId = req.params.id;
 
-  const result = await AllMessages.findById(roomId).lean();
+  const roomMessages = await AllMessages.findById(roomId).lean();
+  console.log("käväsee");
+  //tässä result voi olla error?
+  if (!roomMessages) return res.status(404).send("Messages not found");
 
-  // console.log(
-  //   "olisi hyvä laittaa dataan, monta viestiä haluaa jne. eli ei id:llä?"
-  // );
-  if (!result) return res.status(404).send("Messages not found");
-
-  const messagesObject = {
-    _id: result._id,
-    messages: addObjectIds(result.messages.reverse()),
-  };
-
-  // console.log(messagesObject);
-  // const messages = { [roomId]: result };
-  res.status(200).send(messagesObject);
+  res.status(200).send(roomMessages);
 });
 
 module.exports = router;
