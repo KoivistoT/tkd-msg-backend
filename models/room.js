@@ -71,6 +71,7 @@ roomSchema.statics.getUserRoomsById = async function (userId) {
     // throw "Could not get the messages.";
   }
 };
+
 roomSchema.statics.getRoomMessageSumById = async function (roomId) {
   try {
     const roomData = await this.aggregate([
@@ -89,13 +90,43 @@ roomSchema.statics.getRoomMessageSumById = async function (roomId) {
   }
 };
 
-roomSchema.statics.addMember = function () {
+roomSchema.statics.updateOneField = async function (roomId, fieldName, value) {
   try {
-    return "lkj";
+    const updatedData = await this.findOneAndUpdate(
+      { _id: roomId },
+      { [fieldName]: value }
+    ).lean();
+
+    return updatedData;
   } catch (error) {
-    throw error;
+    // throw "Could not get the messages.";
   }
 };
+
+roomSchema.statics.createRoom = async function (
+  roomName,
+  type,
+  members,
+  roomCreator,
+  status,
+  description = ""
+) {
+  try {
+    const newRoom = await this.create({
+      roomName,
+      type,
+      members,
+      roomCreator,
+      status,
+      description,
+    });
+
+    return newRoom;
+  } catch (error) {
+    // throw "Could not get the messages.";
+  }
+};
+
 const Room = mongoose.model("Room", roomSchema);
 exports.roomSchema = roomSchema;
 exports.Room = Room;
