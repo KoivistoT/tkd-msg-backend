@@ -148,78 +148,83 @@ router.post("/create_channel", auth, async (req, res) => {
 router.post("/change_members", auth, async (req, res) => {
   const { roomId, members: newMemberList, currentUserId } = req.body;
 
-  let result = await Room.findOne({ _id: roomId }).lean();
+  let result = await Room.findById(roomId).lean();
   if (!result) return res.status(400).send("Can't find room");
 
   const membersBefore = result.members;
 
-  if (membersBefore === newMemberList)
+  if (membersBefore === newMemberList) {
     return res.status(200).send("No changes needed");
-
-  const sameMembers = newMemberList.filter((x) => membersBefore.includes(x));
-  const addToSetMembers = newMemberList.filter(
-    (x) => !membersBefore.includes(x)
-  );
-  const pullMembers = membersBefore.filter((x) => !newMemberList.includes(x));
-
-  try {
-    await Promise.all(
-      addToSetMembers.map(async (userId) => {
-        await Room.findByIdAndUpdate(
-          { _id: roomId },
-          { $addToSet: { members: userId } }
-        ).lean();
-
-        await User.findByIdAndUpdate(
-          { _id: userId },
-          { $addToSet: { userRooms: roomId } }
-        ).lean();
-      })
-    );
-
-    await Promise.all(
-      pullMembers.map(async (userId) => {
-        await Room.findByIdAndUpdate(
-          { _id: roomId },
-          { $pull: { members: userId } }
-        ).lean();
-
-        await User.findByIdAndUpdate(
-          { _id: userId },
-          { $pull: { userRooms: roomId } }
-        ).lean();
-      })
-    );
-
-    const updatedRoomData = await Room.findById(roomId).lean();
-    ioUpdateByUserId(
-      addToSetMembers,
-      "roomAdded",
-      "roomAdded",
-      updatedRoomData
-    );
-    ioUpdateByUserId(
-      pullMembers,
-      "roomRemoved",
-      "roomRemoved",
-      updatedRoomData._id
-    );
-
-    ioUpdateByUserId(
-      removeItemFromArray(currentUserId, sameMembers),
-      "room",
-      "membersChanged",
-      updatedRoomData
-    );
-
-    res.status(200).send(updatedRoomData);
-  } catch (error) {
-    console.log(error);
-    res.status(400).send("something faild");
   }
+
+  const sameMembers = newMemberList.filter((member) =>
+    membersBefore.includes(member)
+  );
+  const addToSetMembers = newMemberList.filter(
+    (member) => !membersBefore.includes(member)
+  );
+  const pullMembers = membersBefore.filter(
+    (member) => !newMemberList.includes(member)
+  );
+
+  await Promise.all(
+    addToSetMembers.map(async (userId) => {
+      await Room.addOrRemoveItemsInArrayById(
+        roomId,
+        "$addToSet",
+        "members",
+        userId
+      );
+
+      await User.addOrRemoveItemsInArrayById(
+        userId,
+        "$addToSet",
+        "userRooms",
+        roomId
+      );
+    })
+  );
+
+  await Promise.all(
+    pullMembers.map(async (userId) => {
+      await Room.addOrRemoveItemsInArrayById(
+        roomId,
+        "$pull",
+        "members",
+        userId
+      );
+
+      await User.addOrRemoveItemsInArrayById(
+        userId,
+        "$pull",
+        "userRooms",
+        roomId
+      );
+    })
+  );
+
+  const updatedRoomData = await Room.findById(roomId).lean();
+
+  ioUpdateByUserId(addToSetMembers, "roomAdded", "roomAdded", updatedRoomData);
+
+  ioUpdateByUserId(
+    pullMembers,
+    "roomRemoved",
+    "roomRemoved",
+    updatedRoomData._id
+  );
+
+  ioUpdateByUserId(
+    removeItemFromArray(currentUserId, sameMembers),
+    "room",
+    "membersChanged",
+    updatedRoomData
+  );
+
+  res.status(200).send(updatedRoomData);
 });
+
 router.post("/leave_room", auth, async (req, res) => {
-  // tähän validointi
   const { roomId, userId } = req.body;
 
   let result = await Room.findById(roomId);
