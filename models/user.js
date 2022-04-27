@@ -103,6 +103,7 @@ userSchema.statics.updateUserDataById = async function (data) {
     // throw "Could not update data."
   }
 };
+
 userSchema.statics.updateOneField = async function (
   currentUserId,
   fieldName,
@@ -116,6 +117,55 @@ userSchema.statics.updateOneField = async function (
     ).lean();
 
     return updatedData;
+  } catch (error) {
+    // throw "Could not update data."
+  }
+};
+
+userSchema.statics.addReadByMessageSum = async function (
+  currentUserId,
+  roomId,
+  lastSeenMessageSum
+) {
+  try {
+    const isLastSeenMessagesAlreadyAdded = await this.aggregate([
+      {
+        $match: {
+          $and: [
+            { _id: new mongoose.Types.ObjectId(currentUserId) },
+            { "last_seen_messages.roomId": roomId },
+          ],
+        },
+      },
+    ]);
+
+    if (isLastSeenMessagesAlreadyAdded.length === 0) {
+      this.updateOne(
+        { _id: currentUserId },
+        {
+          $addToSet: {
+            userRooms: roomId,
+            last_seen_messages: {
+              roomId,
+              lastSeenMessageSum: lastSeenMessageSum,
+            },
+          },
+        }
+      ).exec();
+    } else {
+      this.updateOne(
+        { _id: currentUserId, "last_seen_messages.roomId": roomId },
+        {
+          $set: {
+            "last_seen_messages.$.lastSeenMessageSum": lastSeenMessageSum,
+          },
+        },
+        { new: true }
+      )
+        .lean()
+        .exec();
+    }
+    return true;
   } catch (error) {
     // throw "Could not update data."
   }

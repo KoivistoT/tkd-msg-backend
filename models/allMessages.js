@@ -224,6 +224,35 @@ allMessagesSchema.statics.getRoomMessagesById = async function (roomId) {
   }
 };
 
+allMessagesSchema.statics.addReadByRecipients = async function (
+  roomId,
+  currentUserId
+) {
+  try {
+    this.findOneAndUpdate(
+      { _id: roomId },
+      {
+        $addToSet: {
+          "messages.$[element].readByRecipients": {
+            readByUserId: currentUserId,
+          },
+        },
+      },
+
+      {
+        arrayFilters: [
+          {
+            "element.readByRecipients.readByUserId": { $ne: currentUserId },
+            "element.postedByUser": { $ne: currentUserId },
+          },
+        ],
+      }
+    ).exec();
+  } catch (error) {
+    // throw "Could not get the messages.";
+  }
+};
+
 const AllMessages = mongoose.model("AllMessages", allMessagesSchema);
 
 exports.allMessagesSchema = allMessagesSchema;

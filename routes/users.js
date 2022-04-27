@@ -113,63 +113,12 @@ router.post("/get_last_user_last_present", auth, async (req, res) => {
 
 router.post("/save_last_seen_message_sum", auth, async (req, res) => {
   const { currentUserId, roomId, lastSeenMessageSum } = req.body;
-  // console.log("katso ettei täällä ole turhaan");
-  //testaile, ettei tarci olla updateMany
-  await AllMessages.findOneAndUpdate(
-    { _id: roomId },
-    {
-      $addToSet: {
-        "messages.$[element].readByRecipients": { readByUserId: currentUserId },
-      },
-    },
 
-    {
-      arrayFilters: [
-        {
-          "element.readByRecipients.readByUserId": { $ne: currentUserId },
-          "element.postedByUser": { $ne: currentUserId },
-        },
-      ],
-    }
-  ).exec();
+  await AllMessages.addReadByRecipients(roomId, currentUserId);
 
   io.to(roomId).emit("subscribe_read_at", true);
 
-  const isLastSeenMessagesAlreadyAdded = await User.aggregate([
-    {
-      $match: {
-        $and: [
-          { _id: new mongoose.Types.ObjectId(currentUserId) },
-          { "last_seen_messages.roomId": roomId },
-        ],
-      },
-    },
-  ]);
-
-  if (isLastSeenMessagesAlreadyAdded.length === 0) {
-    User.updateOne(
-      { _id: currentUserId },
-      {
-        $addToSet: {
-          userRooms: roomId,
-          last_seen_messages: {
-            roomId,
-            lastSeenMessageSum: lastSeenMessageSum,
-          },
-        },
-      }
-    ).exec();
-  } else {
-    User.updateOne(
-      { _id: currentUserId, "last_seen_messages.roomId": roomId },
-      {
-        $set: { "last_seen_messages.$.lastSeenMessageSum": lastSeenMessageSum },
-      },
-      { new: true }
-    )
-      .lean()
-      .exec();
-  }
+  User.addReadByMessageSum(currentUserId, roomId, lastSeenMessageSum);
 
   res.status(200).send("newUserData");
 });
