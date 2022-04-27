@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const addObjectIds = require("../utils/addObjectIds");
 const { check } = require("../utils/check");
 
 const MESSAGE_TYPES = {
@@ -129,7 +130,7 @@ allMessagesSchema.statics.updateReactions = async function (
     ]);
     return updatedMessage[0].message;
   } catch (error) {
-    throw error;
+    // throw "Could not update reactions";
   }
 };
 
@@ -159,7 +160,7 @@ allMessagesSchema.statics.findMessageById = async function (roomId, messageId) {
 
     return item[0].message;
   } catch (error) {
-    throw error;
+    // throw "Could not get the message.";
   }
 };
 
@@ -188,7 +189,7 @@ allMessagesSchema.statics.getImageURLsByRoomId = async function (roomId) {
       .map((message) => Object.values(message)[0].imageURLs);
     return reversedImageURLs;
   } catch (error) {
-    throw error;
+    // throw "Could not get the images URLs.";
   }
 };
 allMessagesSchema.statics.deleteMessageById = async function (
@@ -205,9 +206,10 @@ allMessagesSchema.statics.deleteMessageById = async function (
     ).exec();
     return true;
   } catch (error) {
-    throw error;
+    // throw "Could not delete the messge.";
   }
 };
+
 allMessagesSchema.statics.getRoomMessagesById = async function (roomId) {
   try {
     const result = await this.findById(roomId).lean();
@@ -216,10 +218,9 @@ allMessagesSchema.statics.getRoomMessagesById = async function (roomId) {
       _id: result._id,
       messages: addObjectIds(result.messages.reverse()),
     };
-
     return messagesObject;
   } catch (error) {
-    throw error;
+    // throw "Could not get the messages.";
   }
 };
 
