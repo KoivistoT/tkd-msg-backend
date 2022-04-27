@@ -2,6 +2,7 @@ const express = require("express");
 const moment = require("moment");
 const router = express.Router();
 const auth = require("../middleware/auth");
+const _ = require("lodash");
 const mongoose = require("mongoose");
 const addObjectIds = require("../utils/addObjectIds");
 const bcrypt = require("bcrypt");
@@ -75,8 +76,8 @@ router.get("/all", auth, async (req, res) => {
   const users = await User.find({});
   if (!users) return res.status(404).send("Users not found");
 
-  const usersObjects = addObjectIds(users);
-  res.status(200).send(usersObjects);
+  const userObjects = addObjectIds(users);
+  res.status(200).send(userObjects);
 });
 
 // router.get("/delete_user/:id", auth, async (req, res) => {
@@ -174,11 +175,9 @@ router.post("/save_push_token", auth, async (req, res) => {
 router.post("/last_present", auth, async (req, res) => {
   const { currentUserId } = req.body;
   let user = await User.findById(currentUserId);
-  //toki pitäisi löytyä, mutta on nyt joku viealla
-
   if (!user) return res.status(400).send("User do not exist.");
 
-  const newUserData = await User.findOneAndUpdate(
+  User.findOneAndUpdate(
     { _id: currentUserId },
     { last_present: moment().format() },
     { new: true }
