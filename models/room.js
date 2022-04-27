@@ -38,6 +38,30 @@ const schema = Joi.object({
   topic: Joi.string(),
 });
 
+roomSchema.statics.pullMember = async function (roomId, userId) {
+  try {
+    const updatedRoomData = await this.findByIdAndUpdate(
+      { _id: roomId },
+      { $pull: { members: userId } },
+      { new: true }
+    )
+      .lean()
+      .exec();
+    return updatedRoomData;
+  } catch (error) {
+    // throw "Could not get the messages.";
+  }
+};
+roomSchema.statics.getUserRoomsById = async function (userId) {
+  try {
+    const rooms = this.find({ members: { $all: [userId] } });
+
+    return rooms;
+  } catch (error) {
+    // throw "Could not get the messages.";
+  }
+};
+
 roomSchema.statics.addMember = function () {
   try {
     return "lkj";

@@ -135,7 +135,6 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
     { new: true }
   ).lean();
 
-  const targetRooms = await Room.find({ members: { $all: [userId] } });
   await AllTasks.findOneAndUpdate(
     { _id: userId },
     { changes: [] },
@@ -144,22 +143,19 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
     .lean()
     .exec();
 
+  const allUserRooms = await Room.getUserRoomsById(userId);
+
   var changeMembers = new Promise((resolve) => {
     let i = 0;
 
-    targetRooms.forEach(async (room) => {
-      if (room.type === "private") return;
+    allUserRooms.forEach(async (room) => {
+      const { type, _id: roomId } = room;
+      if (type === "private") return;
 
-      const updatedRoomData = await Room.findByIdAndUpdate(
-        { _id: room._id },
-        { $pull: { members: userId } },
-        { new: true }
-      )
-        .lean()
-        .exec();
+      const updatedRoomData = await Room.pullMember(roomId, userId);
 
       ioUpdateByRoomId(
-        [room._id.toString()],
+        [roomId.toString()],
         "room",
         "membersChanged",
         updatedRoomData,
@@ -167,7 +163,7 @@ router.post("/archive_or_delete_user", auth, async (req, res) => {
       );
 
       i++;
-      if (targetRooms.length === i) resolve();
+      if (allUserRooms.length === i) resolve();
     });
   });
   Promise.all([changeMembers]);
