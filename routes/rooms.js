@@ -230,40 +230,41 @@ router.post("/leave_room", auth, async (req, res) => {
   let result = await Room.findById(roomId);
   if (!result) return res.status(400).send("Can't find room");
 
-  const newMembersList = result.members.filter((user) => user !== userId);
+  const updatedMembersList = result.members.filter((user) => user !== userId);
 
-  try {
-    await Room.findByIdAndUpdate(
-      { _id: roomId },
-      { $pull: { members: userId } }
-    ).lean();
-    await User.findByIdAndUpdate(
-      { _id: userId },
-      { $pull: { userRooms: roomId, last_seen_messages: { roomId: roomId } } }
-    ).lean();
+  await Room.addOrRemoveItemsInArrayById(roomId, "$pull", "members", userId);
 
-    const updatedRoomData = await Room.findById(roomId).lean();
+  await User.findByIdAndUpdate(
+    { _id: userId },
+    { $pull: { userRooms: roomId, last_seen_messages: { roomId: roomId } } }
+  ).lean();
 
-    const allUsers = await User.find({}).lean();
-    const usersWithId = addObjectIds(allUsers);
+  const updatedRoomData = await Room.findById(roomId).lean();
 
-    let sum = 0;
-    updatedRoomData.members.forEach((userId) => {
-      usersWithId[userId].status === "active" ? (sum += 1) : (sum = sum);
-    });
+  const allUsers = await User.find({}).lean();
+  const usersWithId = addObjectIds(allUsers);
 
-    if (sum === 0) {
-      Room.deleteOne({ _id: roomId }).exec();
-      AllMessages.deleteOne({ _id: roomId }).lean().exec();
+  let deleteRoom = true;
+
+  updatedRoomData.members.forEach((userId) => {
+    if (usersWithId[userId].status === "active") {
+      deleteRoom = false;
     }
+  });
 
-    ioUpdateByUserId(newMembersList, "room", "membersChanged", updatedRoomData);
-
-    res.status(200).send(updatedRoomData);
-  } catch (error) {
-    console.log(error);
-    res.status(400).send("something faild");
+  if (deleteRoom) {
+    Room.deleteOne({ _id: roomId }).exec();
+    AllMessages.deleteOne({ _id: roomId }).lean().exec();
   }
+
+  ioUpdateByUserId(
+    updatedMembersList,
+    "room",
+    "membersChanged",
+    updatedRoomData
+  );
+
+  res.status(200).send(updatedRoomData);
 });
 
 router.post("/delete_room/", auth, async (req, res) => {
