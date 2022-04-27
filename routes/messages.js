@@ -290,29 +290,8 @@ const { check } = require("../utils/check");
 
 router.get("/room_images/:id", auth, async (req, res) => {
   const roomId = req.params.id;
-  const roomImageURLs = await AllMessages.aggregate([
-    { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
-    {
-      $set: {
-        messages: {
-          $filter: {
-            input: "$messages",
-            as: "m",
-            cond: { $eq: ["$$m.type", "image"] },
-          },
-        },
-      },
-    },
-    { $unwind: { path: "$messages" } },
-    { $unwind: { path: "$messages.imageURLs" } },
-    { $project: { "messages.imageURLs": 1, _id: 0 } },
 
-    // { $limit: 1 },
-  ]);
-
-  const imageURLs = roomImageURLs
-    .reverse()
-    .map((message) => Object.values(message)[0].imageURLs);
+  const imageURLs = await AllMessages.getImageURLsByRoomId(roomId);
 
   res.status(200).send({ imageURLs, roomId });
 });

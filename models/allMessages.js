@@ -132,9 +132,10 @@ allMessagesSchema.statics.updateReactions = async function (
     throw error;
   }
 };
+
 allMessagesSchema.statics.findMessageById = async function (roomId, messageId) {
   try {
-    const item = await AllMessages.aggregate([
+    const item = await this.aggregate([
       { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
       {
         $set: {
@@ -155,7 +156,37 @@ allMessagesSchema.statics.findMessageById = async function (roomId, messageId) {
         $project: { message: 1, _id: 0 },
       },
     ]);
+
     return item[0].message;
+  } catch (error) {
+    throw error;
+  }
+};
+
+allMessagesSchema.statics.getImageURLsByRoomId = async function (roomId) {
+  try {
+    const imageURLs = await this.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(roomId) } },
+      {
+        $set: {
+          messages: {
+            $filter: {
+              input: "$messages",
+              as: "m",
+              cond: { $eq: ["$$m.type", "image"] },
+            },
+          },
+        },
+      },
+      { $unwind: { path: "$messages" } },
+      { $unwind: { path: "$messages.imageURLs" } },
+      { $project: { "messages.imageURLs": 1, _id: 0 } },
+    ]);
+
+    const reversedImageURLs = imageURLs
+      .reverse()
+      .map((message) => Object.values(message)[0].imageURLs);
+    return reversedImageURLs;
   } catch (error) {
     throw error;
   }
