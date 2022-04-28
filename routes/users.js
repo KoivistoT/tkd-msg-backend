@@ -43,10 +43,12 @@ router.post("/create_user", auth, async (req, res) => {
 
   await AllTasks.create({ _id: newUser._id });
   ioUpdateToAllUsers("user", "newUser", newUser);
-  res
-    .header("x-auth-token", token)
-    .header("access-control-expose-headers", "x-auth-token")
-    .send(_.pick(user, ["_id", "name", "email"]));
+
+  // res
+  //   .header("x-auth-token", token)
+  //   .header("access-control-expose-headers", "x-auth-token")
+  //   .send(_.pick(user, ["_id", "name", "email"]));
+  res.send(_.pick(user, ["_id", "name", "email"]));
 });
 
 router.post("/edit_password", auth, async (req, res) => {
