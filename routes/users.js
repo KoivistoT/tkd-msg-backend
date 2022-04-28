@@ -120,7 +120,7 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
 
   setTimeout(() => {
     io.to(roomId).emit("subscribe_read_at", true);
-  }, 1000);
+  }, 2000);
 
   res.status(200).send("newUserData");
 });

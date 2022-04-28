@@ -18,7 +18,7 @@ const readByRecipientSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: false,
+    timestamps: true,
   }
 );
 
@@ -291,6 +291,7 @@ allMessagesSchema.statics.addReadByRecipients = async function (
         $addToSet: {
           "messages.$[element].readByRecipients": {
             readByUserId: currentUserId,
+            readAt: Date.now(),
           },
         },
       },
