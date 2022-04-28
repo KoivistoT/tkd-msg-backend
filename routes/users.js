@@ -114,11 +114,13 @@ router.post("/get_last_user_last_present", auth, async (req, res) => {
 router.post("/save_last_seen_message_sum", auth, async (req, res) => {
   const { currentUserId, roomId, lastSeenMessageSum } = req.body;
 
-  await AllMessages.addReadByRecipients(roomId, currentUserId);
-
-  io.to(roomId).emit("subscribe_read_at", true);
+  AllMessages.addReadByRecipients(roomId, currentUserId);
 
   User.addReadByMessageSum(currentUserId, roomId, lastSeenMessageSum);
+
+  setTimeout(() => {
+    io.to(roomId).emit("subscribe_read_at", true);
+  }, 1000);
 
   res.status(200).send("newUserData");
 });

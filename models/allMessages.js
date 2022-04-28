@@ -304,6 +304,8 @@ allMessagesSchema.statics.addReadByRecipients = async function (
         ],
       }
     ).exec();
+
+    return true;
   } catch (error) {
     // throw "Could not get the messages.";
   }
