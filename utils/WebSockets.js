@@ -122,7 +122,7 @@ class WebSockets {
     });
 
     client.on("userOffline", (userId) => {
-      liveUsers = liveUsers.filter((user) => user !== userId);
+      liveUsers = removeItemFromArray(userId, liveUsers);
       io.emit("userOnline", liveUsers);
     });
 

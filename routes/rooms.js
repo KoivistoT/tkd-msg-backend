@@ -230,7 +230,7 @@ router.post("/leave_room", auth, async (req, res) => {
   let result = await Room.findById(roomId);
   if (!result) return res.status(400).send("Can't find room");
 
-  const updatedMembersList = result.members.filter((user) => user !== userId);
+  const updatedMembersList = removeItemFromArray(userId, result.members);
 
   await Room.addOrRemoveItemsInArrayById(roomId, "$pull", "members", userId);
   await User.removeRoomFromUserById(roomId, userId);
@@ -267,7 +267,9 @@ router.post("/delete_room/", auth, async (req, res) => {
   const { roomId, currentUserId } = req.body;
 
   const roomData = await Room.findById(roomId).select("members type").lean();
-  if (roomData.length === 0) return res.status(404).send("Room not found");
+  if (!roomData || roomData.length === 0) {
+    return res.status(404).send("Room not found");
+  }
 
   const members = roomData.members;
 
