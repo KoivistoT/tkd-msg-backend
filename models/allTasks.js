@@ -12,7 +12,7 @@ allTasksSchema.statics.clearTasks = async function (userId) {
 
     return true;
   } catch (error) {
-    // throw "Could not get the messages.";
+    // throw "Could not clear tasks.";
   }
 };
 
@@ -72,7 +72,7 @@ allTasksSchema.statics.getUserTasksById = async function (currentUserId) {
 
     return taskGroups;
   } catch (error) {
-    // throw "Could not get the messages.";
+    // throw "Could not get tasks.";
   }
 };
 
@@ -143,7 +143,7 @@ allTasksSchema.statics.updateTasks = async function (
 
     return true;
   } catch (error) {
-    // throw "Could not get the messages.";
+    // throw "Could not update tasks.";
   }
 };
 

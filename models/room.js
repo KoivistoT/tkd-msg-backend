@@ -58,7 +58,7 @@ roomSchema.statics.addOrRemoveItemsInArrayById = async function (
       .exec();
     return updatedData;
   } catch (error) {
-    // throw "Could not update data."
+    // throw "Could not update the data."
   }
 };
 
@@ -68,7 +68,7 @@ roomSchema.statics.getUserRoomsById = async function (userId) {
 
     return rooms;
   } catch (error) {
-    // throw "Could not get the messages.";
+    // throw "Could not get rooms.";
   }
 };
 
@@ -89,7 +89,7 @@ roomSchema.statics.getUseRoomsOnInit = async function (roomId, userId) {
 
     return rooms;
   } catch (error) {
-    // throw "Could not get the messages.";
+    // throw "Could not get rooms.";
   }
 };
 
@@ -107,7 +107,7 @@ roomSchema.statics.getRoomMessageSumById = async function (roomId) {
 
     return roomData[0].messageSum;
   } catch (error) {
-    // throw "Could not get the messages.";
+    // throw "Could not get the message sum.";
   }
 };
 
@@ -121,7 +121,7 @@ roomSchema.statics.updateOneField = async function (roomId, fieldName, value) {
 
     return updatedData;
   } catch (error) {
-    // throw "Could not get the messages.";
+    // throw "Could not update the field.";
   }
 };
 
@@ -144,7 +144,7 @@ roomSchema.statics.updateLatestMessage = async function (
 
     return updatedData;
   } catch (error) {
-    // throw "Could not get the messages.";
+    // throw "Could not update the last message.";
   }
 };
 
@@ -168,7 +168,7 @@ roomSchema.statics.createRoom = async function (
 
     return newRoom;
   } catch (error) {
-    // throw "Could not get the messages.";
+    // throw "Could not create the room.";
   }
 };
 

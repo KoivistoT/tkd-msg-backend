@@ -207,7 +207,7 @@ allMessagesSchema.statics.deleteMessageById = async function (
     ).exec();
     return true;
   } catch (error) {
-    // throw "Could not delete the messge.";
+    // throw "Could not delete the message.";
   }
 };
 
@@ -219,7 +219,7 @@ allMessagesSchema.statics.addNewMessage = async function (roomId, message) {
     ).exec();
     return true;
   } catch (error) {
-    // throw "Could not delete the messge.";
+    // throw "Could not add the message.";
   }
 };
 
@@ -234,7 +234,7 @@ allMessagesSchema.statics.getAllMessagesOnInit = async function (
 
     return messages;
   } catch (error) {
-    // throw "Could not delete the messge.";
+    // throw "Could not get messages.";
   }
 };
 
@@ -262,7 +262,7 @@ allMessagesSchema.statics.getAllImageURLsOnInit = async function (roomId) {
 
     return imageURLs;
   } catch (error) {
-    // throw "Could not delete the messge.";
+    // throw "Could not get images.";
   }
 };
 
@@ -308,7 +308,7 @@ allMessagesSchema.statics.addReadByRecipients = async function (
 
     return true;
   } catch (error) {
-    // throw "Could not get the messages.";
+    // throw "Could not add recepient.";
   }
 };
 
@@ -351,7 +351,7 @@ allMessagesSchema.statics.getRestMessagesOnInit = async function (messagesNow) {
     );
     return userAllMessages;
   } catch (error) {
-    // throw "Could not get the messages.";
+    // throw "Could not get messages.";
   }
 };
 

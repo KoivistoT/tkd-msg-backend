@@ -76,7 +76,7 @@ userSchema.statics.addRoomToUsers = function (roomUsers, roomId) {
         .exec();
     });
   } catch (error) {
-    // throw "Could not get room."
+    // throw "Could not add the room."
   }
 };
 
@@ -100,7 +100,7 @@ userSchema.statics.updateUserDataById = async function (data) {
 
     return updatedData;
   } catch (error) {
-    // throw "Could not update data."
+    // throw "Could not update the data."
   }
 };
 
@@ -118,7 +118,7 @@ userSchema.statics.updateOneField = async function (
 
     return updatedData;
   } catch (error) {
-    // throw "Could not update data."
+    // throw "Could not update the field."
   }
 };
 userSchema.statics.archiveOrDeleteUser = async function (userId, status) {
@@ -130,7 +130,7 @@ userSchema.statics.archiveOrDeleteUser = async function (userId, status) {
     ).lean();
     return true;
   } catch (error) {
-    // throw "Could not update data."
+    // throw "Could not update user data."
   }
 };
 
@@ -144,7 +144,7 @@ userSchema.statics.removeRoomFromUserById = async function (roomId, userId) {
       .exec();
     return true;
   } catch (error) {
-    // throw "Could not update data."
+    // throw "Could not remove the room."
   }
 };
 
@@ -156,7 +156,7 @@ userSchema.statics.getActiveUsers = async function () {
     ]);
     return activeUsers;
   } catch (error) {
-    // throw "Could not update data."
+    // throw "Could not get active users."
   }
 };
 
@@ -180,7 +180,7 @@ userSchema.statics.addOrRemoveItemsInArrayById = async function (
       .exec();
     return updatedData;
   } catch (error) {
-    // throw "Could not update data."
+    // throw "Could not update the data."
   }
 };
 
@@ -229,7 +229,7 @@ userSchema.statics.addReadByMessageSum = async function (
     }
     return true;
   } catch (error) {
-    // throw "Could not update data."
+    // throw "Could not read or update the data."
   }
 };
 
