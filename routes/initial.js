@@ -64,7 +64,7 @@ router.get("/", auth, async (req, res) => {
 
     res.status(200).send(initialData);
   } catch (error) {
-    return res.status(400).send(error, "Tämä joo");
+    return res.status(400).send(error, "code 2992771");
   }
 });
 

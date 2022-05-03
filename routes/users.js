@@ -122,7 +122,7 @@ router.post("/save_last_seen_message_sum", auth, async (req, res) => {
     io.to(roomId).emit("subscribe_read_at", true);
   }, 2000);
 
-  res.status(200).send("newUserData");
+  res.status(200).send(currentUserId);
 });
 
 router.post("/archive_or_delete_user", auth, async (req, res) => {
