@@ -2,4 +2,4 @@
 
 ## General
 
-This backend to msg-mobile app which is connected to Firestore and MongoDB.
+This is backend for msg-mobile app and it is communicating with Firestore and MongoDB.
