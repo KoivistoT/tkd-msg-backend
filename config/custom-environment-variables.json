@@ -1,0 +1,4 @@
+{
+  "jwtPrivateKey": "msg_jwtPrivateKey",
+  "db": "msg_db"
+}
