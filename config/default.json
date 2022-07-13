@@ -1,4 +1,4 @@
 {
-  "jwtPrivateKey": "msg_jwtPrivateKey",
+  "jwtPrivateKey": "1234",
   "db": "mongodb://localhost:27017/chat-app"
 }
